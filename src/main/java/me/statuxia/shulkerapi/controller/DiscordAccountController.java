@@ -1,12 +1,13 @@
 package me.statuxia.shulkerapi.controller;
 
 import me.statuxia.shulkerapi.annotations.TokenData;
-import me.statuxia.shulkerapi.configuration.properties.DiscordOAuthProperties;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.model.Token;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
+import me.statuxia.shulkerapi.service.impl.DiscordIntegrationServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AccountExpiredException;
@@ -23,23 +24,25 @@ public class DiscordAccountController extends BaseDiscordApiController {
 
     private final DiscordAccountDAO discordAccountDAO;
 
+    @Autowired
     public DiscordAccountController(
-        DiscordOAuthProperties properties,
-        HttpHandler httpHandler, DiscordAccountDAO discordAccountDAO
+        DiscordIntegrationServiceImpl discordIntegrationService,
+        DiscordAccountDAO discordAccountDAO
     ) {
-        super(properties, httpHandler);
+        super(discordIntegrationService);
         this.discordAccountDAO = discordAccountDAO;
     }
 
     @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiscordIdentityResponse> get(@TokenData Token token) {
-        final Optional<DiscordAccount> discordAccount = discordAccountDAO.findBySessionToken(token.sessionToken());
+        final Optional<DiscordAccount> discordAccount = getDiscordAccountDAO().findBySessionToken(token.sessionToken());
         if (discordAccount.isEmpty()) {
             throw new BadCredentialsException("know nothing about this token");
         }
 
         final String accessToken = discordAccount.get().getAccessToken();
-        final HttpHandler.HttpResponse<DiscordIdentityResponse> response = getUserInfo(accessToken);
+        final HttpHandler.HttpResponse<DiscordIdentityResponse> response
+            = getDiscordIntegrationService().getUserInfo(accessToken);
         if (response.getException() != null) {
             logger.error("error occured", response.getException());
             throw new AccountExpiredException("dead access token");
@@ -50,5 +53,9 @@ public class DiscordAccountController extends BaseDiscordApiController {
         }
 
         return ResponseEntity.ok(response.getBody());
+    }
+
+    public DiscordAccountDAO getDiscordAccountDAO() {
+        return discordAccountDAO;
     }
 }

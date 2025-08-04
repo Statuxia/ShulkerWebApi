@@ -1,13 +1,13 @@
 package me.statuxia.shulkerapi.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
-import me.statuxia.shulkerapi.configuration.properties.DiscordOAuthProperties;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.provider.DiscordOAuthRedirectProvider;
 import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
+import me.statuxia.shulkerapi.service.impl.DiscordIntegrationServiceImpl;
 import me.statuxia.shulkerapi.utils.TokenGenerator;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +27,11 @@ public class DiscordOAuthController extends BaseDiscordApiController {
 
     @Autowired
     public DiscordOAuthController(
+        DiscordIntegrationServiceImpl discordIntegrationService,
         DiscordOAuthRedirectProvider provider,
-        DiscordOAuthProperties properties,
-        HttpHandler httpHandler,
         DiscordAccountDAO discordAccountDAO
     ) {
-        super(properties, httpHandler);
+        super(discordIntegrationService);
         this.provider = provider;
         this.discordAccountDAO = discordAccountDAO;
     }
@@ -44,7 +43,8 @@ public class DiscordOAuthController extends BaseDiscordApiController {
 
     @GetMapping("/auth")
     public void auth(HttpServletResponse response, @RequestParam("code") String code) throws IOException {
-        final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken = getAccessToken(code);
+        final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
+            = getDiscordIntegrationService().getAccessToken(code);
         if (accessToken.getException() != null) {
             logger.error("error occured", accessToken.getException());
             response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
@@ -57,7 +57,8 @@ public class DiscordOAuthController extends BaseDiscordApiController {
             return;
         }
 
-        final HttpHandler.HttpResponse<DiscordIdentityResponse> userInfo = getUserInfo(tokenResponse.getAccessToken());
+        final HttpHandler.HttpResponse<DiscordIdentityResponse> userInfo
+            = getDiscordIntegrationService().getUserInfo(tokenResponse.getAccessToken());
         if (userInfo.getException() != null) {
             logger.error("error occured", userInfo.getException());
             response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
