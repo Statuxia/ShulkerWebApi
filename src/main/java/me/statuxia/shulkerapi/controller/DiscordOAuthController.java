@@ -7,7 +7,7 @@ import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.provider.DiscordOAuthRedirectProvider;
 import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
-import me.statuxia.shulkerapi.service.impl.DiscordIntegrationServiceImpl;
+import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import me.statuxia.shulkerapi.utils.TokenGenerator;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +19,19 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/v1/oauth2/discord")
+@RequestMapping(DiscordOAuthController.PREFIX)
 public class DiscordOAuthController extends BaseDiscordApiController {
+
+    public static final String PREFIX = "/api/v1/oauth2/discord";
+    public static final String REDIRECT = "/redirect";
+    public static final String AUTH = "/auth";
 
     private final DiscordOAuthRedirectProvider provider;
     private final DiscordAccountDAO discordAccountDAO;
 
     @Autowired
     public DiscordOAuthController(
-        DiscordIntegrationServiceImpl discordIntegrationService,
+        DiscordIntegrationService discordIntegrationService,
         DiscordOAuthRedirectProvider provider,
         DiscordAccountDAO discordAccountDAO
     ) {
@@ -36,12 +40,12 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         this.discordAccountDAO = discordAccountDAO;
     }
 
-    @GetMapping("/redirect")
+    @GetMapping(REDIRECT)
     public void redirect(HttpServletResponse response) throws IOException {
         response.sendRedirect(getProvider().getDiscordRedirectUrl());
     }
 
-    @GetMapping("/auth")
+    @GetMapping(AUTH)
     public void auth(HttpServletResponse response, @RequestParam("code") String code) throws IOException {
         final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
             = getDiscordIntegrationService().getAccessToken(code);

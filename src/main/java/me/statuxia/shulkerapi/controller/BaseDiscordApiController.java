@@ -1,6 +1,6 @@
 package me.statuxia.shulkerapi.controller;
 
-import me.statuxia.shulkerapi.service.impl.DiscordIntegrationServiceImpl;
+import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +9,14 @@ public abstract class BaseDiscordApiController {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final DiscordIntegrationServiceImpl discordIntegrationService;
+    private final DiscordIntegrationService discordIntegrationService;
 
     @Autowired
-    protected BaseDiscordApiController(DiscordIntegrationServiceImpl discordIntegrationService) {
+    protected BaseDiscordApiController(DiscordIntegrationService discordIntegrationService) {
         this.discordIntegrationService = discordIntegrationService;
     }
 
-    public DiscordIntegrationServiceImpl getDiscordIntegrationService() {
+    public DiscordIntegrationService getDiscordIntegrationService() {
         return discordIntegrationService;
     }
 }

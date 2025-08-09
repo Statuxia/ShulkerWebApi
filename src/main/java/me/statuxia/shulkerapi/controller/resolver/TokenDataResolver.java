@@ -1,10 +1,10 @@
 package me.statuxia.shulkerapi.controller.resolver;
 
 import me.statuxia.shulkerapi.annotations.TokenData;
+import me.statuxia.shulkerapi.exception.AuthenticationException;
 import me.statuxia.shulkerapi.model.Token;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -47,7 +47,7 @@ public class TokenDataResolver implements HandlerMethodArgumentResolver {
         final String sessionToken = webRequest.getHeader(X_SESSION_TOKEN_HEADER);
 
         if (!StringUtils.hasText(sessionToken)) {
-            throw new BadCredentialsException("no token");
+            throw AuthenticationException.UNKNOWN_SESSION_TOKEN;
         }
 
         return new Token(sessionToken);

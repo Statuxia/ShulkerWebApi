@@ -15,27 +15,30 @@ public class DiscordAccessTokenResponse {
     @JsonProperty("expires_in")
     protected Long expireIn;
 
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
     public String getAccessToken() {
         return accessToken;
     }
 
-    public void setAccessToken(String accessToken) {
+    public DiscordAccessTokenResponse setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+        return this;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public DiscordAccessTokenResponse setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+        return this;
     }
 
     public Long getExpireIn() {
         return expireIn;
     }
 
-    public void setExpireIn(Long expireIn) {
+    public DiscordAccessTokenResponse setExpireIn(Long expireIn) {
         this.expireIn = expireIn;
+        return this;
     }
 }

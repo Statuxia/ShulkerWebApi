@@ -6,38 +6,43 @@ import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.model.Token;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
-import me.statuxia.shulkerapi.service.impl.DiscordIntegrationServiceImpl;
+import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AccountExpiredException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
+import static me.statuxia.shulkerapi.exception.AuthenticationException.DISCORD_ACCOUNT_EXPIRED;
+import static me.statuxia.shulkerapi.exception.AuthenticationException.UNKNOWN_SESSION_TOKEN;
+import static me.statuxia.shulkerapi.exception.DiscordIntegrationApiException.NO_DATA;
+
 @RestController
-@RequestMapping("/api/v1/discord")
+@RequestMapping(DiscordAccountController.PREFIX)
 public class DiscordAccountController extends BaseDiscordApiController {
+
+    public static final String PREFIX = "/api/v1/discord";
+    public static final String GET = "/get";
 
     private final DiscordAccountDAO discordAccountDAO;
 
     @Autowired
     public DiscordAccountController(
-        DiscordIntegrationServiceImpl discordIntegrationService,
+        DiscordIntegrationService discordIntegrationService,
         DiscordAccountDAO discordAccountDAO
     ) {
         super(discordIntegrationService);
         this.discordAccountDAO = discordAccountDAO;
     }
 
-    @GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiscordIdentityResponse> get(@TokenData Token token) {
         final Optional<DiscordAccount> discordAccount = getDiscordAccountDAO().findBySessionToken(token.sessionToken());
         if (discordAccount.isEmpty()) {
-            throw new BadCredentialsException("know nothing about this token");
+            throw UNKNOWN_SESSION_TOKEN;
         }
 
         final String accessToken = discordAccount.get().getAccessToken();
@@ -45,11 +50,11 @@ public class DiscordAccountController extends BaseDiscordApiController {
             = getDiscordIntegrationService().getUserInfo(accessToken);
         if (response.getException() != null) {
             logger.error("error occured", response.getException());
-            throw new AccountExpiredException("dead access token");
+            throw DISCORD_ACCOUNT_EXPIRED;
         }
 
         if (response.getBody() == null) {
-            throw new BadCredentialsException("know nothing about this account");
+            throw NO_DATA;
         }
 
         return ResponseEntity.ok(response.getBody());

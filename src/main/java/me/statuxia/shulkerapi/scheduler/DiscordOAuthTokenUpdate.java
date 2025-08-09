@@ -4,7 +4,7 @@ import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
-import me.statuxia.shulkerapi.service.impl.DiscordIntegrationServiceImpl;
+import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +23,11 @@ public class DiscordOAuthTokenUpdate {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final DiscordAccountDAO discordAccountDAO;
-    private final DiscordIntegrationServiceImpl discordIntegrationService;
+    private final DiscordIntegrationService discordIntegrationService;
 
     @Autowired
     public DiscordOAuthTokenUpdate(
-        DiscordIntegrationServiceImpl discordIntegrationService, DiscordAccountDAO discordAccountDAO) {
+        DiscordIntegrationService discordIntegrationService, DiscordAccountDAO discordAccountDAO) {
         this.discordIntegrationService = discordIntegrationService;
         this.discordAccountDAO = discordAccountDAO;
     }
@@ -71,7 +71,7 @@ public class DiscordOAuthTokenUpdate {
         getDiscordAccountDAO().saveAll(needToUpdateAccounts);
     }
 
-    public DiscordIntegrationServiceImpl getDiscordIntegrationService() {
+    public DiscordIntegrationService getDiscordIntegrationService() {
         return discordIntegrationService;
     }
 
