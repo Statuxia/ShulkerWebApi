@@ -8,7 +8,7 @@ import java.util.StringJoiner;
 
 @Entity(name = "DiscordAccount")
 @Table(name = "discord_account")
-public class DiscordAccount implements Identifiable<Long>, DisableAware {
+public class DiscordAccount implements Identifiable<Long>, DisableAware, TokenSource {
 
     @Id
     private Long id;
@@ -38,7 +38,7 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
     @Column(name = "update_time", nullable = false)
     private DateTime updateTime;
 
-    private Boolean disabled;
+    private boolean disabled;
 
     @Column(name = "disabled_time")
     private DateTime disabledTime;
@@ -86,12 +86,12 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
     }
 
     @Override
-    public Boolean isDisabled() {
+    public boolean isDisabled() {
         return disabled;
     }
 
     @Override
-    public void setDisabled(Boolean disabled) {
+    public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
 
@@ -110,7 +110,7 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DiscordAccount that = (DiscordAccount) o;
+        final DiscordAccount that = (DiscordAccount) o;
         return Objects.equals(id, that.id);
     }
 
@@ -123,9 +123,6 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
     public String toString() {
         return new StringJoiner(", ", DiscordAccount.class.getSimpleName() + "[", "]")
             .add("id=" + id)
-            .add("updateTime=" + updateTime)
-            .add("disabled=" + disabled)
-            .add("disabledTime=" + disabledTime)
             .toString();
     }
 }

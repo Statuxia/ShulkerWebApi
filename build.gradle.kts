@@ -27,6 +27,8 @@ dependencies {
     implementation("org.testcontainers:junit-jupiter")
     implementation("org.liquibase:liquibase-core")
     implementation("joda-time:joda-time:2.14.0")
+
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 }
 
 tasks.withType<Test> {

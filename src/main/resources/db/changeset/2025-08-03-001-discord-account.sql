@@ -1,5 +1,5 @@
 --liquibase formatted sql
---changeset statuxia:2025-08-03-discord-account
+--changeset statuxia:2025-08-03-001-discord-account
 
 CREATE TABLE IF NOT EXISTS discord_account (
     id BIGSERIAL,

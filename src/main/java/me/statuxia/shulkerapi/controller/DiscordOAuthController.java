@@ -1,16 +1,16 @@
 package me.statuxia.shulkerapi.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.provider.DiscordOAuthRedirectProvider;
 import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
+import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
-import me.statuxia.shulkerapi.utils.TokenGenerator;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +20,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping(DiscordOAuthController.PREFIX)
+@Tag(name = "Discord OAuth", description = "Контроллер для аутентификации через Discord")
 public class DiscordOAuthController extends BaseDiscordApiController {
 
     public static final String PREFIX = "/api/v1/oauth2/discord";
@@ -27,25 +28,29 @@ public class DiscordOAuthController extends BaseDiscordApiController {
     public static final String AUTH = "/auth";
 
     private final DiscordOAuthRedirectProvider provider;
-    private final DiscordAccountDAO discordAccountDAO;
+    private final DiscordAccountService discordAccountService;
 
-    @Autowired
     public DiscordOAuthController(
         DiscordIntegrationService discordIntegrationService,
         DiscordOAuthRedirectProvider provider,
-        DiscordAccountDAO discordAccountDAO
+        DiscordAccountService discordAccountService
     ) {
         super(discordIntegrationService);
         this.provider = provider;
-        this.discordAccountDAO = discordAccountDAO;
+        this.discordAccountService = discordAccountService;
     }
 
     @GetMapping(REDIRECT)
+    @Operation(description = "Эндпоинт для простого редиректа в сервис Discord OAuth")
     public void redirect(HttpServletResponse response) throws IOException {
         response.sendRedirect(getProvider().getDiscordRedirectUrl());
     }
 
     @GetMapping(AUTH)
+    @Transactional
+    @Operation(description = """
+        Эндпоинт для авторизации полученного от Discord OAuth кода с последующим редиректом в лк
+        """)
     public void auth(HttpServletResponse response, @RequestParam("code") String code) throws IOException {
         final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
             = getDiscordIntegrationService().getAccessToken(code);
@@ -69,20 +74,13 @@ public class DiscordOAuthController extends BaseDiscordApiController {
             return;
         }
 
-        if (userInfo.getBody() == null) {
+        final DiscordIdentityResponse userIdentify = userInfo.getBody();
+        if (userIdentify == null) {
             response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
             return;
         }
 
-        final Long discordId = userInfo.getBody().getId();
-        final DiscordAccount account = getDiscordAccountDAO().findById(discordId).orElse(new DiscordAccount());
-        account.setId(discordId);
-        account.setAccessToken(tokenResponse.getAccessToken());
-        account.setRefreshToken(tokenResponse.getRefreshToken());
-        account.setUpdateTime(DateTime.now().plusSeconds(tokenResponse.getExpireIn().intValue()));
-        account.setSessionToken(TokenGenerator.generate());
-
-        getDiscordAccountDAO().save(account);
+        final DiscordAccount account = getDiscordAccountService().createOrUpdate(userIdentify.getId(), tokenResponse);
 
         response.sendRedirect(getProvider().getAuthSuccessRedirectUrl() + "?token=" + account.getSessionToken());
     }
@@ -91,7 +89,7 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         return provider;
     }
 
-    public DiscordAccountDAO getDiscordAccountDAO() {
-        return discordAccountDAO;
+    public DiscordAccountService getDiscordAccountService() {
+        return discordAccountService;
     }
 }

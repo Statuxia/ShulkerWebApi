@@ -2,6 +2,7 @@ package me.statuxia.shulkerapi.controller.advice;
 
 import jakarta.servlet.http.HttpServletResponse;
 import me.statuxia.shulkerapi.exception.ApiException;
+import me.statuxia.shulkerapi.response.ApiExceptionResponse;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -40,9 +38,9 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseBody
     public Object handle(MissingServletRequestParameterException exception, HttpServletResponse response) {
-        final Map<String, Object> json = handleDefaultException(response, HttpStatus.BAD_REQUEST);
-        json.put("message", exception.getMessage());
-        return json;
+        final ApiExceptionResponse apiResponse = handleDefaultException(response, HttpStatus.BAD_REQUEST);
+        apiResponse.setMessage(exception.getMessage());
+        return apiResponse;
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -54,41 +52,32 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(ApiException.class)
     @ResponseBody
     public Object handle(ApiException exception, HttpServletResponse response) {
-        final Map<String, Object> json = handleApiException(response, exception);
-        logger.debug("response:{}", json);
-        return json;
+        final ApiExceptionResponse apiResponse = handleApiException(response, exception);
+        logger.debug("response:{}", apiResponse);
+        return apiResponse;
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public Object handleAny(Exception exception, HttpServletResponse response) {
-        final Map<String, Object> json = handleDefaultException(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        logger.error("response:{}", json, exception);
-        return json;
+        final ApiExceptionResponse apiResponse = handleDefaultException(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        logger.error("response:{}", apiResponse, exception);
+        return apiResponse;
     }
 
-    private Map<String, Object> handleDefaultException(HttpServletResponse response, HttpStatus status) {
+    private ApiExceptionResponse handleDefaultException(HttpServletResponse response, HttpStatus status) {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(status.value());
 
-        final Map<String, Object> json = new HashMap<>();
-        json.put("code", DEFAULT_ERROR_CODE_VALUE);
-        json.put("message", status.getReasonPhrase());
-        json.put("timestamp", System.currentTimeMillis());
 
-        return json;
+        return new ApiExceptionResponse(DEFAULT_ERROR_CODE_VALUE, status.getReasonPhrase());
     }
 
-    private Map<String, Object> handleApiException(HttpServletResponse response, ApiException exception) {
+    private ApiExceptionResponse handleApiException(HttpServletResponse response, ApiException exception) {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(exception.getStatus().value());
 
-        final Map<String, Object> json = new HashMap<>();
-        json.put("code", exception.getCode());
-        json.put("message", getMessageService().message(exception.getMessage()));
-        json.put("timestamp", System.currentTimeMillis());
-
-        return json;
+        return new ApiExceptionResponse(exception.getCode(), getMessageService().message(exception.getMessage()));
     }
 
     public MessageService getMessageService() {

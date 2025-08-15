@@ -8,6 +8,8 @@ import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,7 +24,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
-import static me.statuxia.shulkerapi.controller.resolver.TokenDataResolver.X_SESSION_TOKEN_HEADER;
+import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -58,7 +60,7 @@ class DiscordAccountControllerTest extends BaseContainerTest {
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET)
-                    .header(X_SESSION_TOKEN_HEADER, SESSION_TOKEN)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk())
             .andReturn();
@@ -82,7 +84,7 @@ class DiscordAccountControllerTest extends BaseContainerTest {
     void getInvalidToken() throws Exception {
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET)
-                    .header(X_SESSION_TOKEN_HEADER, "test")
+                    .header(X_TOKEN_HEADER, "test")
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isUnauthorized())
             .andReturn();
@@ -97,7 +99,7 @@ class DiscordAccountControllerTest extends BaseContainerTest {
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET)
-                    .header(X_SESSION_TOKEN_HEADER, SESSION_TOKEN)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isUnauthorized())
             .andReturn();
@@ -112,7 +114,7 @@ class DiscordAccountControllerTest extends BaseContainerTest {
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET)
-                    .header(X_SESSION_TOKEN_HEADER, SESSION_TOKEN)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isBadRequest())
             .andReturn();
@@ -127,7 +129,7 @@ class DiscordAccountControllerTest extends BaseContainerTest {
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET)
-                    .header(X_SESSION_TOKEN_HEADER, SESSION_TOKEN)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
             ).andExpect(status().isBadRequest())
             .andReturn();

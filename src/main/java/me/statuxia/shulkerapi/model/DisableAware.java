@@ -4,9 +4,9 @@ import org.joda.time.DateTime;
 
 public interface DisableAware {
 
-    Boolean isDisabled();
+    boolean isDisabled();
 
-    void setDisabled(Boolean disabled);
+    void setDisabled(boolean disabled);
 
     DateTime getDisabledTime();
 
