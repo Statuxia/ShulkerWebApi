@@ -12,6 +12,8 @@ public class AuthenticationException extends ApiException {
         = new AuthenticationException("exception.AuthenticationException.TOKEN_DISABLED", 1103);
     public static final AuthenticationException DISCORD_ACCOUNT_EXPIRED
         = new AuthenticationException("exception.AuthenticationException.DISCORD_ACCOUNT_EXPIRED", 1104);
+    public static final AuthenticationException TOKEN_HAS_NO_LIMITATION
+        = new AuthenticationException("exception.AuthenticationException.TOKEN_HAS_NO_LIMITATION", 1105);
 
     public AuthenticationException(String message, int code) {
         super(message, HttpStatus.UNAUTHORIZED, code);

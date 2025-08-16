@@ -27,6 +27,10 @@ import java.lang.annotation.Target;
     @ApiResponse(
         responseCode = "1104", description = "Необходима переавторизация",
         content = @Content(schema = @Schema(implementation = ApiExceptionResponse.class))
+    ),
+    @ApiResponse(
+        responseCode = "1105", description = "Токен не настроен до конца (Лимиты)",
+        content = @Content(schema = @Schema(implementation = ApiExceptionResponse.class))
     )
 })
 @Target({ElementType.TYPE, ElementType.METHOD})

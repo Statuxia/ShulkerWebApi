@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 public class TokenGenerator {
 
     public static final int TOKEN_LENGTH = 24;
+    public static final int CUSTOM_TOKEN_LENGTH = 48;
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 

@@ -11,6 +11,7 @@ import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
+import me.statuxia.shulkerapi.swagger.IncorrectDataOperation;
 import me.statuxia.shulkerapi.swagger.NoDataOperation;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.DiscordAccountControllerOperation;
@@ -50,6 +51,7 @@ public class DiscordAccountController extends BaseDiscordApiController implement
     @GetMapping(value = {GET + ID_PATH, GET}, produces = MediaType.APPLICATION_JSON_VALUE)
     @UnknownAccountOperation
     @NoDataOperation
+    @IncorrectDataOperation
     @DiscordAccountControllerOperation.Get
     public ResponseEntity<DiscordIdentityResponse> get(
         @PathVariable(value = "id", required = false) Long id,

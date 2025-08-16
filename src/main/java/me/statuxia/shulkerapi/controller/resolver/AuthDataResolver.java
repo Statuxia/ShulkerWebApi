@@ -1,11 +1,17 @@
 package me.statuxia.shulkerapi.controller.resolver;
 
 import me.statuxia.shulkerapi.annotations.AuthData;
+import me.statuxia.shulkerapi.annotations.RequiredAuthority;
 import me.statuxia.shulkerapi.dao.CustomTokenDAO;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
+import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.AuthenticationException;
+import me.statuxia.shulkerapi.exception.AuthorityException;
 import me.statuxia.shulkerapi.model.DisableAware;
+import me.statuxia.shulkerapi.model.TokenAuthority;
+import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
@@ -18,6 +24,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class AuthDataResolver implements HandlerMethodArgumentResolver {
@@ -27,11 +35,17 @@ public class AuthDataResolver implements HandlerMethodArgumentResolver {
 
     private final DiscordAccountDAO discordAccountDAO;
     private final CustomTokenDAO customTokenDAO;
+    private final TokenAuthorityDAO tokenAuthorityDAO;
 
     @Autowired
-    public AuthDataResolver(DiscordAccountDAO discordAccountDAO, CustomTokenDAO customTokenDAO) {
+    public AuthDataResolver(
+        DiscordAccountDAO discordAccountDAO,
+        CustomTokenDAO customTokenDAO,
+        TokenAuthorityDAO tokenAuthorityDAO
+    ) {
         this.discordAccountDAO = discordAccountDAO;
         this.customTokenDAO = customTokenDAO;
+        this.tokenAuthorityDAO = tokenAuthorityDAO;
     }
 
     @Override
@@ -62,7 +76,47 @@ public class AuthDataResolver implements HandlerMethodArgumentResolver {
             throw AuthenticationException.TOKEN_DISABLED;
         }
 
+        if (parameter.hasMethodAnnotation(RequiredAuthority.class)) {
+            validateRequiredAuthority(parameter, token);
+        }
+
         return token;
+    }
+
+    private void validateRequiredAuthority(MethodParameter parameter, TokenData token) {
+        final RequiredAuthority requiredAuthority = parameter.getMethodAnnotation(RequiredAuthority.class);
+        if (requiredAuthority == null) {
+            return;
+        }
+
+        final TokenAuthorityEnum[] requireAll = requiredAuthority.requireAll();
+        final TokenAuthorityEnum[] requireAny = requiredAuthority.requireAny();
+
+        if (ArrayUtils.isEmpty(requireAll) && ArrayUtils.isEmpty(requireAny)) {
+            return;
+        }
+
+        final Set<TokenAuthorityEnum> authorities = tokenAuthorityDAO.findByToken(token.token()).stream()
+            .map(TokenAuthority::getAuthority)
+            .collect(Collectors.toSet());
+
+        if (ArrayUtils.isNotEmpty(requireAll)) {
+            if (authorities.containsAll(List.of(requireAll))) {
+                return;
+            }
+
+            throw AuthorityException.AUTHORITY_ACCESS_DENIED;
+        }
+
+        if (ArrayUtils.isNotEmpty(requireAll)) {
+            for (TokenAuthorityEnum authority : requireAny) {
+                if (authorities.contains(authority)) {
+                    return;
+                }
+            }
+
+            throw AuthorityException.AUTHORITY_ACCESS_DENIED;
+        }
     }
 
     private Optional<TokenData> getByCustomToken(String token) {

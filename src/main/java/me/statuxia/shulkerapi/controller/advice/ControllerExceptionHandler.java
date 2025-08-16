@@ -9,12 +9,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.List;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -47,6 +51,25 @@ public class ControllerExceptionHandler {
     @ResponseBody
     public Object handle(HttpRequestMethodNotSupportedException exception, HttpServletResponse response) {
         return handleDefaultException(response, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseBody
+    public Object handle(HttpMediaTypeNotSupportedException exception, HttpServletResponse response) {
+        final ApiExceptionResponse apiResponse = handleDefaultException(response, HttpStatus.BAD_REQUEST);
+        apiResponse.setMessage(getMessageService().message(
+            "exception.contentType",
+            List.of(exception.getContentType())
+        ));
+        return apiResponse;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
+    public Object handle(HttpMessageNotReadableException exception, HttpServletResponse response) {
+        final ApiExceptionResponse apiResponse = handleDefaultException(response, HttpStatus.BAD_REQUEST);
+        apiResponse.setMessage(getMessageService().message("exception.messageBody"));
+        return apiResponse;
     }
 
     @ExceptionHandler(ApiException.class)

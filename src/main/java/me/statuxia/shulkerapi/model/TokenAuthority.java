@@ -7,22 +7,39 @@ import java.util.StringJoiner;
 
 @Entity(name = "TokenAuthority")
 @Table(name = "token_authority")
+@IdClass(TokenAuthorityId.class)
 public class TokenAuthority implements Identifiable<String> {
 
     @Id
     @Column(name = "token", nullable = false)
-    private String id;
+    private String token;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private TokenAuthorityEnum authority;
 
+    public TokenAuthority() {
+    }
+
+    public TokenAuthority(TokenAuthority authority) {
+        this.token = authority.getId();
+        this.authority = authority.authority;
+    }
+
     public String getId() {
-        return id;
+        return token;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.token = id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public TokenAuthorityEnum getAuthority() {
@@ -39,18 +56,22 @@ public class TokenAuthority implements Identifiable<String> {
             return false;
         }
         final TokenAuthority that = (TokenAuthority) o;
-        return Objects.equals(id, that.id);
+        return Objects.equals(token, that.token);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(token);
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", TokenAuthority.class.getSimpleName() + "[", "]")
-            .add("id='" + id + "'")
+            .add("id='" + token + "'")
             .toString();
+    }
+
+    public TokenAuthority copy() {
+        return new TokenAuthority(this);
     }
 }

@@ -131,7 +131,7 @@ public class TokenFilter implements Filter {
         }
 
         return getTokenLimitationDAO().findById(token)
-            .orElseThrow(() -> AuthenticationException.UNKNOWN_TOKEN);
+            .orElseThrow(() -> AuthenticationException.TOKEN_HAS_NO_LIMITATION);
     }
 
     private void buildHeaders(HttpServletResponse httpServletResponse, RateLimit rateLimit) {

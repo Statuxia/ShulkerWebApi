@@ -41,26 +41,45 @@ public class TokenServiceImpl implements TokenService {
             oldToken = "-";
         }
 
-        getTokenLimitationDAO().save(getLimitation(oldToken, newToken));
-        getTokenAuthorityDAO().saveAll(getTokenAuthorities(oldToken, newToken));
+
+        processLimitation(oldToken, newToken);
+        processAuthorities(oldToken, newToken);
 
         return newToken;
     }
 
-    private TokenLimitation getLimitation(String oldToken, String newToken) {
-        final TokenLimitation limitation = getTokenLimitationDAO().findById(oldToken).orElseGet(() -> {
+    private void processLimitation(String oldToken, String newToken) {
+        final TokenLimitation limitation = getLimitation(oldToken);
+        if (StringUtils.hasText(limitation.getId())) {
+            getTokenLimitationDAO().delete(limitation);
+        }
+        final TokenLimitation copy = limitation.copy();
+        copy.setId(newToken);
+        getTokenLimitationDAO().save(copy);
+    }
+
+    private void processAuthorities(String oldToken, String newToken) {
+        final List<TokenAuthority> tokenAuthorities = getTokenAuthorities(oldToken);
+
+        getTokenAuthorityDAO().saveAll(tokenAuthorities.stream().map(k -> {
+            final TokenAuthority copy = k.copy();
+            copy.setId(newToken);
+            return copy;
+        }).toList());
+    }
+
+    private TokenLimitation getLimitation(String oldToken) {
+        return getTokenLimitationDAO().findById(oldToken).orElseGet(() -> {
             final TokenLimitation newLimitation = new TokenLimitation();
             newLimitation.setRateLimit(SESSION_RATE_LIMIT);
             newLimitation.setRateResetSeconds(SESSION_RATE_RESET_SECONDS);
             return newLimitation;
         });
-        limitation.setId(newToken);
-        return limitation;
     }
 
-    private List<TokenAuthority> getTokenAuthorities(String oldToken, String newToken) {
-        final List<TokenAuthority> authorities = getTokenAuthorityDAO().findAllById(List.of(oldToken));
-        authorities.forEach(authority -> authority.setId(newToken));
+    private List<TokenAuthority> getTokenAuthorities(String oldToken) {
+        final List<TokenAuthority> authorities = getTokenAuthorityDAO().findByToken(oldToken);
+        getTokenAuthorityDAO().deleteAll(authorities);
         return authorities;
     }
 

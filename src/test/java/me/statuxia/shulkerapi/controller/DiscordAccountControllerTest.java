@@ -90,7 +90,7 @@ class DiscordAccountControllerTest extends BaseContainerTest {
             .andReturn();
 
         final JsonNode node = new ObjectMapper().readValue(result.getResponse().getContentAsString(), JsonNode.class);
-        assertEquals(1101, node.get("code").asInt());
+        assertEquals(1105, node.get("code").asInt());
     }
 
     @Test

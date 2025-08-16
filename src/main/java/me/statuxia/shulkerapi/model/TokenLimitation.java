@@ -22,6 +22,15 @@ public class TokenLimitation implements Identifiable<String> {
     @Column(name = "rate_reset_seconds", nullable = false)
     private Long rateResetSeconds;
 
+    public TokenLimitation() {
+    }
+
+    public TokenLimitation(TokenLimitation tokenLimitation) {
+        this.id = tokenLimitation.getId();
+        this.rateLimit = tokenLimitation.rateLimit;
+        this.rateResetSeconds = tokenLimitation.rateResetSeconds;
+    }
+
     @Override
     public String getId() {
         return id;
@@ -67,5 +76,9 @@ public class TokenLimitation implements Identifiable<String> {
         return new StringJoiner(", ", TokenLimitation.class.getSimpleName() + "[", "]")
             .add("token='" + id + "'")
             .toString();
+    }
+
+    public TokenLimitation copy() {
+        return new TokenLimitation(this);
     }
 }
