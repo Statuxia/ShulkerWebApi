@@ -1,0 +1,156 @@
+package me.statuxia.shulkerapi.controller;
+
+import jakarta.validation.Valid;
+import me.statuxia.shulkerapi.annotations.AuthData;
+import me.statuxia.shulkerapi.annotations.RequiredAuthority;
+import me.statuxia.shulkerapi.configuration.properties.CardProperties;
+import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
+import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dto.TokenData;
+import me.statuxia.shulkerapi.dto.operation.OperationData;
+import me.statuxia.shulkerapi.exception.CardException;
+import me.statuxia.shulkerapi.model.*;
+import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
+import me.statuxia.shulkerapi.request.CardCreateRequest;
+import me.statuxia.shulkerapi.request.CardRequest;
+import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
+import me.statuxia.shulkerapi.response.CardResponse;
+import me.statuxia.shulkerapi.service.AccountService;
+import me.statuxia.shulkerapi.service.OperationProcessorService;
+import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.utils.CardNumberGenerator;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.*;
+
+@RestController
+@RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
+public class CardManagementController extends CardController {
+
+    public static final String CREATE = "/create";
+    public static final String UPDATE_PIN = "/update-pin";
+    public static final String DISABLE_CARD = "/disable";
+    public static final String ENABLE_CARD = "/enable";
+
+    @Autowired
+    public CardManagementController(
+        TokenService tokenService, AccountService accountService, BankCardDAO bankCardDAO,
+        CardProperties cardProperties,
+        OperationProcessorService operationProcessorService
+    ) {
+        super(tokenService, accountService, bankCardDAO, cardProperties, operationProcessorService);
+    }
+
+    @PostMapping(value = CREATE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public ResponseEntity<CardResponse> createCard(
+        @RequestBody @Valid CardCreateRequest request,
+        @AuthData TokenData token
+    ) {
+        final GameAccount owner = getAccountService().getOwner(token, request, TokenAuthorityEnum.CREATE_BANK_CARD);
+        final BankCard bankCard = new BankCard();
+        bankCard.setNumber(CardNumberGenerator.generate());
+        bankCard.setType(request.getType());
+        bankCard.setOwner(owner);
+        bankCard.setPin(request.getPin());
+
+        final Long totalCards = getBankCardDAO().countByOwnerAndType(owner, request.getType());
+        if (CardType.DIRECT.equals(request.getType()) && totalCards >= getCardProperties().getMaxDirectCards()) {
+            throw CardException.TOO_MANY_DIRECT_CARDS;
+        }
+
+        if (totalCards >= 1) {
+            final String number = request.getPaymentCardNumber();
+            if (!StringUtils.hasText(number)) {
+                throw CardException.UNKNOWN_PAYMENT_CARD;
+            }
+
+            final Optional<BankCard> paymentCard = getBankCardDAO().findByNumberAndOwner(number, owner);
+            if (paymentCard.isEmpty()) {
+                throw CardException.UNKNOWN_PAYMENT_CARD;
+            }
+
+            final OperationData data = new OperationData()
+                .addProcessor(BalanceProcessor.class)
+                .addData(BalanceProcessor.CARD, paymentCard.get())
+                .addData(BalanceProcessor.OPERATION, CardOperationType.WITHDRAW)
+                .addData(BalanceProcessor.VALUE, getCardProperties().getNewDirectCardPayment());
+            getOperationProcessorService().process(data);
+        }
+
+        getBankCardDAO().save(bankCard);
+
+        final CardResponse response = new CardResponse();
+        response.setNumber(bankCard.getNumber());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping(value = UPDATE_PIN, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public ResponseEntity<Void> updatePin(
+        @RequestBody @Valid CardUpdatePinRequest request,
+        @AuthData TokenData token
+    ) {
+        final BankCard card = getBankCard(request, token, UPDATE_PIN_CODE);
+
+        if (!card.getPin().equals(request.getPin())) {
+            throw CardException.INVALID_PIN;
+        }
+
+        card.setPin(request.getNewPin());
+        getBankCardDAO().save(card);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @RequiredAuthority(requireAll = DISABLE_BANK_CARD)
+    @PutMapping(value = DISABLE_CARD, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public ResponseEntity<Void> disable(
+        @RequestBody @Valid CardRequest request,
+        @AuthData TokenData token
+    ) {
+        final BankCard card = getBankCard(request, token, DISABLE_BANK_CARD);
+
+        if (card.isDisabled()) {
+            return ResponseEntity.ok().build();
+        }
+
+        card.setDisabled(true);
+        card.setDisabledTime(DateTime.now());
+
+        getBankCardDAO().save(card);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @RequiredAuthority(requireAll = ENABLE_BANK_CARD)
+    @PutMapping(value = ENABLE_CARD, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public ResponseEntity<Void> enable(
+        @RequestBody @Valid CardRequest request,
+        @AuthData TokenData token
+    ) {
+        final BankCard card = getBankCard(request, token, ENABLE_BANK_CARD);
+
+        if (!card.isDisabled()) {
+            return ResponseEntity.ok().build();
+        }
+
+        card.setDisabled(false);
+        card.setDisabledTime(null);
+
+        getBankCardDAO().save(card);
+
+        return ResponseEntity.ok().build();
+    }
+}

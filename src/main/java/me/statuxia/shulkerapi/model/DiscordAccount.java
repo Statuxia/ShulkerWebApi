@@ -16,6 +16,7 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware, TokenSo
     /**
      * Внутренний токен, через который можно обращаться к API
      */
+    // todo: перейти на лист чтобы поддерживать несколько устройств
     @Column(name = "session_token")
     private String sessionToken;
 

@@ -1,0 +1,5 @@
+package me.statuxia.shulkerapi.model;
+
+public enum CardType {
+    DIRECT, GROUP
+}

@@ -5,6 +5,7 @@ import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
 import me.statuxia.shulkerapi.exception.BaseApiException;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.model.TokenAuthority;
+import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.model.TokenLimitation;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.utils.TokenGenerator;
@@ -46,6 +47,12 @@ public class TokenServiceImpl implements TokenService {
         processAuthorities(oldToken, newToken);
 
         return newToken;
+    }
+
+    @Override
+    @Transactional
+    public boolean hasAuthority(String token, TokenAuthorityEnum authority) {
+        return tokenAuthorityDAO.hasAuthorityByIdAndAuthority(token, authority);
     }
 
     private void processLimitation(String oldToken, String newToken) {
