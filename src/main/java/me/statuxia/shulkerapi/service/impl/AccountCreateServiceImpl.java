@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 public class AccountCreateServiceImpl implements AccountCreateService {
 
@@ -30,19 +28,20 @@ public class AccountCreateServiceImpl implements AccountCreateService {
      */
     @Override
     @Transactional
-    public boolean create(DiscordAccount discordAccount) {
+    public Account create(DiscordAccount discordAccount) {
         validateDiscordAccount(discordAccount);
 
-        final Optional<Account> optionalAccount = getAccountDAO().findByDiscordAccount(discordAccount);
-        if (optionalAccount.isPresent()) {
-            return false;
-        }
+        final Account account = getAccountDAO().findByDiscordAccount(discordAccount).orElseGet(() -> {
+            final Account newAccount = new Account();
+            newAccount.setDiscordAccount(discordAccount);
 
-        final Account account = new Account();
-        account.setDiscordAccount(discordAccount);
+            getAccountDAO().save(newAccount);
 
-        getAccountDAO().save(account);
-        return true;
+            return newAccount;
+        });
+
+        discordAccount.setAccount(account);
+        return account;
     }
 
     private void validateDiscordAccount(DiscordAccount discordAccount) {

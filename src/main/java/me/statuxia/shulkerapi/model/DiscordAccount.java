@@ -8,16 +8,10 @@ import java.util.StringJoiner;
 
 @Entity(name = "DiscordAccount")
 @Table(name = "discord_account")
-public class DiscordAccount implements Identifiable<Long>, DisableAware, TokenSource {
+public class DiscordAccount implements Identifiable<Long>, DisableAware {
 
     @Id
     private Long id;
-
-    /**
-     * Внутренний токен, через который можно обращаться к API
-     */
-    @Column(name = "session_token")
-    private String sessionToken;
 
     /**
      * Токен доступа получения данных об аккаунте
@@ -42,6 +36,9 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware, TokenSo
 
     @Column(name = "disabled_time")
     private DateTime disabledTime;
+
+    @OneToOne(mappedBy = "discordAccount")
+    private Account account;
 
     @Override
     public Long getId() {
@@ -77,14 +74,6 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware, TokenSo
         this.updateTime = updateTime;
     }
 
-    public String getSessionToken() {
-        return sessionToken;
-    }
-
-    public void setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
-    }
-
     @Override
     public boolean isDisabled() {
         return disabled;
@@ -103,6 +92,14 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware, TokenSo
     @Override
     public void setDisabledTime(DateTime dateTime) {
         this.disabledTime = dateTime;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     @Override
