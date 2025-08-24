@@ -3,6 +3,7 @@ package me.statuxia.shulkerapi.dao;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardType;
 import me.statuxia.shulkerapi.model.GameAccount;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,11 +15,13 @@ public interface BankCardDAO extends JpaRepository<BankCard, Long> {
 
     Optional<BankCard> findByNumber(String number);
 
-    Optional<BankCard> findByNumberAndOwner(String number, GameAccount owner);
+    Optional<BankCard> findByNumberAndGameAccount(String number, GameAccount gameAccount);
 
-    List<BankCard> findByOwner(GameAccount owner);
+    List<BankCard> findByGameAccount(GameAccount gameAccount);
 
-    List<BankCard> findByOwnerAndType(GameAccount owner, CardType type);
+    List<BankCard> findByGameAccount(GameAccount gameAccount, Pageable pageable);
 
-    Long countByOwnerAndType(GameAccount owner, CardType type);
+    List<BankCard> findByGameAccountAndType(GameAccount gameAccount, CardType type);
+
+    Long countByGameAccountAndType(GameAccount gameAccount, CardType type);
 }

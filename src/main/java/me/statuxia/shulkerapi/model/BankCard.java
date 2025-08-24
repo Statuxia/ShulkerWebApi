@@ -23,8 +23,8 @@ public class BankCard {
     private String number;
 
     @ManyToOne(targetEntity = GameAccount.class)
-    @JoinColumn(name = "owner")
-    private GameAccount owner;
+    @JoinColumn(name = "game_account_id")
+    private GameAccount gameAccount;
 
     @Column(nullable = false)
     @Pattern(regexp = "\\d{4}")
@@ -58,12 +58,12 @@ public class BankCard {
         this.number = number;
     }
 
-    public GameAccount getOwner() {
-        return owner;
+    public GameAccount getGameAccount() {
+        return gameAccount;
     }
 
-    public void setOwner(GameAccount owner) {
-        this.owner = owner;
+    public void setGameAccount(GameAccount gameAccount) {
+        this.gameAccount = gameAccount;
     }
 
     public String getPin() {
@@ -125,7 +125,7 @@ public class BankCard {
         final StringBuilder sb = new StringBuilder("BankCard{");
         sb.append("id=").append(id);
         sb.append(", number=").append(number);
-        sb.append(", owner=").append(owner);
+        sb.append(", gameAccount=").append(gameAccount);
         sb.append(", pin=").append(pin);
         sb.append(", currency=").append(currency);
         sb.append(", type=").append(type);

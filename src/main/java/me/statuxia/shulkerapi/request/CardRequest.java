@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Pattern;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CardRequest {
+public class CardRequest extends PaginationRequest {
 
     @Pattern(regexp = "\\d{4} \\d{4}")
     protected String cardNumber;

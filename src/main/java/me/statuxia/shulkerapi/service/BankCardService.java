@@ -2,7 +2,7 @@ package me.statuxia.shulkerapi.service;
 
 import me.statuxia.shulkerapi.model.BankCard;
 
-public interface CardService {
+public interface BankCardService {
 
     /**
      * Списание средств

@@ -11,7 +11,7 @@ import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardOperationType;
 import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
 import me.statuxia.shulkerapi.request.ChangeCardBalanceRequest;
-import me.statuxia.shulkerapi.service.AccountService;
+import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.DEPOSIT_FUNDS_TO_CARD;
 import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.WITHDRAW_FUNDS_FROM_CARD;
 
-
 @RestController
 @RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 public class CardActionController extends CardController {
@@ -37,11 +36,11 @@ public class CardActionController extends CardController {
     @Autowired
     public CardActionController(
         TokenService tokenService,
-        AccountService accountService, BankCardDAO bankCardDAO,
+        GameAccountService gameAccountService, BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService
     ) {
-        super(tokenService, accountService, bankCardDAO, cardProperties, operationProcessorService);
+        super(tokenService, gameAccountService, bankCardDAO, cardProperties, operationProcessorService);
     }
 
     @PostMapping(value = DEPOSIT, produces = MediaType.APPLICATION_JSON_VALUE)

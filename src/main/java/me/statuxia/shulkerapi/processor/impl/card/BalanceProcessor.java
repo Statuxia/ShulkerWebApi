@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import me.statuxia.shulkerapi.dto.operation.OperationData;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardOperationType;
-import me.statuxia.shulkerapi.service.CardService;
+import me.statuxia.shulkerapi.service.BankCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,11 +26,11 @@ public class BalanceProcessor extends BaseProcessor {
 
     private final HashMap<String, Function<Object, Boolean>> map = new HashMap<>();
 
-    private final CardService cardService;
+    private final BankCardService bankCardService;
 
     @Autowired
-    public BalanceProcessor(CardService cardService) {
-        this.cardService = cardService;
+    public BalanceProcessor(BankCardService bankCardService) {
+        this.bankCardService = bankCardService;
     }
 
     @PostConstruct
@@ -53,12 +53,12 @@ public class BalanceProcessor extends BaseProcessor {
         final BankCard card = (BankCard) data.getData().get(CARD);
 
         if (value < 0) {
-            cardService.withdrawFunds(card, Math.abs(value));
+            bankCardService.withdrawFunds(card, Math.abs(value));
             return;
         }
 
         if (value > 0) {
-            cardService.depositFunds(card, value);
+            bankCardService.depositFunds(card, value);
         }
     }
 }

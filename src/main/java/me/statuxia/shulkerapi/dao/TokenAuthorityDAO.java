@@ -13,5 +13,5 @@ public interface TokenAuthorityDAO extends JpaRepository<TokenAuthority, TokenAu
 
     List<TokenAuthority> findByToken(String token);
 
-    boolean hasAuthorityByIdAndAuthority(String id, TokenAuthorityEnum authority);
+    boolean existsByTokenAndAuthority(String token, TokenAuthorityEnum authority);
 }

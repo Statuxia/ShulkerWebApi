@@ -15,7 +15,7 @@ import me.statuxia.shulkerapi.request.CardCreateRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
 import me.statuxia.shulkerapi.response.CardResponse;
-import me.statuxia.shulkerapi.service.AccountService;
+import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.utils.CardNumberGenerator;
@@ -42,11 +42,11 @@ public class CardManagementController extends CardController {
 
     @Autowired
     public CardManagementController(
-        TokenService tokenService, AccountService accountService, BankCardDAO bankCardDAO,
+        TokenService tokenService, GameAccountService gameAccountService, BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService
     ) {
-        super(tokenService, accountService, bankCardDAO, cardProperties, operationProcessorService);
+        super(tokenService, gameAccountService, bankCardDAO, cardProperties, operationProcessorService);
     }
 
     @PostMapping(value = CREATE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,14 +55,18 @@ public class CardManagementController extends CardController {
         @RequestBody @Valid CardCreateRequest request,
         @AuthData TokenData token
     ) {
-        final GameAccount owner = getAccountService().getOwner(token, request, TokenAuthorityEnum.CREATE_BANK_CARD);
+        final GameAccount gameAccount = getGameAccountService().getGameAccount(
+            token,
+            request.getName(),
+            TokenAuthorityEnum.CREATE_BANK_CARD
+        );
         final BankCard bankCard = new BankCard();
         bankCard.setNumber(CardNumberGenerator.generate());
         bankCard.setType(request.getType());
-        bankCard.setOwner(owner);
+        bankCard.setGameAccount(gameAccount);
         bankCard.setPin(request.getPin());
 
-        final Long totalCards = getBankCardDAO().countByOwnerAndType(owner, request.getType());
+        final Long totalCards = getBankCardDAO().countByGameAccountAndType(gameAccount, request.getType());
         if (CardType.DIRECT.equals(request.getType()) && totalCards >= getCardProperties().getMaxDirectCards()) {
             throw CardException.TOO_MANY_DIRECT_CARDS;
         }
@@ -73,7 +77,7 @@ public class CardManagementController extends CardController {
                 throw CardException.UNKNOWN_PAYMENT_CARD;
             }
 
-            final Optional<BankCard> paymentCard = getBankCardDAO().findByNumberAndOwner(number, owner);
+            final Optional<BankCard> paymentCard = getBankCardDAO().findByNumberAndGameAccount(number, gameAccount);
             if (paymentCard.isEmpty()) {
                 throw CardException.UNKNOWN_PAYMENT_CARD;
             }

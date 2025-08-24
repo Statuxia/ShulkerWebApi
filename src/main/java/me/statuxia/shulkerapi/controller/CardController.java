@@ -6,15 +6,19 @@ import me.statuxia.shulkerapi.dao.BankCardDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
+import me.statuxia.shulkerapi.request.CardGameAccountRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
-import me.statuxia.shulkerapi.service.AccountService;
+import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -24,7 +28,7 @@ public abstract class CardController implements AuthController {
     public static final String PREFIX = "/api/v1/card";
 
     private final TokenService tokenService;
-    private final AccountService accountService;
+    private final GameAccountService gameAccountService;
     private final BankCardDAO bankCardDAO;
     private final CardProperties cardProperties;
     private final OperationProcessorService operationProcessorService;
@@ -32,19 +36,26 @@ public abstract class CardController implements AuthController {
     @Autowired
     protected CardController(
         TokenService tokenService,
-        AccountService accountService,
+        GameAccountService gameAccountService,
         BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService
     ) {
         this.tokenService = tokenService;
-        this.accountService = accountService;
+        this.gameAccountService = gameAccountService;
         this.bankCardDAO = bankCardDAO;
         this.cardProperties = cardProperties;
         this.operationProcessorService = operationProcessorService;
     }
 
-    protected BankCard getBankCard(CardRequest request, TokenData token, TokenAuthorityEnum updatePinCode) {
+    @Transactional
+    public List<BankCard> getBankCards(CardGameAccountRequest request, TokenData token) {
+        final GameAccount gameAccount = getGameAccountService().getGameAccount(request.getGameAccount());
+        return getBankCardDAO().findByGameAccount(gameAccount);
+    }
+
+    @Transactional
+    public BankCard getBankCard(CardRequest request, TokenData token, TokenAuthorityEnum authority) {
         final Optional<BankCard> optCard = getBankCardDAO().findByNumber(request.getCardNumber());
         if (optCard.isEmpty()) {
             throw CardException.UNKNOWN_CARD;
@@ -52,8 +63,8 @@ public abstract class CardController implements AuthController {
 
         final BankCard card = optCard.get();
 
-        if (!getTokenService().hasAuthority(token.token(), updatePinCode)) {
-            getAccountService().validateOwned(token, card.getOwner());
+        if (authority == null || !getTokenService().hasAuthority(token.token(), authority)) {
+            getGameAccountService().validateOwned(token, card.getGameAccount());
         }
 
         return card;
@@ -63,8 +74,8 @@ public abstract class CardController implements AuthController {
         return tokenService;
     }
 
-    public AccountService getAccountService() {
-        return accountService;
+    public GameAccountService getGameAccountService() {
+        return gameAccountService;
     }
 
     public BankCardDAO getBankCardDAO() {
