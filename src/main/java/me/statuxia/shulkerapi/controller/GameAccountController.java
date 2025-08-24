@@ -79,7 +79,7 @@ public class GameAccountController implements AuthController {
         }
 
         gameAccounts.forEach(account -> account.setName(name));
-        gameAccountDAO.saveAll(gameAccounts);
+        gameAccounts.forEach(gameAccountDAO::save);
 
         final GameAccount first = gameAccounts.getFirst();
         final GameAccountResponse dto = new GameAccountResponse(

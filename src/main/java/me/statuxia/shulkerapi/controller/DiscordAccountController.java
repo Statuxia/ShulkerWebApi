@@ -61,11 +61,7 @@ public class DiscordAccountController extends BaseDiscordApiController implement
             return findById(id, token);
         }
 
-        if (token.source() instanceof DiscordAccount discordAccount) {
-            return getResponse(discordAccount, false);
-        }
-
-        throw AccountException.UNKNOWN_ACCOUNT;
+        return getResponse(token.getDiscordAccount(), false);
     }
 
     private ResponseEntity<DiscordIdentityResponse> findById(Long id, TokenData token) {

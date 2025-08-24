@@ -5,7 +5,6 @@ import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.GameAccountDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
-import me.statuxia.shulkerapi.exception.AccountException;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.response.MeGameAccountResponse;
@@ -44,9 +43,7 @@ public class MeController implements AuthController {
     @MeControllerOperation.Me
     @UnknownAccountOperation
     public ResponseEntity<MeResponse> me(@AuthData TokenData token) {
-        if (!(token.source() instanceof DiscordAccount discordAccount)) {
-            throw AccountException.UNKNOWN_ACCOUNT;
-        }
+        final DiscordAccount discordAccount = token.getDiscordAccount();
 
         final List<MeGameAccountResponse> gameAccounts = gameAccountDAO.findByDiscordAccount(discordAccount).stream()
             .map(account -> {

@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.testcontainers:testcontainers")
     implementation("org.testcontainers:postgresql")
     implementation("org.testcontainers:junit-jupiter")

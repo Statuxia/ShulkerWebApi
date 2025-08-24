@@ -68,7 +68,7 @@ public class DiscordOAuthTokenUpdate {
         }
 
         logger.debug("updated: {} errors: {}", updated, errors);
-        getDiscordAccountDAO().saveAll(needToUpdateAccounts);
+        needToUpdateAccounts.forEach(discordAccountDAO::save);
     }
 
     public DiscordIntegrationService getDiscordIntegrationService() {

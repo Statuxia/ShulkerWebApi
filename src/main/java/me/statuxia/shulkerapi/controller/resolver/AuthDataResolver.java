@@ -3,7 +3,7 @@ package me.statuxia.shulkerapi.controller.resolver;
 import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.annotations.RequiredAuthority;
 import me.statuxia.shulkerapi.dao.CustomTokenDAO;
-import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
+import me.statuxia.shulkerapi.dao.SessionTokenDAO;
 import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.AuthenticationException;
@@ -33,18 +33,17 @@ public class AuthDataResolver implements HandlerMethodArgumentResolver {
     public static final String X_TOKEN_HEADER = "X-Auth-Token";
     public static final List<Class<TokenData>> SUPPORTED_CLASSES = List.of(TokenData.class);
 
-    private final DiscordAccountDAO discordAccountDAO;
     private final CustomTokenDAO customTokenDAO;
+    private final SessionTokenDAO sessionTokenDAO;
     private final TokenAuthorityDAO tokenAuthorityDAO;
 
     @Autowired
     public AuthDataResolver(
-        DiscordAccountDAO discordAccountDAO,
-        CustomTokenDAO customTokenDAO,
+        CustomTokenDAO customTokenDAO, SessionTokenDAO sessionTokenDAO,
         TokenAuthorityDAO tokenAuthorityDAO
     ) {
-        this.discordAccountDAO = discordAccountDAO;
         this.customTokenDAO = customTokenDAO;
+        this.sessionTokenDAO = sessionTokenDAO;
         this.tokenAuthorityDAO = tokenAuthorityDAO;
     }
 
@@ -70,7 +69,7 @@ public class AuthDataResolver implements HandlerMethodArgumentResolver {
         }
 
         final TokenData token = getByCustomToken(tokenValue)
-            .orElseGet(() -> getByDiscordAccount(tokenValue)
+            .orElseGet(() -> getBySessionToken(tokenValue)
             .orElseThrow());
         if (token.source() instanceof DisableAware disableAware && disableAware.isDisabled()) {
             throw AuthenticationException.TOKEN_DISABLED;
@@ -124,16 +123,16 @@ public class AuthDataResolver implements HandlerMethodArgumentResolver {
             .map(customToken -> new TokenData(token, customToken));
     }
 
-    private Optional<TokenData> getByDiscordAccount(String token) {
-        return getDiscordAccountDAO().findBySessionToken(token)
-            .map(discordAccount -> new TokenData(token, discordAccount));
-    }
-
-    public DiscordAccountDAO getDiscordAccountDAO() {
-        return discordAccountDAO;
+    private Optional<TokenData> getBySessionToken(String token) {
+        return getSessionTokenDAO().findByToken(token)
+            .map(sessionToken -> new TokenData(token, sessionToken));
     }
 
     public CustomTokenDAO getCustomTokenDAO() {
         return customTokenDAO;
+    }
+
+    public SessionTokenDAO getSessionTokenDAO() {
+        return sessionTokenDAO;
     }
 }

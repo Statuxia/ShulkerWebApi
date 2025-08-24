@@ -64,7 +64,7 @@ public class TokenController implements AuthController {
     public ResponseEntity<TokenResponse> info(@AuthData TokenData token) {
         final String stringToken = token.token();
 
-        Optional<Account> account = getAccount(token);
+        final Account account = token.getAccount();
         final Optional<TokenLimitationResponse> limitationResponse = tokenLimitationDAO.findById(stringToken)
             .map(limitation -> new TokenLimitationResponse()
                 .setRateLimit(limitation.getRateLimit())
@@ -75,7 +75,7 @@ public class TokenController implements AuthController {
         return ResponseEntity.ok(
             new TokenResponse()
                 .setToken(stringToken)
-                .setAccountId(account.orElse(new Account()).getId())
+                .setAccountId(account.getId())
                 .setLimitation(limitationResponse.orElse(null))
                 .setAuthorities(authorities)
         );
@@ -106,7 +106,7 @@ public class TokenController implements AuthController {
 
         customTokenDAO.save(customToken);
         tokenLimitationDAO.save(limitation);
-        tokenAuthorityDAO.saveAll(authorities);
+        authorities.forEach(tokenAuthorityDAO::save);
 
         final TokenLimitationResponse limitationResponse = new TokenLimitationResponse()
             .setRateLimit(limitation.getRateLimit())
@@ -119,18 +119,6 @@ public class TokenController implements AuthController {
                 .setLimitation(limitationResponse)
                 .setAuthorities(request.getAuthorities())
         );
-    }
-
-    private Optional<Account> getAccount(TokenData token) {
-        if (token.source() instanceof CustomToken customToken) {
-            return Optional.ofNullable(customToken.getAccount());
-        }
-
-        if (token.source() instanceof DiscordAccount discordAccount) {
-            return accountDAO.findByDiscordAccount(discordAccount);
-        }
-
-        return Optional.empty();
     }
 
     private CustomToken buildToken(Account account) {

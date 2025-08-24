@@ -1,8 +1,8 @@
 package me.statuxia.shulkerapi.service;
 
-import me.statuxia.shulkerapi.model.DiscordAccount;
+import me.statuxia.shulkerapi.model.Account;
 
 public interface TokenService {
 
-    String createSessionToken(DiscordAccount discordAccount);
+    String createSessionToken(Account account);
 }
