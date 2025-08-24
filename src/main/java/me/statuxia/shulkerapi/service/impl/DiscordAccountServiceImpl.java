@@ -11,6 +11,8 @@ import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +21,25 @@ import java.util.Optional;
 import static me.statuxia.shulkerapi.exception.BaseApiException.NO_DATA;
 
 @Service
+@Transactional
 public class DiscordAccountServiceImpl implements DiscordAccountService {
 
     private final DiscordAccountDAO discordAccountDAO;
     private final DiscordIntegrationService discordIntegrationService;
     private final AccountCreateService accountCreateService;
+    private final DiscordAccountService discordAccountService;
 
     @Autowired
     public DiscordAccountServiceImpl(
-        DiscordAccountDAO discordAccountDAO, DiscordIntegrationService discordIntegrationService,
-        AccountCreateService accountCreateService
+        DiscordAccountDAO discordAccountDAO,
+        DiscordIntegrationService discordIntegrationService,
+        AccountCreateService accountCreateService,
+        @Lazy DiscordAccountService discordAccountService
     ) {
         this.discordAccountDAO = discordAccountDAO;
         this.discordIntegrationService = discordIntegrationService;
         this.accountCreateService = accountCreateService;
+        this.discordAccountService = discordAccountService;
     }
 
     @Override
@@ -69,15 +76,17 @@ public class DiscordAccountServiceImpl implements DiscordAccountService {
         return account;
     }
 
+    @Cacheable(value = "discord_identity", key = "#discordId")
     public DiscordIdentityResponse getByDiscordId(Long discordId) {
         final Optional<DiscordAccount> discordAccount = discordAccountDAO.findById(discordId);
         if (discordAccount.isEmpty()) {
             throw AccountException.UNKNOWN_ACCOUNT;
         }
 
-        return getByDiscord(discordAccount.get());
+        return discordAccountService.getByDiscord(discordAccount.get());
     }
 
+    @Cacheable(value = "discord_identity", key = "#discordAccount.id")
     public DiscordIdentityResponse getByDiscord(DiscordAccount discordAccount) {
         final String accessToken = discordAccount.getAccessToken();
         final HttpHandler.HttpResponse<DiscordIdentityResponse> response

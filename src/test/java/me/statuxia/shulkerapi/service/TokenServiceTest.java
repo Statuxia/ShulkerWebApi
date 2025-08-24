@@ -15,11 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
 import static me.statuxia.shulkerapi.service.impl.TokenServiceImpl.SESSION_RATE_LIMIT;
 import static me.statuxia.shulkerapi.service.impl.TokenServiceImpl.SESSION_RATE_RESET_SECONDS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,11 +36,15 @@ class TokenServiceTest {
     @Mock
     protected SessionTokenDAO sessionTokenDAO;
 
+    @Mock
+    protected ValidationService validationService;
+
     @Captor
     protected ArgumentCaptor<TokenLimitation> captor;
 
     @Test
     void noDataTest() {
+        doThrow(BaseApiException.class).when(validationService).validateAccount(isNull(Account.class));
         assertThrows(BaseApiException.class, () -> tokenService.createSessionToken(null));
     }
 

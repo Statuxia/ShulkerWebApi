@@ -19,18 +19,28 @@ public class MessageService {
         this.defaultLocale = defaultLocale;
     }
 
-    public String message(String key) {
+    public String message(Object key) {
         return message(key, List.of());
     }
 
-    public String message(String key, List<Object> args) {
+    public String message(Object key, List<Object> args) {
         return message(key, args, getDefaultLocale());
     }
 
-    public String message(String key, List<Object> args, Locale locale) {
-        return getMessageSource().getMessage(key, args.toArray(), locale);
+    public String message(Object key, List<Object> args, Locale locale) {
+        if (key instanceof Enum<?> enumKey) {
+            return getMessageSource().getMessage(enumI18n(enumKey), args.toArray(), locale);
+        }
+        return getMessageSource().getMessage(String.valueOf(key), args.toArray(), locale);
     }
 
+    private String enumI18n(Enum<?> arg) {
+        if (arg == null) {
+            return "";
+        }
+
+        return "enum.%s.%s".formatted(arg.getClass().getSimpleName(), arg.name());
+    }
 
     public MessageSource getMessageSource() {
         return messageSource;

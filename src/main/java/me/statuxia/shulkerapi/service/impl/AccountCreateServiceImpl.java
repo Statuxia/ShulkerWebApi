@@ -6,6 +6,7 @@ import me.statuxia.shulkerapi.exception.BaseApiException;
 import me.statuxia.shulkerapi.model.Account;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.service.AccountCreateService;
+import me.statuxia.shulkerapi.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,11 +16,17 @@ public class AccountCreateServiceImpl implements AccountCreateService {
 
     private final AccountDAO accountDAO;
     private final DiscordAccountDAO discordAccountDAO;
+    private final ValidationService validationService;
 
     @Autowired
-    public AccountCreateServiceImpl(AccountDAO accountDAO, DiscordAccountDAO discordAccountDAO) {
+    public AccountCreateServiceImpl(
+        AccountDAO accountDAO,
+        DiscordAccountDAO discordAccountDAO,
+        ValidationService validationService
+    ) {
         this.accountDAO = accountDAO;
         this.discordAccountDAO = discordAccountDAO;
+        this.validationService = validationService;
     }
 
     /**
@@ -29,7 +36,7 @@ public class AccountCreateServiceImpl implements AccountCreateService {
     @Override
     @Transactional
     public Account create(DiscordAccount discordAccount) {
-        validateDiscordAccount(discordAccount);
+        validationService.validateDiscordAccount(discordAccount);
 
         final Account account = getAccountDAO().findByDiscordAccount(discordAccount).orElseGet(() -> {
             final Account newAccount = new Account();
@@ -42,16 +49,6 @@ public class AccountCreateServiceImpl implements AccountCreateService {
 
         discordAccount.setAccount(account);
         return account;
-    }
-
-    private void validateDiscordAccount(DiscordAccount discordAccount) {
-        if (discordAccount == null) {
-            throw BaseApiException.INCORRECT_DATA;
-        }
-
-        if (!getDiscordAccountDAO().existsById(discordAccount.getId())) {
-            throw BaseApiException.INCORRECT_DATA;
-        }
     }
 
     public AccountDAO getAccountDAO() {

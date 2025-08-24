@@ -67,6 +67,7 @@ public class CustomToken implements Identifiable<Long>, DisableAware, TokenSourc
         this.disabledTime = disabledTime;
     }
 
+    @Override
     public Account getAccount() {
         return account;
     }

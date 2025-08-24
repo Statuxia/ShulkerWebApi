@@ -72,6 +72,7 @@ public class SessionToken implements Identifiable<Long>, DisableAware, TokenSour
         this.disabledTime = disabledTime;
     }
 
+    @Override
     public Account getAccount() {
         return account;
     }

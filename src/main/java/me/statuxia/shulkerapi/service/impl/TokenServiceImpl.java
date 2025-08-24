@@ -3,12 +3,12 @@ package me.statuxia.shulkerapi.service.impl;
 import me.statuxia.shulkerapi.dao.SessionTokenDAO;
 import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
 import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
-import me.statuxia.shulkerapi.exception.BaseApiException;
 import me.statuxia.shulkerapi.model.Account;
 import me.statuxia.shulkerapi.model.SessionToken;
 import me.statuxia.shulkerapi.model.TokenAuthority;
 import me.statuxia.shulkerapi.model.TokenLimitation;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.service.ValidationService;
 import me.statuxia.shulkerapi.utils.TokenGenerator;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
@@ -26,23 +26,24 @@ public class TokenServiceImpl implements TokenService {
     private final TokenLimitationDAO tokenLimitationDAO;
     private final TokenAuthorityDAO tokenAuthorityDAO;
     private final SessionTokenDAO sessionTokenDAO;
+    private final ValidationService validationService;
 
     public TokenServiceImpl(
         TokenLimitationDAO tokenLimitationDAO,
         TokenAuthorityDAO tokenAuthorityDAO,
-        SessionTokenDAO sessionTokenDAO
+        SessionTokenDAO sessionTokenDAO,
+        ValidationService validationService
     ) {
         this.tokenLimitationDAO = tokenLimitationDAO;
         this.tokenAuthorityDAO = tokenAuthorityDAO;
         this.sessionTokenDAO = sessionTokenDAO;
+        this.validationService = validationService;
     }
 
     @Override
     @Transactional
     public String createSessionToken(Account account) {
-        if (account == null) {
-            throw BaseApiException.INCORRECT_DATA;
-        }
+        getValidationService().validateAccount(account);
 
         final String newToken = TokenGenerator.generate();
 
@@ -72,11 +73,11 @@ public class TokenServiceImpl implements TokenService {
     }
 
     private void createAuthorities(String token) {
-        final List<TokenAuthority> tokenAuthorities = createDefaultAuthorities(token);
-        getTokenAuthorityDAO().saveAll(tokenAuthorities);
+        final List<TokenAuthority> tokenAuthorities = getDefaultAuthorities(token);
+        tokenAuthorities.forEach(getTokenAuthorityDAO()::save);
     }
 
-    private List<TokenAuthority> createDefaultAuthorities(String token) {
+    private List<TokenAuthority> getDefaultAuthorities(String token) {
         final ArrayList<TokenAuthority> authorities = new ArrayList<>();
         return authorities;
     }
@@ -91,5 +92,9 @@ public class TokenServiceImpl implements TokenService {
 
     public SessionTokenDAO getSessionTokenDAO() {
         return sessionTokenDAO;
+    }
+
+    public ValidationService getValidationService() {
+        return validationService;
     }
 }
