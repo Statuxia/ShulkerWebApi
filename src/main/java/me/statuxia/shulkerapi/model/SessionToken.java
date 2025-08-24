@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import org.joda.time.DateTime;
 
 import java.util.Objects;
-import java.util.StringJoiner;
 
-@Entity(name = "CustomToken")
-@Table(name = "custom_token")
-public class CustomToken implements Identifiable<Long>, DisableAware, TokenSource {
+@Entity(name = "SessionToken")
+@Table(name = "session_token")
+public class SessionToken implements Identifiable<Long>, DisableAware, TokenSource {
 
-    public static final String ID_SEQ_GENERATOR = "custom_token_id_seq_generator";
-    public static final String ID_SEQ = "custom_token_id_seq";
+    public static final String ID_SEQ_GENERATOR = "session_token_id_seq_generator";
+    public static final String ID_SEQ = "session_token_id_seq";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = ID_SEQ_GENERATOR)
@@ -20,6 +19,9 @@ public class CustomToken implements Identifiable<Long>, DisableAware, TokenSourc
 
     @Column(nullable = false)
     private String token;
+
+    @Column(name = "create_time", nullable = false)
+    private DateTime createTime;
 
     private boolean disabled;
 
@@ -30,12 +32,10 @@ public class CustomToken implements Identifiable<Long>, DisableAware, TokenSourc
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -48,21 +48,26 @@ public class CustomToken implements Identifiable<Long>, DisableAware, TokenSourc
         this.token = token;
     }
 
+    public DateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(DateTime createTime) {
+        this.createTime = createTime;
+    }
+
     public boolean isDisabled() {
         return disabled;
     }
 
-    @Override
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
 
-    @Override
     public DateTime getDisabledTime() {
         return disabledTime;
     }
 
-    @Override
     public void setDisabledTime(DateTime disabledTime) {
         this.disabledTime = disabledTime;
     }
@@ -81,7 +86,7 @@ public class CustomToken implements Identifiable<Long>, DisableAware, TokenSourc
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final CustomToken that = (CustomToken) o;
+        final SessionToken that = (SessionToken) o;
         return Objects.equals(id, that.id);
     }
 
@@ -92,8 +97,9 @@ public class CustomToken implements Identifiable<Long>, DisableAware, TokenSourc
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", CustomToken.class.getSimpleName() + "[", "]")
-            .add("id=" + id)
-            .toString();
+        final StringBuilder sb = new StringBuilder("SessionToken{");
+        sb.append("id=").append(id);
+        sb.append('}');
+        return sb.toString();
     }
 }

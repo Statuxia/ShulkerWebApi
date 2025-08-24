@@ -1,18 +1,22 @@
 package me.statuxia.shulkerapi.service.impl;
 
+import me.statuxia.shulkerapi.dao.SessionTokenDAO;
 import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
 import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
-import me.statuxia.shulkerapi.exception.BaseApiException;
-import me.statuxia.shulkerapi.model.DiscordAccount;
+import me.statuxia.shulkerapi.model.Account;
+import me.statuxia.shulkerapi.model.SessionToken;
 import me.statuxia.shulkerapi.model.TokenAuthority;
+import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.model.TokenLimitation;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.service.ValidationService;
 import me.statuxia.shulkerapi.utils.TokenGenerator;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,30 +27,42 @@ public class TokenServiceImpl implements TokenService {
 
     private final TokenLimitationDAO tokenLimitationDAO;
     private final TokenAuthorityDAO tokenAuthorityDAO;
+    private final SessionTokenDAO sessionTokenDAO;
+    private final ValidationService validationService;
 
-    public TokenServiceImpl(TokenLimitationDAO tokenLimitationDAO, TokenAuthorityDAO tokenAuthorityDAO) {
+    public TokenServiceImpl(
+        TokenLimitationDAO tokenLimitationDAO,
+        TokenAuthorityDAO tokenAuthorityDAO,
+        SessionTokenDAO sessionTokenDAO,
+        ValidationService validationService
+    ) {
         this.tokenLimitationDAO = tokenLimitationDAO;
         this.tokenAuthorityDAO = tokenAuthorityDAO;
+        this.sessionTokenDAO = sessionTokenDAO;
+        this.validationService = validationService;
     }
 
     @Override
     @Transactional
-    public String createSessionToken(DiscordAccount discordAccount) {
-        if (discordAccount == null) {
-            throw BaseApiException.INCORRECT_DATA;
-        }
+    public String createSessionToken(Account account) {
+        getValidationService().validateAccount(account);
 
         final String newToken = TokenGenerator.generate();
-        String oldToken = discordAccount.getSessionToken();
-        if (!StringUtils.hasText(oldToken)) {
-            oldToken = "-";
-        }
 
-
-        processLimitation(oldToken, newToken);
-        processAuthorities(oldToken, newToken);
+        createSessionToken(account, newToken);
+        createLimitation(newToken);
+        createAuthorities(newToken);
 
         return newToken;
+    }
+
+    private void createSessionToken(Account account, String token) {
+        final SessionToken sessionToken = new SessionToken();
+        sessionToken.setToken(token);
+        sessionToken.setAccount(account);
+        sessionToken.setCreateTime(DateTime.now());
+
+        getSessionTokenDAO().save(sessionToken);
     }
 
     @Override
@@ -55,38 +71,22 @@ public class TokenServiceImpl implements TokenService {
         return tokenAuthorityDAO.hasAuthorityByIdAndAuthority(token, authority);
     }
 
-    private void processLimitation(String oldToken, String newToken) {
-        final TokenLimitation limitation = getLimitation(oldToken);
-        if (StringUtils.hasText(limitation.getId())) {
-            getTokenLimitationDAO().delete(limitation);
-        }
-        final TokenLimitation copy = limitation.copy();
-        copy.setId(newToken);
-        getTokenLimitationDAO().save(copy);
+    private void createLimitation(String token) {
+        final TokenLimitation limitation = new TokenLimitation();
+        limitation.setId(token);
+        limitation.setRateLimit(SESSION_RATE_LIMIT);
+        limitation.setRateResetSeconds(SESSION_RATE_RESET_SECONDS);
+
+        getTokenLimitationDAO().save(limitation);
     }
 
-    private void processAuthorities(String oldToken, String newToken) {
-        final List<TokenAuthority> tokenAuthorities = getTokenAuthorities(oldToken);
-
-        getTokenAuthorityDAO().saveAll(tokenAuthorities.stream().map(k -> {
-            final TokenAuthority copy = k.copy();
-            copy.setId(newToken);
-            return copy;
-        }).toList());
+    private void createAuthorities(String token) {
+        final List<TokenAuthority> tokenAuthorities = getDefaultAuthorities(token);
+        tokenAuthorities.forEach(getTokenAuthorityDAO()::save);
     }
 
-    private TokenLimitation getLimitation(String oldToken) {
-        return getTokenLimitationDAO().findById(oldToken).orElseGet(() -> {
-            final TokenLimitation newLimitation = new TokenLimitation();
-            newLimitation.setRateLimit(SESSION_RATE_LIMIT);
-            newLimitation.setRateResetSeconds(SESSION_RATE_RESET_SECONDS);
-            return newLimitation;
-        });
-    }
-
-    private List<TokenAuthority> getTokenAuthorities(String oldToken) {
-        final List<TokenAuthority> authorities = getTokenAuthorityDAO().findByToken(oldToken);
-        getTokenAuthorityDAO().deleteAll(authorities);
+    private List<TokenAuthority> getDefaultAuthorities(String token) {
+        final ArrayList<TokenAuthority> authorities = new ArrayList<>();
         return authorities;
     }
 
@@ -96,5 +96,13 @@ public class TokenServiceImpl implements TokenService {
 
     public TokenAuthorityDAO getTokenAuthorityDAO() {
         return tokenAuthorityDAO;
+    }
+
+    public SessionTokenDAO getSessionTokenDAO() {
+        return sessionTokenDAO;
+    }
+
+    public ValidationService getValidationService() {
+        return validationService;
     }
 }

@@ -10,6 +10,7 @@ import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
+import me.statuxia.shulkerapi.service.TokenService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,15 +30,17 @@ public class DiscordOAuthController extends BaseDiscordApiController {
 
     private final DiscordOAuthRedirectProvider provider;
     private final DiscordAccountService discordAccountService;
+    private final TokenService tokenService;
 
     public DiscordOAuthController(
         DiscordIntegrationService discordIntegrationService,
         DiscordOAuthRedirectProvider provider,
-        DiscordAccountService discordAccountService
+        DiscordAccountService discordAccountService, TokenService tokenService
     ) {
         super(discordIntegrationService);
         this.provider = provider;
         this.discordAccountService = discordAccountService;
+        this.tokenService = tokenService;
     }
 
     @GetMapping(REDIRECT)
@@ -80,9 +83,13 @@ public class DiscordOAuthController extends BaseDiscordApiController {
             return;
         }
 
-        final DiscordAccount account = getDiscordAccountService().createOrUpdate(userIdentify.getId(), tokenResponse);
+        final DiscordAccount discordAccount = getDiscordAccountService().createOrUpdate(
+            userIdentify.getId(),
+            tokenResponse
+        );
 
-        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl() + "?token=" + account.getSessionToken());
+        final String sessionToken = getTokenService().createSessionToken(discordAccount.getAccount());
+        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl() + "?token=" + sessionToken);
     }
 
     public DiscordOAuthRedirectProvider getProvider() {
@@ -91,5 +98,9 @@ public class DiscordOAuthController extends BaseDiscordApiController {
 
     public DiscordAccountService getDiscordAccountService() {
         return discordAccountService;
+    }
+
+    public TokenService getTokenService() {
+        return tokenService;
     }
 }

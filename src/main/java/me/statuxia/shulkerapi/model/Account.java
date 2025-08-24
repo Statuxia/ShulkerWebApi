@@ -30,9 +30,12 @@ public class Account implements Identifiable<Long>, DisableAware {
     @OneToMany(mappedBy = "account")
     private List<CustomToken> customTokens;
 
+    @OneToMany(mappedBy = "account")
+    private List<SessionToken> sessionTokens;
+
     private boolean disabled;
 
-    @Column(name = "disabled_time", nullable = false)
+    @Column(name = "disabled_time")
     private DateTime disabledTime;
 
     @Override
@@ -78,6 +81,14 @@ public class Account implements Identifiable<Long>, DisableAware {
 
     public void setCustomTokens(List<CustomToken> customTokens) {
         this.customTokens = customTokens;
+    }
+
+    public List<SessionToken> getSessionTokens() {
+        return sessionTokens;
+    }
+
+    public void setSessionTokens(List<SessionToken> sessionTokens) {
+        this.sessionTokens = sessionTokens;
     }
 
     @Override

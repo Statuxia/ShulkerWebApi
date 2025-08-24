@@ -18,4 +18,15 @@ insert into session_token
 values
 (1, 'session-token-1', 1, NOW());
 
+insert into game_account
+(id, name, discord_id)
+values
+(1, 'test-name', 1);
+
+insert into token_authority
+(token, authority)
+values
+('session-token-1', 'ADD_GAME_ACCOUNTS');
+
 SELECT setval('account_id_seq', (SELECT MAX(id) FROM account));
+SELECT setval('game_account_id_seq', (SELECT MAX(id) FROM game_account));

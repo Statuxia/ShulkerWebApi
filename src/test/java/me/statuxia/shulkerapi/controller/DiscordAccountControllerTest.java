@@ -8,8 +8,6 @@ import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -46,6 +44,27 @@ class DiscordAccountControllerTest extends BaseContainerTest {
 
     @Autowired
     protected MockMvc mockMvc;
+
+    @Test
+    void getSuccessById() throws Exception {
+        final DiscordIdentityResponse expectedResponse = new DiscordIdentityResponse();
+        expectedResponse.setId(1234567890L);
+        expectedResponse.setUsername("testUsername");
+        expectedResponse.setAvatar("qw724vyt12n984v");
+        final HttpHandler.HttpResponse<DiscordIdentityResponse> httpResponse = new HttpHandler.HttpResponse<>(
+            expectedResponse, HttpStatus.OK
+        );
+        when(discordIntegrationService.getUserInfo(anyString())).thenReturn(httpResponse);
+
+        final MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET + "/1")
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isOk())
+            .andReturn();
+
+        assertEquals(new ObjectMapper().writeValueAsString(expectedResponse), result.getResponse().getContentAsString());
+    }
 
     @Test
     void getSuccess() throws Exception {
@@ -136,5 +155,20 @@ class DiscordAccountControllerTest extends BaseContainerTest {
 
         final JsonNode node = new ObjectMapper().readValue(result.getResponse().getContentAsString(), JsonNode.class);
         assertEquals(1001, node.get("code").asInt());
+    }
+
+    @Test
+    void getUnknownAccount() throws Exception {
+        when(discordIntegrationService.getUserInfo(anyString())).thenReturn(new HttpHandler.HttpResponse<>(null, null));
+
+        final MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.get(DiscordAccountController.PREFIX + DiscordAccountController.GET + "/9999")
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isBadRequest())
+            .andReturn();
+
+        final JsonNode node = new ObjectMapper().readValue(result.getResponse().getContentAsString(), JsonNode.class);
+        assertEquals(1201, node.get("code").asInt());
     }
 }

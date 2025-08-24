@@ -6,22 +6,27 @@ import me.statuxia.shulkerapi.exception.BaseApiException;
 import me.statuxia.shulkerapi.model.Account;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.service.AccountCreateService;
+import me.statuxia.shulkerapi.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class AccountCreateServiceImpl implements AccountCreateService {
 
     private final AccountDAO accountDAO;
     private final DiscordAccountDAO discordAccountDAO;
+    private final ValidationService validationService;
 
     @Autowired
-    public AccountCreateServiceImpl(AccountDAO accountDAO, DiscordAccountDAO discordAccountDAO) {
+    public AccountCreateServiceImpl(
+        AccountDAO accountDAO,
+        DiscordAccountDAO discordAccountDAO,
+        ValidationService validationService
+    ) {
         this.accountDAO = accountDAO;
         this.discordAccountDAO = discordAccountDAO;
+        this.validationService = validationService;
     }
 
     /**
@@ -30,29 +35,20 @@ public class AccountCreateServiceImpl implements AccountCreateService {
      */
     @Override
     @Transactional
-    public boolean create(DiscordAccount discordAccount) {
-        validateDiscordAccount(discordAccount);
+    public Account create(DiscordAccount discordAccount) {
+        validationService.validateDiscordAccount(discordAccount);
 
-        final Optional<Account> optionalAccount = getAccountDAO().findByDiscordAccount(discordAccount);
-        if (optionalAccount.isPresent()) {
-            return false;
-        }
+        final Account account = getAccountDAO().findByDiscordAccount(discordAccount).orElseGet(() -> {
+            final Account newAccount = new Account();
+            newAccount.setDiscordAccount(discordAccount);
 
-        final Account account = new Account();
-        account.setDiscordAccount(discordAccount);
+            getAccountDAO().save(newAccount);
 
-        getAccountDAO().save(account);
-        return true;
-    }
+            return newAccount;
+        });
 
-    private void validateDiscordAccount(DiscordAccount discordAccount) {
-        if (discordAccount == null) {
-            throw BaseApiException.INCORRECT_DATA;
-        }
-
-        if (!getDiscordAccountDAO().existsById(discordAccount.getId())) {
-            throw BaseApiException.INCORRECT_DATA;
-        }
+        discordAccount.setAccount(account);
+        return account;
     }
 
     public AccountDAO getAccountDAO() {
