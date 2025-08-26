@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -69,6 +72,20 @@ public class ControllerExceptionHandler {
     public Object handle(HttpMessageNotReadableException exception, HttpServletResponse response) {
         final ApiExceptionResponse apiResponse = handleDefaultException(response, HttpStatus.BAD_REQUEST);
         apiResponse.setMessage(getMessageService().message("exception.messageBody"));
+        return apiResponse;
+    }
+
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    public Object handle(MethodArgumentNotValidException exception, HttpServletResponse response) {
+        final ApiExceptionResponse apiResponse = handleDefaultException(response, HttpStatus.BAD_REQUEST);
+        apiResponse.setValidationErrors(exception.getFieldErrors().stream().collect(Collectors.toMap(
+            FieldError::getField,
+            field -> field.getDefaultMessage() == null ? "" : field.getDefaultMessage(),
+            (existing, replacement) -> replacement
+        )));
+        apiResponse.setMessage(getMessageService().message("exception.validation"));
         return apiResponse;
     }
 

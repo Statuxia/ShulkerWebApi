@@ -1,4 +1,4 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api.card;
 
 import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
@@ -21,6 +21,7 @@ import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.utils.CardNumberGenerator;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,8 @@ public class CardManagementController extends CardController {
     public static final String UPDATE_PIN = "/update-pin";
     public static final String DISABLE_CARD = "/disable";
     public static final String ENABLE_CARD = "/enable";
+
+    protected CardManagementController controller;
 
     @Autowired
     public CardManagementController(
@@ -104,7 +107,7 @@ public class CardManagementController extends CardController {
         @RequestBody @Valid CardUpdatePinRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getBankCard(request, token, UPDATE_PIN_CODE);
+        final BankCard card = getController().getBankCard(request, token, UPDATE_PIN_CODE);
 
         if (!card.getPin().equals(request.getPin())) {
             throw CardException.INVALID_PIN;
@@ -123,10 +126,10 @@ public class CardManagementController extends CardController {
         @RequestBody @Valid CardRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getBankCard(request, token, DISABLE_BANK_CARD);
+        final BankCard card = getController().getBankCard(request, token, DISABLE_BANK_CARD);
 
         if (card.isDisabled()) {
-            return ResponseEntity.ok().build();
+            throw CardException.CARD_DISABLED;
         }
 
         card.setDisabled(true);
@@ -144,10 +147,10 @@ public class CardManagementController extends CardController {
         @RequestBody @Valid CardRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getBankCard(request, token, ENABLE_BANK_CARD);
+        final BankCard card = getController().getBankCard(request, token, ENABLE_BANK_CARD);
 
         if (!card.isDisabled()) {
-            return ResponseEntity.ok().build();
+            throw CardException.CARD_DISABLED;
         }
 
         card.setDisabled(false);
@@ -156,5 +159,15 @@ public class CardManagementController extends CardController {
         getBankCardDAO().save(card);
 
         return ResponseEntity.ok().build();
+    }
+
+    public CardManagementController getController() {
+        return controller;
+    }
+
+    @Autowired
+    @Lazy
+    public void setController(CardManagementController controller) {
+        this.controller = controller;
     }
 }

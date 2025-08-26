@@ -1,4 +1,4 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api;
 
 import me.statuxia.shulkerapi.swagger.AuthOperation;
 

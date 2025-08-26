@@ -12,6 +12,8 @@ public class CardException extends ApiException {
         = new CardException("exception.CardException.INVALID_PIN", 1403);
     public static final CardException TOO_MANY_DIRECT_CARDS
         = new CardException("exception.CardException.TOO_MANY_ACCOUNTS", 1404);
+    public static final CardException CARD_DISABLED
+        = new CardException("exception.CardException.CARD_DISABLED", 1405);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

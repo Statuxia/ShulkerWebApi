@@ -3,9 +3,9 @@
 
 CREATE TABLE IF NOT EXISTS bank_card(
     id BIGSERIAL,
-    number INTEGER NOT NULL UNIQUE,
+    number VARCHAR(24) NOT NULL UNIQUE,
     game_account_id BIGSERIAL,
-    pin INTEGER NOT NULL,
+    pin varchar(24) NOT NULL,
     currency BIGINT NOT NULL DEFAULT 0,
     type VARCHAR(24) NOT NULL,
     disabled boolean default false,

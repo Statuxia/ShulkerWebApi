@@ -1,6 +1,7 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api.card;
 
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
+import me.statuxia.shulkerapi.controller.api.AuthController;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.BankCardDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
@@ -8,11 +9,11 @@ import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
-import me.statuxia.shulkerapi.request.CardGameAccountRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.utils.PaginationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,9 +50,9 @@ public abstract class CardController implements AuthController {
     }
 
     @Transactional
-    public List<BankCard> getBankCards(CardGameAccountRequest request, TokenData token) {
+    public List<BankCard> getBankCards(CardRequest request, TokenData token) {
         final GameAccount gameAccount = getGameAccountService().getGameAccount(request.getGameAccount());
-        return getBankCardDAO().findByGameAccount(gameAccount);
+        return getBankCardDAO().findByGameAccount(gameAccount, PaginationUtils.convert(request));
     }
 
     @Transactional
@@ -62,9 +63,8 @@ public abstract class CardController implements AuthController {
         }
 
         final BankCard card = optCard.get();
-
         if (authority == null || !getTokenService().hasAuthority(token.token(), authority)) {
-            getGameAccountService().validateOwned(token, card.getGameAccount());
+            getGameAccountService().validateOwnedWithResult(token, card.getGameAccount());
         }
 
         return card;

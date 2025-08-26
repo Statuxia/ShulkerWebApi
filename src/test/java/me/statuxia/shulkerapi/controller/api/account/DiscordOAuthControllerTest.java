@@ -1,4 +1,4 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api.account;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

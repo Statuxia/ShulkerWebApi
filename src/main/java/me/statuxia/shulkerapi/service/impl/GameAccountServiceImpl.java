@@ -64,15 +64,32 @@ public class GameAccountServiceImpl implements GameAccountService {
 
     /**
      * Валидация пренадлежность аккаунта
+     *
+     * @throws me.statuxia.shulkerapi.exception.AccountException, если не пренадлежит
      */
     @Transactional
+    @Override
     public void validateOwned(
         TokenData token,
         GameAccount account
     ) {
-        final List<GameAccount> currentAccounts = gameAccountDAO.findByDiscordAccount(token.getDiscordAccount());
-        if (!currentAccounts.contains(account)) {
+        if (!gameAccountService.validateOwnedWithResult(token, account)) {
             throw AccountException.UNKNOWN_ACCOUNT;
         }
+    }
+
+    /**
+     * Валидация пренадлежность аккаунта
+     *
+     * @return true, если пренадлежит
+     */
+    @Transactional
+    @Override
+    public boolean validateOwnedWithResult(
+        TokenData token,
+        GameAccount account
+    ) {
+        final List<GameAccount> currentAccounts = gameAccountDAO.findByDiscordAccount(token.getDiscordAccount());
+        return currentAccounts.contains(account);
     }
 }

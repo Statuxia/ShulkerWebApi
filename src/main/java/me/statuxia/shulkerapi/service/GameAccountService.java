@@ -22,10 +22,23 @@ public interface GameAccountService {
      */
     GameAccount getGameAccount(String name);
 
+
     /**
      * Валидация пренадлежность аккаунта
+     *
+     * @throws me.statuxia.shulkerapi.exception.AccountException, если не пренадлежит
      */
     void validateOwned(
+        TokenData token,
+        GameAccount account
+    );
+
+    /**
+     * Валидация пренадлежность аккаунта
+     *
+     * @return true, если пренадлежит
+     */
+    boolean validateOwnedWithResult(
         TokenData token,
         GameAccount account
     );

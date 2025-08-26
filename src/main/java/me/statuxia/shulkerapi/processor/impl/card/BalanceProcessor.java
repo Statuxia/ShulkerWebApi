@@ -52,13 +52,9 @@ public class BalanceProcessor extends BaseProcessor {
         final Long value = (Long) data.getData().get(VALUE);
         final BankCard card = (BankCard) data.getData().get(CARD);
 
-        if (value < 0) {
-            bankCardService.withdrawFunds(card, Math.abs(value));
-            return;
-        }
-
-        if (value > 0) {
-            bankCardService.depositFunds(card, value);
+        switch (operation) {
+            case DEPOSIT -> bankCardService.depositFunds(card, value);
+            case WITHDRAW -> bankCardService.withdrawFunds(card, value);
         }
     }
 }

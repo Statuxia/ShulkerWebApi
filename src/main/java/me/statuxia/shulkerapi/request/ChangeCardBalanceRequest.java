@@ -10,7 +10,7 @@ public class ChangeCardBalanceRequest extends CardRequest {
     @Pattern(regexp = "\\d{4}")
     private String pin;
 
-    @Min(0)
+    @Min(1)
     private Long funds;
 
     public String getPin() {

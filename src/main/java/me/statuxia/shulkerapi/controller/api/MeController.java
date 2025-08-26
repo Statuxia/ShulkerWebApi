@@ -1,4 +1,4 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.annotations.AuthData;

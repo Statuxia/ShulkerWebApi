@@ -17,7 +17,7 @@ public class PaginationRequest {
     private int page;
     @Min(1)
     @Max(100)
-    private int size;
+    private int size = 20;
 
     public Sort.Direction getDirection() {
         return direction;
