@@ -57,10 +57,6 @@ public class CardActionController extends CardController {
     ) {
         final BankCard card = getController().getBankCard(request, token, DEPOSIT_FUNDS_TO_CARD);
 
-        if (!getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())) {
-            throw CardException.UNKNOWN_CARD;
-        }
-
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;
         }
@@ -82,10 +78,6 @@ public class CardActionController extends CardController {
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, WITHDRAW_FUNDS_FROM_CARD);
-
-        if (!getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())) {
-            throw CardException.UNKNOWN_CARD;
-        }
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;

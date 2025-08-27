@@ -55,6 +55,7 @@ public class BalanceProcessor extends BaseProcessor {
         switch (operation) {
             case DEPOSIT -> bankCardService.depositFunds(card, value);
             case WITHDRAW -> bankCardService.withdrawFunds(card, value);
+            default -> throw new IllegalArgumentException();
         }
     }
 }

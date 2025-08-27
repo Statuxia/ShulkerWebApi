@@ -60,7 +60,7 @@ public class CardManagementController extends CardController {
     ) {
         final GameAccount gameAccount = getGameAccountService().getGameAccount(
             token,
-            request.getName(),
+            request.getGameAccount(),
             TokenAuthorityEnum.CREATE_BANK_CARD
         );
         final BankCard bankCard = new BankCard();
@@ -85,9 +85,18 @@ public class CardManagementController extends CardController {
                 throw CardException.UNKNOWN_PAYMENT_CARD;
             }
 
+            final BankCard card = paymentCard.get();
+            if (card.isDisabled()) {
+                throw CardException.PAYMENT_CARD_DISABLED;
+            }
+
+            if (!CardType.DIRECT.equals(card.getType())) {
+                throw CardException.PAYMENT_FROM_DIRECT;
+            }
+
             final OperationData data = new OperationData()
                 .addProcessor(BalanceProcessor.class)
-                .addData(BalanceProcessor.CARD, paymentCard.get())
+                .addData(BalanceProcessor.CARD, card)
                 .addData(BalanceProcessor.OPERATION, CardOperationType.WITHDRAW)
                 .addData(BalanceProcessor.VALUE, getCardProperties().getNewDirectCardPayment());
             getOperationProcessorService().process(data);
@@ -108,6 +117,10 @@ public class CardManagementController extends CardController {
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, UPDATE_PIN_CODE);
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
 
         if (!card.getPin().equals(request.getPin())) {
             throw CardException.INVALID_PIN;
@@ -150,7 +163,7 @@ public class CardManagementController extends CardController {
         final BankCard card = getController().getBankCard(request, token, ENABLE_BANK_CARD);
 
         if (!card.isDisabled()) {
-            throw CardException.CARD_DISABLED;
+            throw CardException.CARD_ENABLED;
         }
 
         card.setDisabled(false);

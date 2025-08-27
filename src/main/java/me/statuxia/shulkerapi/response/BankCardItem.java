@@ -11,6 +11,7 @@ public class BankCardItem {
     protected String cardNumber;
     protected String gameAccount;
     protected Long currency;
+    protected Boolean disabled;
 
     public Long getId() {
         return id;
@@ -45,6 +46,15 @@ public class BankCardItem {
 
     public BankCardItem setCurrency(Long currency) {
         this.currency = currency;
+        return this;
+    }
+
+    public Boolean getDisabled() {
+        return disabled;
+    }
+
+    public BankCardItem setDisabled(Boolean disabled) {
+        this.disabled = disabled;
         return this;
     }
 }

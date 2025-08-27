@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @TestPropertySource("classpath:test-application.properties")
 @Transactional
+@DirtiesContext
 class CardActionControllerTest extends BaseContainerTest {
 
     private static final String SESSION_TOKEN = "session-token-1";
@@ -88,7 +90,7 @@ class CardActionControllerTest extends BaseContainerTest {
         final ChangeCardBalanceRequest request = new ChangeCardBalanceRequest();
         request.setCardNumber("1234 5678");
         request.setFunds(100L);
-        request.setGameAccount("test-name-3");
+        request.setGameAccount("test-name-1");
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardActionController.DEPOSIT)
@@ -190,7 +192,7 @@ class CardActionControllerTest extends BaseContainerTest {
         request.setCardNumber("1234 5678");
         request.setFunds(100L);
         request.setPin("1234");
-        request.setGameAccount("test-name-3");
+        request.setGameAccount("test-name-1");
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardActionController.WITHDRAW)

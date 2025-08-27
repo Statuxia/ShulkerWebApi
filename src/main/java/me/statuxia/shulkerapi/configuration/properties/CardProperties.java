@@ -5,31 +5,31 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("card")
 public class CardProperties {
 
-    private Integer maxDirectCards = 3;
-    private Integer newDirectCardPayment = 64;
-    private Integer newGroupCardPayment = 128;
+    private Long maxDirectCards = 3L;
+    private Long newDirectCardPayment = 64L;
+    private Long newGroupCardPayment = 128L;
 
-    public Integer getMaxDirectCards() {
+    public Long getMaxDirectCards() {
         return maxDirectCards;
     }
 
-    public void setMaxDirectCards(Integer maxDirectCards) {
+    public void setMaxDirectCards(Long maxDirectCards) {
         this.maxDirectCards = maxDirectCards;
     }
 
-    public Integer getNewDirectCardPayment() {
+    public Long getNewDirectCardPayment() {
         return newDirectCardPayment;
     }
 
-    public void setNewDirectCardPayment(Integer newDirectCardPayment) {
+    public void setNewDirectCardPayment(Long newDirectCardPayment) {
         this.newDirectCardPayment = newDirectCardPayment;
     }
 
-    public Integer getNewGroupCardPayment() {
+    public Long getNewGroupCardPayment() {
         return newGroupCardPayment;
     }
 
-    public void setNewGroupCardPayment(Integer newGroupCardPayment) {
+    public void setNewGroupCardPayment(Long newGroupCardPayment) {
         this.newGroupCardPayment = newGroupCardPayment;
     }
 }

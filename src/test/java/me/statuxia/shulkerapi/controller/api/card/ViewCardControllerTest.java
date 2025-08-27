@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,7 +37,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
+@TestPropertySource("classpath:test-application.properties")
 @Transactional
+@DirtiesContext
 class ViewCardControllerTest extends BaseContainerTest {
 
     private static final String SESSION_TOKEN = "session-token-1";
@@ -58,6 +62,7 @@ class ViewCardControllerTest extends BaseContainerTest {
             .setId(1L)
             .setCardNumber("1234 5678")
             .setCurrency(0L)
+            .setDisabled(false)
             .setGameAccount("test-name");
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
@@ -74,7 +79,7 @@ class ViewCardControllerTest extends BaseContainerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"test-name-2", "test-name-3"})
+    @CsvSource({"test-name-2", "test-name-1"})
     void getNotOwnedTest(String name) throws Exception {
         final CardRequest request = new CardRequest();
         request.setCardNumber("1234 5678");
@@ -122,6 +127,7 @@ class ViewCardControllerTest extends BaseContainerTest {
                 .setId(1L)
                 .setCardNumber("1234 5678")
                 .setCurrency(0L)
+                .setDisabled(false)
                 .setGameAccount("test-name")
         );
 

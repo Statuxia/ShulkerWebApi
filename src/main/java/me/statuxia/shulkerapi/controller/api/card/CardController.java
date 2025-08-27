@@ -64,7 +64,13 @@ public abstract class CardController implements AuthController {
 
         final BankCard card = optCard.get();
         if (authority == null || !getTokenService().hasAuthority(token.token(), authority)) {
-            getGameAccountService().validateOwnedWithResult(token, card.getGameAccount());
+            if (!getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())) {
+                throw CardException.UNKNOWN_CARD;
+            }
+
+            if (!getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())) {
+                throw CardException.UNKNOWN_CARD;
+            }
         }
 
         return card;

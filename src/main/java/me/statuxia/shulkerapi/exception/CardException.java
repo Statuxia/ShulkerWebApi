@@ -14,6 +14,12 @@ public class CardException extends ApiException {
         = new CardException("exception.CardException.TOO_MANY_ACCOUNTS", 1404);
     public static final CardException CARD_DISABLED
         = new CardException("exception.CardException.CARD_DISABLED", 1405);
+    public static final CardException PAYMENT_CARD_DISABLED
+        = new CardException("exception.CardException.PAYMENT_CARD_DISABLED", 1406);
+    public static final CardException CARD_ENABLED
+        = new CardException("exception.CardException.CARD_ENABLED", 1407);
+    public static final CardException PAYMENT_FROM_DIRECT
+        = new CardException("exception.CardException.PAYMENT_FROM_DIRECT", 1408);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

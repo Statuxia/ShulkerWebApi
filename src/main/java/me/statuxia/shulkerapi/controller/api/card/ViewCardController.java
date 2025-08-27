@@ -74,6 +74,7 @@ public class ViewCardController extends CardController {
             || !getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
         ) {
             item.setCurrency(null);
+            item.setDisabled(null);
         }
         return ResponseEntity.ok(item);
     }
@@ -83,7 +84,8 @@ public class ViewCardController extends CardController {
             .setId(card.getId())
             .setCardNumber(card.getNumber())
             .setGameAccount(card.getGameAccount() == null ? null : card.getGameAccount().getName())
-            .setCurrency(card.getCurrency());
+            .setCurrency(card.getCurrency())
+            .setDisabled(card.isDisabled());
     }
 
     public ViewCardController getController() {

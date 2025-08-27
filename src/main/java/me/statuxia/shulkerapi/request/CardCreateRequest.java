@@ -1,16 +1,13 @@
 package me.statuxia.shulkerapi.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import me.statuxia.shulkerapi.model.CardType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CardCreateRequest {
-
-    @NotBlank
-    private String name;
 
     @NotNull
     private CardType type;
@@ -20,12 +17,16 @@ public class CardCreateRequest {
 
     private String paymentCardNumber;
 
-    public String getName() {
-        return name;
+    @NotNull
+    @NotEmpty
+    protected String gameAccount;
+
+    public String getGameAccount() {
+        return gameAccount;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setGameAccount(String gameAccount) {
+        this.gameAccount = gameAccount;
     }
 
     public CardType getType() {
