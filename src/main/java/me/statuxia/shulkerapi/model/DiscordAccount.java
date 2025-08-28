@@ -14,12 +14,6 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
     private Long id;
 
     /**
-     * Внутренний токен, через который можно обращаться к API
-     */
-    @Column(name = "session_token")
-    private String sessionToken;
-
-    /**
      * Токен доступа получения данных об аккаунте
      */
     @Column(name = "access_token", nullable = false)
@@ -38,10 +32,13 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
     @Column(name = "update_time", nullable = false)
     private DateTime updateTime;
 
-    private Boolean disabled;
+    private boolean disabled;
 
     @Column(name = "disabled_time")
     private DateTime disabledTime;
+
+    @OneToOne(mappedBy = "discordAccount")
+    private Account account;
 
     @Override
     public Long getId() {
@@ -77,21 +74,13 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
         this.updateTime = updateTime;
     }
 
-    public String getSessionToken() {
-        return sessionToken;
-    }
-
-    public void setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
-    }
-
     @Override
-    public Boolean isDisabled() {
+    public boolean isDisabled() {
         return disabled;
     }
 
     @Override
-    public void setDisabled(Boolean disabled) {
+    public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
 
@@ -105,12 +94,20 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
         this.disabledTime = dateTime;
     }
 
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DiscordAccount that = (DiscordAccount) o;
+        final DiscordAccount that = (DiscordAccount) o;
         return Objects.equals(id, that.id);
     }
 
@@ -123,9 +120,6 @@ public class DiscordAccount implements Identifiable<Long>, DisableAware {
     public String toString() {
         return new StringJoiner(", ", DiscordAccount.class.getSimpleName() + "[", "]")
             .add("id=" + id)
-            .add("updateTime=" + updateTime)
-            .add("disabled=" + disabled)
-            .add("disabledTime=" + disabledTime)
             .toString();
     }
 }

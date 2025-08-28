@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 public class TokenGenerator {
 
     public static final int TOKEN_LENGTH = 24;
+    public static final int CUSTOM_TOKEN_LENGTH = 48;
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -12,8 +13,16 @@ public class TokenGenerator {
     }
 
     public static String generate() {
-        final StringBuilder token = new StringBuilder(TOKEN_LENGTH);
-        for (int i = 0; i < TOKEN_LENGTH; i++) {
+        return generate(TOKEN_LENGTH);
+    }
+
+    public static String generate(int tokenLength) {
+        if (tokenLength < TOKEN_LENGTH) {
+            throw new IllegalArgumentException("token should not be less than " + TOKEN_LENGTH);
+        }
+
+        final StringBuilder token = new StringBuilder(tokenLength);
+        for (int i = 0; i < tokenLength; i++) {
             int index = RANDOM.nextInt(CHARACTERS.length());
             token.append(CHARACTERS.charAt(index));
         }
