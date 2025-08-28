@@ -10,8 +10,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public class BaseContainerTest {
 
     @Container
-    private static final PostgreSQLContainer<?> CONTAINER = new PostgreSQLContainer<>("postgres:17.5")
-        .withReuse(true);
+    private static final PostgreSQLContainer<?> CONTAINER = new PostgreSQLContainer<>("postgres:17.5");
 
     @DynamicPropertySource
     static void configureDatabase(DynamicPropertyRegistry registry) {

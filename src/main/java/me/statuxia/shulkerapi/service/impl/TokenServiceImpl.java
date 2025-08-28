@@ -6,6 +6,7 @@ import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
 import me.statuxia.shulkerapi.model.Account;
 import me.statuxia.shulkerapi.model.SessionToken;
 import me.statuxia.shulkerapi.model.TokenAuthority;
+import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.model.TokenLimitation;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.ValidationService;
@@ -61,6 +62,12 @@ public class TokenServiceImpl implements TokenService {
         sessionToken.setCreateTime(DateTime.now());
 
         getSessionTokenDAO().save(sessionToken);
+    }
+
+    @Override
+    @Transactional
+    public boolean hasAuthority(String token, TokenAuthorityEnum authority) {
+        return tokenAuthorityDAO.existsByTokenAndAuthority(token, authority);
     }
 
     private void createLimitation(String token) {

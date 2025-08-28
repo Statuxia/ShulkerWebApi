@@ -1,7 +1,8 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api.account;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.annotations.AuthData;
+import me.statuxia.shulkerapi.controller.api.AuthController;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.dto.TokenData;

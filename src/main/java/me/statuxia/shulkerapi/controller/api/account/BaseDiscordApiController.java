@@ -1,4 +1,4 @@
-package me.statuxia.shulkerapi.controller;
+package me.statuxia.shulkerapi.controller.api.account;
 
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.slf4j.Logger;

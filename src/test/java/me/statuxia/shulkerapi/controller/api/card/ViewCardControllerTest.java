@@ -1,0 +1,144 @@
+package me.statuxia.shulkerapi.controller.api.card;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import me.statuxia.shulkerapi.configuration.BaseContainerTest;
+import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.request.CardRequest;
+import me.statuxia.shulkerapi.request.CardRequest;
+import me.statuxia.shulkerapi.response.BankCardItem;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@Sql({
+    "classpath:sql/CardControllerTest.sql"
+})
+@SpringBootTest
+@AutoConfigureMockMvc
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
+@TestPropertySource("classpath:test-application.properties")
+@Transactional
+@DirtiesContext
+class ViewCardControllerTest extends BaseContainerTest {
+
+    private static final String SESSION_TOKEN = "session-token-1";
+
+    @Autowired
+    protected BankCardDAO bankCardDAO;
+
+    @Autowired
+    protected MockMvc mockMvc;
+
+    protected final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Test
+    void getTest() throws Exception {
+        final CardRequest request = new CardRequest();
+        request.setCardNumber("1234 5678");
+        request.setGameAccount("test-name");
+
+        final BankCardItem response = new BankCardItem()
+            .setId(1L)
+            .setCardNumber("1234 5678")
+            .setCurrency(0L)
+            .setDisabled(false)
+            .setGameAccount("test-name");
+
+        assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
+
+        final MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.GET)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isOk())
+            .andReturn();
+
+        assertEquals(objectMapper.writeValueAsString(response), result.getResponse().getContentAsString());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"test-name-2", "test-name-1"})
+    void getNotOwnedTest(String name) throws Exception {
+        final CardRequest request = new CardRequest();
+        request.setCardNumber("1234 5678");
+        request.setGameAccount(name);
+
+        final BankCardItem response = new BankCardItem()
+            .setId(1L)
+            .setCardNumber("1234 5678")
+            .setGameAccount("test-name");
+
+        assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
+
+        final MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.GET)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isOk())
+            .andReturn();
+
+        assertEquals(objectMapper.writeValueAsString(response), result.getResponse().getContentAsString());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"badFormat", "0000 0000"})
+    void getBadCardsTest(String card) throws Exception {
+        final CardRequest request = new CardRequest();
+        request.setCardNumber(card);
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.GET)
+                .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listTest() throws Exception {
+        final CardRequest request = new CardRequest();
+        request.setGameAccount("test-name");
+
+        final List<BankCardItem> response = List.of(
+            new BankCardItem()
+                .setId(1L)
+                .setCardNumber("1234 5678")
+                .setCurrency(0L)
+                .setDisabled(false)
+                .setGameAccount("test-name")
+        );
+
+        final MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.LIST)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isOk())
+            .andReturn();
+
+        assertEquals(objectMapper.writeValueAsString(response), result.getResponse().getContentAsString());
+    }
+}
