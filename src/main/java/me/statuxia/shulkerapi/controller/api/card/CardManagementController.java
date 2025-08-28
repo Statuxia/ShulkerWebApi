@@ -18,6 +18,11 @@ import me.statuxia.shulkerapi.response.CardResponse;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
+import me.statuxia.shulkerapi.swagger.controller.CardManagementControllerOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.*;
+import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperation;
+import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import me.statuxia.shulkerapi.utils.CardNumberGenerator;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +59,15 @@ public class CardManagementController extends CardController {
 
     @PostMapping(value = CREATE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @UnknownAccountOperation
+    @CardDisabledOperation
+    @TooManyDirectCardsOperation
+    @UnknownPaymentCardOperation
+    @PaymentCardDisabledOperation
+    @PaymentFromDirectOperation
+    @AmountGreaterZeroOperation
+    @NotEnoughFundsOperation
+    @CardManagementControllerOperation.Create
     public ResponseEntity<CardResponse> createCard(
         @RequestBody @Valid CardCreateRequest request,
         @AuthData TokenData token
@@ -112,6 +126,11 @@ public class CardManagementController extends CardController {
 
     @PutMapping(value = UPDATE_PIN, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @UnknownAccountOperation
+    @UnknownCardOperation
+    @CardDisabledOperation
+    @InvalidPinOperation
+    @CardManagementControllerOperation.UpdatePin
     public ResponseEntity<Void> updatePin(
         @RequestBody @Valid CardUpdatePinRequest request,
         @AuthData TokenData token
@@ -135,11 +154,15 @@ public class CardManagementController extends CardController {
     @RequiredAuthority(requireAll = DISABLE_BANK_CARD)
     @PutMapping(value = DISABLE_CARD, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @CardManagementControllerOperation.Disable
+    @UnknownAccountOperation
+    @UnknownCardOperation
+    @CardDisabledOperation
     public ResponseEntity<Void> disable(
         @RequestBody @Valid CardRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getController().getBankCard(request, token, DISABLE_BANK_CARD);
+        final BankCard card = getController().getBankCard(request, token, null);
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;
@@ -156,11 +179,15 @@ public class CardManagementController extends CardController {
     @RequiredAuthority(requireAll = ENABLE_BANK_CARD)
     @PutMapping(value = ENABLE_CARD, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @CardManagementControllerOperation.Enable
+    @UnknownAccountOperation
+    @UnknownCardOperation
+    @CardDisabledOperation
     public ResponseEntity<Void> enable(
         @RequestBody @Valid CardRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getController().getBankCard(request, token, ENABLE_BANK_CARD);
+        final BankCard card = getController().getBankCard(request, token, null);
 
         if (!card.isDisabled()) {
             throw CardException.CARD_ENABLED;

@@ -13,6 +13,9 @@ import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
+import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
@@ -48,6 +51,9 @@ public class ViewCardController extends CardController {
 
     @PostMapping(value = LIST, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @UnknownAccountOperation
+    @UnknownCardOperation
+    @ViewCardControllerOperation.List
     public ResponseEntity<List<BankCardItem>> list(
         @AuthData TokenData token,
         @RequestBody @Valid CardRequest request
@@ -57,6 +63,9 @@ public class ViewCardController extends CardController {
 
     @PostMapping(value = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @UnknownCardOperation
+    @UnknownAccountOperation
+    @ViewCardControllerOperation.Get
     public ResponseEntity<BankCardItem> get(
         @AuthData TokenData token,
         @RequestBody @Valid CardRequest request

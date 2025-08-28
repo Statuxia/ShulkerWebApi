@@ -15,6 +15,11 @@ import me.statuxia.shulkerapi.request.ChangeCardBalanceRequest;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
+import me.statuxia.shulkerapi.swagger.controller.CardActionControllerOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.InvalidPinOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
@@ -51,6 +56,10 @@ public class CardActionController extends CardController {
 
     @PostMapping(value = DEPOSIT, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @CardActionControllerOperation.Deposit
+    @CardDisabledOperation
+    @UnknownCardOperation
+    @UnknownAccountOperation
     public ResponseEntity<Void> deposit(
         @RequestBody @Valid ChangeCardBalanceRequest request,
         @AuthData TokenData token
@@ -73,6 +82,11 @@ public class CardActionController extends CardController {
 
     @PostMapping(value = WITHDRAW, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @CardDisabledOperation
+    @UnknownCardOperation
+    @InvalidPinOperation
+    @CardActionControllerOperation.Withdraw
+    @UnknownAccountOperation
     public ResponseEntity<Void> withdraw(
         @RequestBody @Valid ChangeCardBalanceRequest request,
         @AuthData TokenData token

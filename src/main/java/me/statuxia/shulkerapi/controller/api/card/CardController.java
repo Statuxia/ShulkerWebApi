@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.controller.api.card;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.api.AuthController;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
+@Tag(name = "Card", description = "Контроллер для работы с картами")
 public abstract class CardController implements AuthController {
 
     public static final String PREFIX = "/api/v1/card";
