@@ -12,6 +12,7 @@ import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardOperationType;
 import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
 import me.statuxia.shulkerapi.request.ChangeCardBalanceRequest;
+import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
@@ -21,7 +22,6 @@ import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.InvalidPinOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,16 +42,21 @@ public class CardActionController extends CardController {
     public static final String DEPOSIT = "/deposit";
     public static final String WITHDRAW = "/withdraw";
 
-    protected CardActionController controller;
+    private final CardActionController controller;
 
     @Autowired
     public CardActionController(
         TokenService tokenService,
         GameAccountService gameAccountService, BankCardDAO bankCardDAO,
         CardProperties cardProperties,
-        OperationProcessorService operationProcessorService
+        OperationProcessorService operationProcessorService,
+        CardHistoryService cardHistoryService
     ) {
-        super(tokenService, gameAccountService, bankCardDAO, cardProperties, operationProcessorService);
+        super(
+            tokenService, gameAccountService, bankCardDAO, cardProperties,
+            operationProcessorService, cardHistoryService
+        );
+        this.controller = this;
     }
 
     @PostMapping(value = DEPOSIT, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -113,11 +118,5 @@ public class CardActionController extends CardController {
 
     public CardActionController getController() {
         return controller;
-    }
-
-    @Autowired
-    @Lazy
-    public void setController(CardActionController controller) {
-        this.controller = controller;
     }
 }

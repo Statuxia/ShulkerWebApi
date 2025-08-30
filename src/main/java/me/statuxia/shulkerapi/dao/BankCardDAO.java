@@ -19,6 +19,8 @@ public interface BankCardDAO extends JpaRepository<BankCard, Long> {
 
     List<BankCard> findByGameAccount(GameAccount gameAccount);
 
+    Long countByGameAccount(GameAccount gameAccount);
+
     List<BankCard> findByGameAccount(GameAccount gameAccount, Pageable pageable);
 
     List<BankCard> findByGameAccountAndType(GameAccount gameAccount, CardType type);

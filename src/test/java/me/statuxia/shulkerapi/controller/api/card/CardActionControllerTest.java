@@ -3,7 +3,10 @@ package me.statuxia.shulkerapi.controller.api.card;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.BankCardHistory;
+import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.request.ChangeCardBalanceRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +45,9 @@ class CardActionControllerTest extends BaseContainerTest {
     protected BankCardDAO bankCardDAO;
 
     @Autowired
+    protected BankCardHistoryDAO bankCardHistoryDAO;
+
+    @Autowired
     protected MockMvc mockMvc;
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
@@ -65,6 +71,10 @@ class CardActionControllerTest extends BaseContainerTest {
 
         assertEquals("", result.getResponse().getContentAsString());
         assertEquals(100, (long) bankCardDAO.findByNumber("1234 5678").get().getCurrency());
+        final BankCardHistory history = bankCardHistoryDAO.findAll().getLast();
+        assertEquals(BankCardHistoryType.DEPOSIT, history.getType());
+        assertNotNull(history.getHistoryData());
+        assertEquals("0 -> 100 (+100)", history.getHistoryData().get("valueChange").asText());
     }
 
     @Test
@@ -144,6 +154,10 @@ class CardActionControllerTest extends BaseContainerTest {
 
         assertEquals("", result.getResponse().getContentAsString());
         assertEquals(0, (long) bankCardDAO.findByNumber("1234 5678").get().getCurrency());
+        final BankCardHistory history = bankCardHistoryDAO.findAll().getLast();
+        assertEquals(BankCardHistoryType.WITHDRAW, history.getType());
+        assertNotNull(history.getHistoryData());
+        assertEquals("100 -> 0 (-100)", history.getHistoryData().get("valueChange").asText());
     }
 
     @Test

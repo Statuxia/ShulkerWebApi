@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Entity(name = "BankCard")
 @Table(name = "bank_card")
-public class BankCard {
+public class BankCard implements Identifiable<Long> {
 
     public static final String ID_SEQ_GENERATOR = "bank_card_id_seq_generator";
     public static final String ID_SEQ = "bank_card_id_seq";
@@ -42,10 +42,12 @@ public class BankCard {
     @Column(name = "disabled_time")
     private DateTime disabledTime;
 
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }

@@ -12,7 +12,6 @@ import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,13 +32,12 @@ public class DiscordAccountServiceImpl implements DiscordAccountService {
     public DiscordAccountServiceImpl(
         DiscordAccountDAO discordAccountDAO,
         DiscordIntegrationService discordIntegrationService,
-        AccountCreateService accountCreateService,
-        @Lazy DiscordAccountService discordAccountService
+        AccountCreateService accountCreateService
     ) {
         this.discordAccountDAO = discordAccountDAO;
         this.discordIntegrationService = discordIntegrationService;
         this.accountCreateService = accountCreateService;
-        this.discordAccountService = discordAccountService;
+        this.discordAccountService = this;
     }
 
     @Override

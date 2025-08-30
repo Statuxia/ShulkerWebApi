@@ -3,6 +3,8 @@ package me.statuxia.shulkerapi.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BankCardItem {
@@ -56,5 +58,35 @@ public class BankCardItem {
     public BankCardItem setDisabled(Boolean disabled) {
         this.disabled = disabled;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final BankCardItem that = (BankCardItem) o;
+        return Objects.equals(id, that.id)
+            && Objects.equals(cardNumber, that.cardNumber)
+            && Objects.equals(gameAccount, that.gameAccount)
+            && Objects.equals(currency, that.currency)
+            && Objects.equals(disabled, that.disabled);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cardNumber, gameAccount, currency, disabled);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("BankCardItem{");
+        sb.append("id=").append(id);
+        sb.append(", cardNumber='").append(cardNumber).append('\'');
+        sb.append(", gameAccount='").append(gameAccount).append('\'');
+        sb.append(", currency=").append(currency);
+        sb.append(", disabled=").append(disabled);
+        sb.append('}');
+        return sb.toString();
     }
 }

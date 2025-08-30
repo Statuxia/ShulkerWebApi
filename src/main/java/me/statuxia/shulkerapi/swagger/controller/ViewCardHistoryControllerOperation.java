@@ -4,35 +4,24 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import me.statuxia.shulkerapi.response.BankCardHistoryPaginationResponse;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-public class CardActionControllerOperation {
+public class ViewCardHistoryControllerOperation {
 
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-        description = "Пополнение средств на счет",
+        description = "Получение списка истории карты",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
-            content = @Content(schema = @Schema())
+            content = @Content(schema = @Schema(implementation = BankCardHistoryPaginationResponse.class))
         )
     )
-    public @interface Deposit {
-    }
-
-    @Target(ElementType.METHOD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @Operation(
-        description = "Списание средств со счета",
-        responses = @ApiResponse(
-            responseCode = "200", description = "OK",
-            content = @Content(schema = @Schema())
-        )
-    )
-    public @interface Withdraw {
+    public @interface List {
     }
 }

@@ -25,6 +25,9 @@ class BankCardServiceTest {
     @Mock
     protected BankCardDAO bankCardDAO;
 
+    @Mock
+    protected CardHistoryService cardHistoryService;
+
     @ParameterizedTest
     @MethodSource("withdrawFundsDataSource")
     void withdrawFundsTest(BankCard card, Long amount, Object expectedResult) {
