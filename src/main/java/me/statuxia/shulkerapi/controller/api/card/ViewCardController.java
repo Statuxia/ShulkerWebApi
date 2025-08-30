@@ -8,16 +8,20 @@ import me.statuxia.shulkerapi.dao.BankCardDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.GameAccount;
+import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
+import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
+import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
+import me.statuxia.shulkerapi.utils.PaginationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -36,17 +39,19 @@ public class ViewCardController extends CardController {
     public static final String GET = "/get";
     public static final String LIST = "/list";
 
-    protected ViewCardController controller;
-
     @Autowired
     public ViewCardController(
         TokenService tokenService,
         GameAccountService gameAccountService,
         BankCardDAO bankCardDAO,
         CardProperties cardProperties,
-        OperationProcessorService operationProcessorService
+        OperationProcessorService operationProcessorService,
+        CardHistoryService cardHistoryService
     ) {
-        super(tokenService, gameAccountService, bankCardDAO, cardProperties, operationProcessorService);
+        super(
+            tokenService, gameAccountService, bankCardDAO, cardProperties,
+            operationProcessorService, cardHistoryService
+        );
     }
 
     @PostMapping(value = LIST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,11 +59,12 @@ public class ViewCardController extends CardController {
     @UnknownAccountOperation
     @UnknownCardOperation
     @ViewCardControllerOperation.List
-    public ResponseEntity<List<BankCardItem>> list(
+    public ResponseEntity<BankCardPaginationResponse> list(
         @AuthData TokenData token,
         @RequestBody @Valid CardRequest request
     ) {
-        return ResponseEntity.ok(getController().getBankCards(request, token).stream().map(this::buildItem).toList());
+
+        return ResponseEntity.ok(getBankCards(request, token));
     }
 
     @PostMapping(value = GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -80,12 +86,28 @@ public class ViewCardController extends CardController {
         final BankCardItem item = buildItem(card);
         if (
             !getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())
-            || !getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
+                || !getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
         ) {
             item.setCurrency(null);
             item.setDisabled(null);
         }
         return ResponseEntity.ok(item);
+    }
+
+    private BankCardPaginationResponse getBankCards(CardRequest request, TokenData token) {
+        final GameAccount gameAccount = getGameAccountService().getGameAccount(
+            token,
+            request.getGameAccount(),
+            TokenAuthorityEnum.LIST_BANK_CARD
+        );
+
+        final BankCardPaginationResponse response = new BankCardPaginationResponse();
+        response.setTotal(getBankCardDAO().countByGameAccount(gameAccount));
+        response.setItems(
+            getBankCardDAO().findByGameAccount(gameAccount, PaginationUtils.convert(request))
+                .stream().map(this::buildItem).toList()
+        );
+        return response;
     }
 
     private BankCardItem buildItem(BankCard card) {
@@ -95,15 +117,5 @@ public class ViewCardController extends CardController {
             .setGameAccount(card.getGameAccount() == null ? null : card.getGameAccount().getName())
             .setCurrency(card.getCurrency())
             .setDisabled(card.isDisabled());
-    }
-
-    public ViewCardController getController() {
-        return controller;
-    }
-
-    @Autowired
-    @Lazy
-    public void setController(ViewCardController controller) {
-        this.controller = controller;
     }
 }

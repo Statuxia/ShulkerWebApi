@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.BankCardDAO;
 import me.statuxia.shulkerapi.request.CardRequest;
-import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
+import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +29,7 @@ import java.util.List;
 import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Sql({
@@ -122,14 +123,16 @@ class ViewCardControllerTest extends BaseContainerTest {
         final CardRequest request = new CardRequest();
         request.setGameAccount("test-name");
 
-        final List<BankCardItem> response = List.of(
+        final BankCardPaginationResponse response = new BankCardPaginationResponse();
+        response.setTotal(1);
+        response.setItems(List.of(
             new BankCardItem()
                 .setId(1L)
                 .setCardNumber("1234 5678")
                 .setCurrency(0L)
                 .setDisabled(false)
                 .setGameAccount("test-name")
-        );
+        ));
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.LIST)
@@ -140,5 +143,19 @@ class ViewCardControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(objectMapper.writeValueAsString(response), result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void listWrongAccountTest() throws Exception {
+        final CardRequest request = new CardRequest();
+        request.setGameAccount("test-name-2");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.LIST)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1201"));
     }
 }

@@ -32,10 +32,12 @@ public class SessionToken implements Identifiable<Long>, DisableAware, TokenSour
     @JoinColumn(name = "account_id")
     private Account account;
 
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }

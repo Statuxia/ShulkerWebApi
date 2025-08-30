@@ -8,19 +8,17 @@ import me.statuxia.shulkerapi.dao.BankCardDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
-import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.CardRequest;
+import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
-import me.statuxia.shulkerapi.utils.PaginationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -35,6 +33,7 @@ public abstract class CardController implements AuthController {
     private final BankCardDAO bankCardDAO;
     private final CardProperties cardProperties;
     private final OperationProcessorService operationProcessorService;
+    private final CardHistoryService cardHistoryService;
 
     @Autowired
     protected CardController(
@@ -42,19 +41,15 @@ public abstract class CardController implements AuthController {
         GameAccountService gameAccountService,
         BankCardDAO bankCardDAO,
         CardProperties cardProperties,
-        OperationProcessorService operationProcessorService
+        OperationProcessorService operationProcessorService,
+        CardHistoryService cardHistoryService
     ) {
         this.tokenService = tokenService;
         this.gameAccountService = gameAccountService;
         this.bankCardDAO = bankCardDAO;
         this.cardProperties = cardProperties;
         this.operationProcessorService = operationProcessorService;
-    }
-
-    @Transactional
-    public List<BankCard> getBankCards(CardRequest request, TokenData token) {
-        final GameAccount gameAccount = getGameAccountService().getGameAccount(request.getGameAccount());
-        return getBankCardDAO().findByGameAccount(gameAccount, PaginationUtils.convert(request));
+        this.cardHistoryService = cardHistoryService;
     }
 
     @Transactional
@@ -96,5 +91,9 @@ public abstract class CardController implements AuthController {
 
     public OperationProcessorService getOperationProcessorService() {
         return operationProcessorService;
+    }
+
+    public CardHistoryService getCardHistoryService() {
+        return cardHistoryService;
     }
 }

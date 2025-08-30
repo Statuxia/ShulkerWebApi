@@ -15,6 +15,7 @@ import me.statuxia.shulkerapi.request.CardCreateRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
 import me.statuxia.shulkerapi.response.CardResponse;
+import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
@@ -26,7 +27,6 @@ import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import me.statuxia.shulkerapi.utils.CardNumberGenerator;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,15 +46,19 @@ public class CardManagementController extends CardController {
     public static final String DISABLE_CARD = "/disable";
     public static final String ENABLE_CARD = "/enable";
 
-    protected CardManagementController controller;
+    private final CardManagementController controller;
 
     @Autowired
     public CardManagementController(
         TokenService tokenService, GameAccountService gameAccountService, BankCardDAO bankCardDAO,
         CardProperties cardProperties,
-        OperationProcessorService operationProcessorService
+        OperationProcessorService operationProcessorService, CardHistoryService cardHistoryService
     ) {
-        super(tokenService, gameAccountService, bankCardDAO, cardProperties, operationProcessorService);
+        super(
+            tokenService, gameAccountService, bankCardDAO, cardProperties,
+            operationProcessorService, cardHistoryService
+        );
+        this.controller = this;
     }
 
     @PostMapping(value = CREATE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -117,6 +121,7 @@ public class CardManagementController extends CardController {
         }
 
         getBankCardDAO().save(bankCard);
+        getCardHistoryService().writeCreateCard(bankCard);
 
         final CardResponse response = new CardResponse();
         response.setNumber(bankCard.getNumber());
@@ -147,6 +152,7 @@ public class CardManagementController extends CardController {
 
         card.setPin(request.getNewPin());
         getBankCardDAO().save(card);
+        getCardHistoryService().writeUpdatePin(card);
 
         return ResponseEntity.ok().build();
     }
@@ -172,6 +178,7 @@ public class CardManagementController extends CardController {
         card.setDisabledTime(DateTime.now());
 
         getBankCardDAO().save(card);
+        getCardHistoryService().writeDisable(card, true);
 
         return ResponseEntity.ok().build();
     }
@@ -197,17 +204,12 @@ public class CardManagementController extends CardController {
         card.setDisabledTime(null);
 
         getBankCardDAO().save(card);
+        getCardHistoryService().writeDisable(card, false);
 
         return ResponseEntity.ok().build();
     }
 
     public CardManagementController getController() {
         return controller;
-    }
-
-    @Autowired
-    @Lazy
-    public void setController(CardManagementController controller) {
-        this.controller = controller;
     }
 }
