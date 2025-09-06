@@ -5,6 +5,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import me.statuxia.shulkerapi.controller.advice.ControllerExceptionHandler;
+import me.statuxia.shulkerapi.controller.api.TokenController;
 import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
 import me.statuxia.shulkerapi.dto.RateLimit;
 import me.statuxia.shulkerapi.exception.ApiException;
@@ -32,7 +33,8 @@ public class TokenFilter implements Filter {
     public static final String X_RATE_LIMIT_REMAINING = "X-RateLimit-Remaining";
     private final Map<String, RateLimit> rateLimits = new ConcurrentHashMap<>();
     private final List<String> whitelistUrls = List.of(
-        "/api/v1/oauth2/discord"
+        "/api/v1/oauth2/discord",
+        TokenController.PREFIX + TokenController.GET_BY_CODE
     );
 
     private final TokenLimitationDAO tokenLimitationDAO;
