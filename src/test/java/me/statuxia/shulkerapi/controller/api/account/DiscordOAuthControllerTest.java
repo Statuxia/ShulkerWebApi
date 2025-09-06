@@ -3,7 +3,6 @@ package me.statuxia.shulkerapi.controller.api.account;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
-import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
@@ -169,8 +168,7 @@ class DiscordOAuthControllerTest extends BaseContainerTest {
         mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordOAuthController.PREFIX + DiscordOAuthController.AUTH + "?code=")
             ).andExpect(status().isFound())
-            .andExpect(mvc -> assertTrue(mvc.getResponse().getRedirectedUrl().equals("http://localhost:8080/success")))
-            .andExpect(mvc -> assertNotNull(mvc.getResponse().getHeader(AuthDataResolver.X_TOKEN_HEADER)))
+            .andExpect(mvc -> assertTrue(mvc.getResponse().getRedirectedUrl().startsWith("http://localhost:8080/success")))
             .andExpect(mvc -> assertEquals(2, discordAccountDAO.count()));
     }
 }

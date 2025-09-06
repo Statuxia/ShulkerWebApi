@@ -1,11 +1,9 @@
 package me.statuxia.shulkerapi.controller.api.account;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.provider.DiscordOAuthRedirectProvider;
@@ -14,6 +12,7 @@ import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import me.statuxia.shulkerapi.service.TokenService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,8 +55,10 @@ public class DiscordOAuthController extends BaseDiscordApiController {
     @Transactional
     @Operation(description = """
         Эндпоинт для авторизации полученного от Discord OAuth кода с последующим редиректом в лк
-        """, responses = @ApiResponse(headers = @Header(name = AuthDataResolver.X_TOKEN_HEADER)))
-    public void auth(HttpServletResponse response, @RequestParam("code") String code) throws IOException {
+        """)
+    public void auth(
+        HttpServletRequest request, HttpServletResponse response, @RequestParam("code") String code
+    ) throws IOException {
         final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
             = getDiscordIntegrationService().getAccessToken(code);
         if (accessToken.getException() != null) {
@@ -92,8 +93,12 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         );
 
         final String sessionToken = getTokenService().createSessionToken(discordAccount.getAccount());
-        response.addHeader(AuthDataResolver.X_TOKEN_HEADER, sessionToken);
-        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl());
+        response.sendRedirect(
+            getProvider().getAuthSuccessRedirectUrl()
+                + "?a=" + RandomStringUtils.secure().nextAlphanumeric(150)
+                + "&token=" + sessionToken
+                + "&b=" + RandomStringUtils.secure().nextAlphanumeric(150)
+        );
     }
 
     public DiscordOAuthRedirectProvider getProvider() {
