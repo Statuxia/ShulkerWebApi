@@ -64,10 +64,10 @@ public abstract class CardController implements AuthController {
             if (!getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())) {
                 throw CardException.UNKNOWN_CARD;
             }
+        }
 
-            if (!getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())) {
-                throw CardException.UNKNOWN_CARD;
-            }
+        if (!getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())) {
+            throw CardException.UNKNOWN_CARD;
         }
 
         return card;

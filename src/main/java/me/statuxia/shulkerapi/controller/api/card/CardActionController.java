@@ -2,6 +2,7 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
+import me.statuxia.shulkerapi.annotations.RequiredAuthority;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.BankCardDAO;
@@ -59,6 +60,7 @@ public class CardActionController extends CardController {
         this.controller = this;
     }
 
+    @RequiredAuthority(requireAll = DEPOSIT_FUNDS_TO_CARD)
     @PostMapping(value = DEPOSIT, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CardActionControllerOperation.Deposit
@@ -85,6 +87,7 @@ public class CardActionController extends CardController {
         return ResponseEntity.ok().build();
     }
 
+    @RequiredAuthority(requireAll = WITHDRAW_FUNDS_FROM_CARD)
     @PostMapping(value = WITHDRAW, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @CardDisabledOperation
