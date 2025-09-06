@@ -1,6 +1,8 @@
 package me.statuxia.shulkerapi.controller.api.account;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
@@ -54,7 +56,7 @@ public class DiscordOAuthController extends BaseDiscordApiController {
     @Transactional
     @Operation(description = """
         Эндпоинт для авторизации полученного от Discord OAuth кода с последующим редиректом в лк
-        """)
+        """, responses = @ApiResponse(headers = @Header(name = AuthDataResolver.X_TOKEN_HEADER)))
     public void auth(HttpServletResponse response, @RequestParam("code") String code) throws IOException {
         final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
             = getDiscordIntegrationService().getAccessToken(code);
