@@ -3,6 +3,7 @@ package me.statuxia.shulkerapi.controller.api.account;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.provider.DiscordOAuthRedirectProvider;
@@ -89,7 +90,8 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         );
 
         final String sessionToken = getTokenService().createSessionToken(discordAccount.getAccount());
-        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl() + "?token=" + sessionToken);
+        response.addHeader(AuthDataResolver.X_TOKEN_HEADER, sessionToken);
+        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl());
     }
 
     public DiscordOAuthRedirectProvider getProvider() {
