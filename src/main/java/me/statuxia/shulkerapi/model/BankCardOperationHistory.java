@@ -1,7 +1,6 @@
 package me.statuxia.shulkerapi.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.joda.time.DateTime;
@@ -37,8 +36,7 @@ public class BankCardOperationHistory implements Identifiable<Long> {
     private DateTime createTime;
 
     @Column(nullable = false)
-    @Min(1)
-    private Integer value;
+    private Long value;
 
     @Override
     public Long getId() {
@@ -82,11 +80,11 @@ public class BankCardOperationHistory implements Identifiable<Long> {
         this.createTime = createTime;
     }
 
-    public Integer getValue() {
+    public Long getValue() {
         return value;
     }
 
-    public void setValue(Integer value) {
+    public void setValue(Long value) {
         this.value = value;
     }
 

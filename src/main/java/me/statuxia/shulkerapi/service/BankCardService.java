@@ -2,6 +2,8 @@ package me.statuxia.shulkerapi.service;
 
 import me.statuxia.shulkerapi.model.BankCard;
 
+import java.util.UUID;
+
 public interface BankCardService {
 
     /**
@@ -13,4 +15,14 @@ public interface BankCardService {
      * Начисление средств
      */
     void depositFunds(BankCard card, Long amount);
+
+    /**
+     * Откат средств
+     */
+    void rollbackFunds(UUID historyUuid);
+
+    /**
+     * Возврат средств
+     */
+    void restoreFunds(UUID historyUuid);
 }

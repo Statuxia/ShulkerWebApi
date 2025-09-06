@@ -1,9 +1,11 @@
 package me.statuxia.shulkerapi.service.impl;
 
 import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.BankCardHistory;
 import me.statuxia.shulkerapi.model.BankCardHistoryType;
+import me.statuxia.shulkerapi.model.BankCardOperationHistory;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.utils.CardHistoryDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +22,16 @@ import static me.statuxia.shulkerapi.utils.CardHistoryUtils.build;
 public class CardHistoryServiceImpl implements CardHistoryService {
 
     private final BankCardHistoryDAO bankCardHistoryDAO;
+    private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
     private final MessageService messageService;
 
     @Autowired
     public CardHistoryServiceImpl(
-        BankCardHistoryDAO bankCardHistoryDAO,
+        BankCardHistoryDAO bankCardHistoryDAO, BankCardOperationHistoryDAO bankCardOperationHistoryDAO,
         MessageService messageService
     ) {
         this.bankCardHistoryDAO = bankCardHistoryDAO;
+        this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
         this.messageService = messageService;
     }
 
@@ -67,6 +71,9 @@ public class CardHistoryServiceImpl implements CardHistoryService {
         );
         history.setUuid(UUID.randomUUID());
         bankCardHistoryDAO.save(history);
+
+        final BankCardOperationHistory operationHistory = build(history, diff);
+        bankCardOperationHistoryDAO.save(operationHistory);
     }
 
     private BankCardHistory write(BankCard card, BankCardHistoryType type) {
