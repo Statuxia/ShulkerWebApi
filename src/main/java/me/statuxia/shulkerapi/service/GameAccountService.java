@@ -22,6 +22,10 @@ public interface GameAccountService {
      */
     GameAccount getGameAccount(String name);
 
+    /**
+     * Получение игрового аккаунта по имени с выбрасыванием исключения при отсутствии
+     */
+    GameAccount getActionGameAccount(String name);
 
     /**
      * Валидация пренадлежность аккаунта

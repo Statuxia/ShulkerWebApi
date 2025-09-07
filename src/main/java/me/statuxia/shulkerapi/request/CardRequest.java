@@ -15,6 +15,8 @@ public class CardRequest extends PaginationRequest {
     @NotEmpty
     protected String gameAccount;
 
+    protected String actionBy;
+
     public String getGameAccount() {
         return gameAccount;
     }
@@ -29,5 +31,13 @@ public class CardRequest extends PaginationRequest {
 
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
+    }
+
+    public String getActionBy() {
+        return actionBy;
+    }
+
+    public void setActionBy(String actionBy) {
+        this.actionBy = actionBy;
     }
 }

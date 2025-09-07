@@ -20,6 +20,7 @@ import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
+import me.statuxia.shulkerapi.swagger.UnknownActionByAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.CardManagementControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.*;
 import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperation;
@@ -146,13 +147,15 @@ public class CardManagementController extends CardController {
             throw CardException.CARD_DISABLED;
         }
 
-        if (!card.getPin().equals(request.getPin())) {
+        final boolean isAdmin = getTokenService().hasAuthority(token.token(), UPDATE_PIN_CODE);
+
+        if (!isAdmin && !card.getPin().equals(request.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
         card.setPin(request.getNewPin());
         getBankCardDAO().save(card);
-        getCardHistoryService().writeUpdatePin(card);
+        getCardHistoryService().writeUpdatePin(card, isAdmin);
 
         return ResponseEntity.ok().build();
     }
@@ -162,6 +165,7 @@ public class CardManagementController extends CardController {
     @Transactional
     @CardManagementControllerOperation.Disable
     @UnknownAccountOperation
+    @UnknownActionByAccountOperation
     @UnknownCardOperation
     @CardDisabledOperation
     public ResponseEntity<Void> disable(
@@ -169,6 +173,7 @@ public class CardManagementController extends CardController {
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, null);
+        final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;
@@ -177,8 +182,9 @@ public class CardManagementController extends CardController {
         card.setDisabled(true);
         card.setDisabledTime(DateTime.now());
 
+
         getBankCardDAO().save(card);
-        getCardHistoryService().writeDisable(card, true);
+        getCardHistoryService().writeDisable(card, actionBy, true);
 
         return ResponseEntity.ok().build();
     }
@@ -188,6 +194,7 @@ public class CardManagementController extends CardController {
     @Transactional
     @CardManagementControllerOperation.Enable
     @UnknownAccountOperation
+    @UnknownActionByAccountOperation
     @UnknownCardOperation
     @CardDisabledOperation
     public ResponseEntity<Void> enable(
@@ -195,6 +202,7 @@ public class CardManagementController extends CardController {
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, null);
+        final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
 
         if (!card.isDisabled()) {
             throw CardException.CARD_ENABLED;
@@ -204,7 +212,7 @@ public class CardManagementController extends CardController {
         card.setDisabledTime(null);
 
         getBankCardDAO().save(card);
-        getCardHistoryService().writeDisable(card, false);
+        getCardHistoryService().writeDisable(card, actionBy, false);
 
         return ResponseEntity.ok().build();
     }

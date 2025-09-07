@@ -4,6 +4,8 @@ import me.statuxia.shulkerapi.model.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 
+import java.util.UUID;
+
 public class CardHistoryUtils {
 
     private CardHistoryUtils() {
@@ -35,6 +37,21 @@ public class CardHistoryUtils {
 
     public static BankCardOperationHistory copy(BankCardOperationHistory from) {
         final BankCardOperationHistory to = new BankCardOperationHistory();
+        BeanUtils.copyProperties(from, to);
+        return to;
+    }
+
+    public static BankCardLog build(BankCard card, String actionBy, UUID uuid) {
+        final BankCardLog log = new BankCardLog();
+        log.setCard(card);
+        log.setUuid(uuid);
+        log.setActionBy(actionBy);
+        log.setActionTime(DateTime.now());
+        return log;
+    }
+
+    public static BankCardLog copy(BankCardLog from) {
+        final BankCardLog to = new BankCardLog();
         BeanUtils.copyProperties(from, to);
         return to;
     }

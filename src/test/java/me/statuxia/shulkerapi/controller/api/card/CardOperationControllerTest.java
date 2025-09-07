@@ -51,6 +51,7 @@ class CardOperationControllerTest extends BaseContainerTest {
             MockMvcRequestBuilders.post(CardOperationController.PREFIX + CardOperationController.ROLLBACK + "/%s".formatted(id))
                 .header(X_TOKEN_HEADER, SESSION_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"actionBy\": \"test-name\"}")
         ).andExpect(status().isOk());
 
         final BankCard card = bankCardDAO.findById(1L).get();
@@ -64,6 +65,7 @@ class CardOperationControllerTest extends BaseContainerTest {
                 MockMvcRequestBuilders.post(CardOperationController.PREFIX + CardOperationController.ROLLBACK + "/%s".formatted(id))
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"actionBy\": \"test-name\"}")
             ).andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("1603"));
     }
@@ -75,6 +77,7 @@ class CardOperationControllerTest extends BaseContainerTest {
             MockMvcRequestBuilders.post(CardOperationController.PREFIX + CardOperationController.RESTORE + "/%s".formatted(id))
                 .header(X_TOKEN_HEADER, SESSION_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"actionBy\": \"test-name\"}")
         ).andExpect(status().isOk());
 
         final BankCard card = bankCardDAO.findById(1L).get();
@@ -88,6 +91,7 @@ class CardOperationControllerTest extends BaseContainerTest {
                 MockMvcRequestBuilders.post(CardOperationController.PREFIX + CardOperationController.RESTORE + "/%s".formatted(id))
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"actionBy\": \"test-name\"}")
             )
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("1603"));

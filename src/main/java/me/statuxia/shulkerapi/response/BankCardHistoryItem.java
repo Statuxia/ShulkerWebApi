@@ -2,8 +2,10 @@ package me.statuxia.shulkerapi.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import me.statuxia.shulkerapi.model.BankOperationState;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,7 +16,9 @@ public class BankCardHistoryItem {
     protected Long id;
     protected String type;
     protected String dateTime;
+    @Schema(description = "i18n данные, можно возвращать как есть")
     protected Map<String, String> data;
+    protected List<BankCardHistoryLogItem> logs;
     protected BankOperationState state;
 
     public Long getId() {
@@ -53,6 +57,14 @@ public class BankCardHistoryItem {
         return this;
     }
 
+    public List<BankCardHistoryLogItem> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<BankCardHistoryLogItem> logs) {
+        this.logs = logs;
+    }
+
     public BankOperationState getState() {
         return state;
     }
@@ -72,12 +84,13 @@ public class BankCardHistoryItem {
             && Objects.equals(getType(), item.getType())
             && Objects.equals(getDateTime(), item.getDateTime())
             && Objects.equals(getData(), item.getData())
+            && Objects.equals(getLogs(), item.getLogs())
             && getState() == item.getState();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getType(), getDateTime(), getData(), getState());
+        return Objects.hash(getId(), getType(), getDateTime(), getData(), getLogs(), getState());
     }
 
     @Override
@@ -87,6 +100,7 @@ public class BankCardHistoryItem {
         sb.append(", type='").append(type).append('\'');
         sb.append(", dateTime='").append(dateTime).append('\'');
         sb.append(", data=").append(data);
+        sb.append(", logs=").append(logs);
         sb.append(", state=").append(state);
         sb.append('}');
         return sb.toString();

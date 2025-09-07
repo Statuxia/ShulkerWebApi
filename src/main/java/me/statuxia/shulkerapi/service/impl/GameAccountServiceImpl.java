@@ -61,6 +61,18 @@ public class GameAccountServiceImpl implements GameAccountService {
     }
 
     /**
+     * Получение игрового аккаунта по имени с выбрасыванием исключения при отсутствии
+     */
+    @Transactional
+    public GameAccount getActionGameAccount(String name) {
+        final Optional<GameAccount> optAccount = gameAccountDAO.findByName(name);
+        if (optAccount.isEmpty()) {
+            throw AccountException.UNKNOWN_ACTION_ACCOUNT;
+        }
+        return optAccount.get();
+    }
+
+    /**
      * Валидация пренадлежность аккаунта
      *
      * @throws me.statuxia.shulkerapi.exception.AccountException, если не пренадлежит

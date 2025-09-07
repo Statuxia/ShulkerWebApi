@@ -7,15 +7,14 @@ import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.converter.JsonNodeConverter;
 import me.statuxia.shulkerapi.dao.BankCardDAO;
 import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.CardException;
-import me.statuxia.shulkerapi.model.BankCard;
-import me.statuxia.shulkerapi.model.BankCardHistory;
-import me.statuxia.shulkerapi.model.BankCardOperationHistory;
-import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
+import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.request.CardHistoryRequest;
 import me.statuxia.shulkerapi.response.BankCardHistoryItem;
+import me.statuxia.shulkerapi.response.BankCardHistoryLogItem;
 import me.statuxia.shulkerapi.response.BankCardHistoryPaginationResponse;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
@@ -47,6 +46,7 @@ public class ViewCardHistoryController extends CardController {
 
     private final BankCardHistoryDAO bankCardHistoryDAO;
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
+    private final BankCardLogDAO bankCardLogDAO;
     private final MessageService messageService;
     private final JsonNodeConverter jsonNodeConverter;
     private final ViewCardHistoryController controller;
@@ -59,7 +59,8 @@ public class ViewCardHistoryController extends CardController {
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService, BankCardHistoryDAO bankCardHistoryDAO,
-        BankCardOperationHistoryDAO bankCardOperationHistoryDAO, MessageService messageService,
+        BankCardOperationHistoryDAO bankCardOperationHistoryDAO, BankCardLogDAO bankCardLogDAO,
+        MessageService messageService,
         JsonNodeConverter jsonNodeConverter
     ) {
         super(
@@ -72,6 +73,7 @@ public class ViewCardHistoryController extends CardController {
         );
         this.bankCardHistoryDAO = bankCardHistoryDAO;
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
+        this.bankCardLogDAO = bankCardLogDAO;
         this.messageService = messageService;
         this.jsonNodeConverter = jsonNodeConverter;
         this.controller = this;
@@ -111,18 +113,30 @@ public class ViewCardHistoryController extends CardController {
     }
 
     protected BankCardHistoryItem map(BankCardHistory history) {
-        final List<BankCardOperationHistory> list = bankCardOperationHistoryDAO.findByUuid(history.getUuid());
+        final List<BankCardOperationHistory> list = bankCardOperationHistoryDAO.findByUuidAndCard(
+            history.getUuid(), history.getCard()
+        );
+        final List<BankCardLog> logs = bankCardLogDAO.findByUuidAndCard(history.getUuid(), history.getCard());
         final BankCardHistoryItem item = new BankCardHistoryItem();
         item.setId(history.getId());
         item.setType(messageService.message(history.getType()));
         item.setDateTime(history.getCreateTime().toString(DateUtils.DATETIME));
-        item.setData(jsonNodeConverter.convertToDatabaseColumn(history.getHistoryData()));
+        item.setData(jsonNodeConverter.convertToI18nMap(history.getHistoryData()));
+        item.setLogs(logs.stream().map(this::map).toList());
 
         if (!list.isEmpty()) {
             item.setState(list.getFirst().getState());
         }
 
         return item;
+    }
+
+    protected BankCardHistoryLogItem map(BankCardLog log) {
+        final BankCardHistoryLogItem logItem = new BankCardHistoryLogItem();
+        logItem.setUsername(log.getActionBy());
+        logItem.setDateTime(log.getActionTime().toString(DateUtils.DATETIME));
+        logItem.setData(jsonNodeConverter.convertToI18nMap(log.getData()));
+        return logItem;
     }
 
     public ViewCardHistoryController getController() {
