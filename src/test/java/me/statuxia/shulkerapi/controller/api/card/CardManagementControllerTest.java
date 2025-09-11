@@ -2,8 +2,9 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
-import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardHistorySearchDTO;
 import me.statuxia.shulkerapi.model.BankCardHistory;
 import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.model.CardType;
@@ -57,7 +58,8 @@ class CardManagementControllerTest extends BaseContainerTest {
     @Autowired
     protected MockMvc mockMvc;
 
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @Test
     void createFirstCardTest() throws Exception {
@@ -73,7 +75,7 @@ class CardManagementControllerTest extends BaseContainerTest {
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")));
-        assertEquals(BankCardHistoryType.CREATE_CARD, bankCardHistoryDAO.findAll().getLast().getType());
+        assertEquals(BankCardHistoryType.CREATE_CARD, bankCardHistoryDAO.findList(new BankCardHistorySearchDTO()).getLast().getType());
     }
 
     @Test
@@ -185,7 +187,7 @@ class CardManagementControllerTest extends BaseContainerTest {
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")));
 
-        final List<BankCardHistory> histories = bankCardHistoryDAO.findAll();
+        final List<BankCardHistory> histories = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO());
         assertEquals(BankCardHistoryType.WITHDRAW, histories.get(histories.size() - 2).getType());
         assertEquals(BankCardHistoryType.CREATE_CARD, histories.get(histories.size() - 1).getType());
     }
@@ -204,7 +206,7 @@ class CardManagementControllerTest extends BaseContainerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
         ).andExpect(status().isOk());
-        assertEquals(BankCardHistoryType.UPDATE_PIN, bankCardHistoryDAO.findAll().getLast().getType());
+        assertEquals(BankCardHistoryType.UPDATE_PIN, bankCardHistoryDAO.findList(new BankCardHistorySearchDTO()).getLast().getType());
     }
 
     @Test

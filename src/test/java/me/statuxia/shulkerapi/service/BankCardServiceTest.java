@@ -1,6 +1,6 @@
 package me.statuxia.shulkerapi.service;
 
-import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.exception.FundsException;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.service.impl.BankCardServiceImpl;

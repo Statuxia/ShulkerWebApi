@@ -5,9 +5,10 @@ import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.annotations.RequiredAuthority;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.operation.OperationData;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
@@ -85,10 +86,14 @@ public class CardManagementController extends CardController {
         final BankCard bankCard = new BankCard();
         bankCard.setNumber(CardNumberGenerator.generate());
         bankCard.setType(request.getType());
+        bankCard.setCreateTime(DateTime.now());
         bankCard.setGameAccount(gameAccount);
         bankCard.setPin(request.getPin());
 
-        final Long totalCards = getBankCardDAO().countByGameAccountAndType(gameAccount, request.getType());
+        final BankCardSearchDTO dto = new BankCardSearchDTO()
+            .setGameAccount(gameAccount)
+            .setCardType(request.getType());
+        final Long totalCards = getBankCardDAO().count(dto);
         if (CardType.DIRECT.equals(request.getType()) && totalCards >= getCardProperties().getMaxDirectCards()) {
             throw CardException.TOO_MANY_DIRECT_CARDS;
         }
@@ -99,7 +104,9 @@ public class CardManagementController extends CardController {
                 throw CardException.UNKNOWN_PAYMENT_CARD;
             }
 
-            final Optional<BankCard> paymentCard = getBankCardDAO().findByNumberAndGameAccount(number, gameAccount);
+            dto.setNumber(number);
+
+            final Optional<BankCard> paymentCard = getBankCardDAO().find(dto);
             if (paymentCard.isEmpty()) {
                 throw CardException.UNKNOWN_PAYMENT_CARD;
             }

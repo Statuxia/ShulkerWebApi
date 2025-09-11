@@ -96,7 +96,7 @@ public class TokenController {
         );
     }
 
-    @GetMapping(value = GET_BY_CODE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = GET_BY_CODE + "/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @ApiResponse(
         responseCode = "1101", description = "Неизвестный токен",

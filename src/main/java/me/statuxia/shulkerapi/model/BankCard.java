@@ -37,6 +37,9 @@ public class BankCard implements Identifiable<Long> {
     @Enumerated(EnumType.STRING)
     private CardType type;
 
+    @Column(name = "create_time", nullable = false)
+    private DateTime createTime;
+
     private boolean disabled;
 
     @Column(name = "disabled_time")
@@ -108,6 +111,14 @@ public class BankCard implements Identifiable<Long> {
         this.disabledTime = disabledTime;
     }
 
+    public DateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(DateTime createTime) {
+        this.createTime = createTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -131,6 +142,7 @@ public class BankCard implements Identifiable<Long> {
         sb.append(", pin=").append(pin);
         sb.append(", currency=").append(currency);
         sb.append(", type=").append(type);
+        sb.append(", createTime=").append(createTime);
         sb.append(", disabled=").append(disabled);
         sb.append(", disabledTime=").append(disabledTime);
         sb.append('}');

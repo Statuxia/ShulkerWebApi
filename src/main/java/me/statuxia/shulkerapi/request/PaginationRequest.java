@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import me.statuxia.shulkerapi.utils.PaginationUtils;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -18,6 +20,7 @@ public class PaginationRequest {
     @Min(1)
     @Max(100)
     private int size = 20;
+    private String sortProperty = "id";
 
     public Sort.Direction getDirection() {
         return direction;
@@ -41,5 +44,17 @@ public class PaginationRequest {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public String getSortProperty() {
+        return sortProperty;
+    }
+
+    public void setSortProperty(String sortProperty) {
+        this.sortProperty = sortProperty;
+    }
+
+    public Pageable getPageable() {
+        return PaginationUtils.convert(this);
     }
 }

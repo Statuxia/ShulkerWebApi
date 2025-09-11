@@ -13,6 +13,7 @@ public class BankCardItem {
     protected String cardNumber;
     protected String gameAccount;
     protected Long currency;
+    protected String createTime;
     protected Boolean disabled;
 
     public Long getId() {
@@ -51,6 +52,15 @@ public class BankCardItem {
         return this;
     }
 
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public BankCardItem setCreateTime(String createTime) {
+        this.createTime = createTime;
+        return this;
+    }
+
     public Boolean getDisabled() {
         return disabled;
     }
@@ -85,6 +95,7 @@ public class BankCardItem {
         sb.append(", cardNumber='").append(cardNumber).append('\'');
         sb.append(", gameAccount='").append(gameAccount).append('\'');
         sb.append(", currency=").append(currency);
+        sb.append(", createTime=").append(createTime);
         sb.append(", disabled=").append(disabled);
         sb.append('}');
         return sb.toString();

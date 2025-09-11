@@ -1,6 +1,6 @@
 package me.statuxia.shulkerapi.service.impl;
 
-import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
 import me.statuxia.shulkerapi.model.*;

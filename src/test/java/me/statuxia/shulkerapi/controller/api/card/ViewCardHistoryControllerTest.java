@@ -2,7 +2,8 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
-import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardHistorySearchDTO;
 import me.statuxia.shulkerapi.model.BankCardHistory;
 import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.request.CardHistoryRequest;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -53,15 +55,17 @@ class ViewCardHistoryControllerTest extends BaseContainerTest {
     @Autowired
     protected MockMvc mockMvc;
 
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @Test
     void listTest() throws Exception {
         final CardHistoryRequest request = new CardHistoryRequest();
         request.setCardNumber("1234 5678");
         request.setGameAccount("test-name");
+        request.setDirection(Sort.Direction.ASC);
 
-        final List<BankCardHistory> list = bankCardHistoryDAO.findAllById(List.of(1L, 2L, 3L, 4L, 5L, 6L));
+        final List<BankCardHistory> list = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setIds(List.of(1L, 2L, 3L, 4L, 5L, 6L)));
         final BankCardHistoryPaginationResponse response = new BankCardHistoryPaginationResponse();
         response.setTotal(list.size());
         response.setItems(list.stream().map(controller::map).toList());
@@ -86,9 +90,10 @@ class ViewCardHistoryControllerTest extends BaseContainerTest {
         final CardHistoryRequest request = new CardHistoryRequest();
         request.setCardNumber("1234 5678");
         request.setGameAccount("test-name");
-        request.setTypes(List.of(BankCardHistoryType.DEPOSIT, BankCardHistoryType.WITHDRAW));
+        request.setDirection(Sort.Direction.ASC);
+        request.setHistoryTypes(List.of(BankCardHistoryType.DEPOSIT, BankCardHistoryType.WITHDRAW));
 
-        final List<BankCardHistory> list = bankCardHistoryDAO.findAllById(List.of(5L, 6L));
+        final List<BankCardHistory> list = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setIds(List.of(5L, 6L)));
         final BankCardHistoryPaginationResponse response = new BankCardHistoryPaginationResponse();
         response.setTotal(list.size());
         response.setItems(list.stream().map(controller::map).toList());

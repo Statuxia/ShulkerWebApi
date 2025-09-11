@@ -39,7 +39,7 @@ public class MessageService {
             }
             return getMessageSource().getMessage(messageKey, args.toArray(), locale);
         } catch (NoSuchMessageException ex) {
-            logger.warn("message error", ex);
+            logger.warn(ex.getMessage());
             return messageKey;
         }
     }

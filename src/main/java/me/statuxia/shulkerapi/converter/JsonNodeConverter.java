@@ -15,11 +15,12 @@ import java.util.Map;
 @Component
 public class JsonNodeConverter implements AttributeConverter<JsonNode, Map<String, String>> {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final MessageService messageService;
 
     @Autowired
-    public JsonNodeConverter(MessageService messageService) {
+    public JsonNodeConverter(ObjectMapper mapper, MessageService messageService) {
+        this.mapper = mapper;
         this.messageService = messageService;
     }
 

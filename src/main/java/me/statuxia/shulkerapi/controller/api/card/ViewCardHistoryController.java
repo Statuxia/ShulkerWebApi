@@ -5,11 +5,12 @@ import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.converter.JsonNodeConverter;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
-import me.statuxia.shulkerapi.dao.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardHistorySearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.request.CardHistoryRequest;
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,22 +94,17 @@ public class ViewCardHistoryController extends CardController {
             throw CardException.CARD_DISABLED;
         }
 
+        final BankCardHistorySearchDTO dto = new BankCardHistorySearchDTO()
+            .setCard(card)
+            .setStartCreateTime(request.getCreateFrom())
+            .setEndCreateTime(request.getCreateTo())
+            .setTypes(request.getHistoryTypes())
+            .setPageable(request.getPageable());
+
         final BankCardHistoryPaginationResponse response = new BankCardHistoryPaginationResponse();
-        if (CollectionUtils.isEmpty(request.getTypes())) {
-            response.setTotal(bankCardHistoryDAO.countByCard(card));
-            response.setItems(
-                bankCardHistoryDAO.findByCard(card).stream()
-                    .map(this::map).toList()
-            );
-            return ResponseEntity.ok(response);
-        } else {
-            response.setTotal(bankCardHistoryDAO.countByCardAndTypeIn(card, request.getTypes()));
-            response.setItems(
-                bankCardHistoryDAO.findByCardAndTypeIn(card, request.getTypes()).stream()
-                    .map(this::map).toList()
-            );
-            return ResponseEntity.ok(response);
-        }
+        response.setTotal(bankCardHistoryDAO.count(dto));
+        response.setItems(bankCardHistoryDAO.findList(dto).stream().map(this::map).toList());
+        return ResponseEntity.ok(response);
     }
 
     protected BankCardHistoryItem map(BankCardHistory history) {

@@ -8,13 +8,13 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CardHistoryRequest extends CardRequest {
 
-    protected List<BankCardHistoryType> types;
+    protected List<BankCardHistoryType> historyTypes;
 
-    public List<BankCardHistoryType> getTypes() {
-        return types;
+    public List<BankCardHistoryType> getHistoryTypes() {
+        return historyTypes;
     }
 
-    public void setTypes(List<BankCardHistoryType> types) {
-        this.types = types;
+    public void setHistoryTypes(List<BankCardHistoryType> historyTypes) {
+        this.historyTypes = historyTypes;
     }
 }

@@ -4,8 +4,9 @@ import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.GameAccount;
@@ -20,7 +21,7 @@ import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
-import me.statuxia.shulkerapi.utils.PaginationUtils;
+import me.statuxia.shulkerapi.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -90,6 +91,7 @@ public class ViewCardController extends CardController {
         ) {
             item.setCurrency(null);
             item.setDisabled(null);
+            item.setCreateTime(null);
         }
         return ResponseEntity.ok(item);
     }
@@ -102,11 +104,15 @@ public class ViewCardController extends CardController {
         );
 
         final BankCardPaginationResponse response = new BankCardPaginationResponse();
-        response.setTotal(getBankCardDAO().countByGameAccount(gameAccount));
-        response.setItems(
-            getBankCardDAO().findByGameAccount(gameAccount, PaginationUtils.convert(request))
-                .stream().map(this::buildItem).toList()
-        );
+        final BankCardSearchDTO dto = new BankCardSearchDTO()
+            .setPageable(request.getPageable())
+            .setGameAccount(gameAccount)
+            .setCardType(request.getCardType())
+            .setStartCreateTime(request.getCreateFrom())
+            .setEndCreateTime(request.getCreateTo());
+        response.setTotal(getBankCardDAO().count(dto));
+        response.setItems(getBankCardDAO().find(dto).stream().map(this::buildItem).toList());
+
         return response;
     }
 
@@ -116,6 +122,7 @@ public class ViewCardController extends CardController {
             .setCardNumber(card.getNumber())
             .setGameAccount(card.getGameAccount() == null ? null : card.getGameAccount().getName())
             .setCurrency(card.getCurrency())
+            .setCreateTime(card.getCreateTime().toString(DateUtils.DATETIME))
             .setDisabled(card.isDisabled());
     }
 }

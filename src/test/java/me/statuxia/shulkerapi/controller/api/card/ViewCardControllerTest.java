@@ -2,10 +2,12 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
+import me.statuxia.shulkerapi.utils.DateUtils;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,7 +53,8 @@ class ViewCardControllerTest extends BaseContainerTest {
     @Autowired
     protected MockMvc mockMvc;
 
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @Test
     void getTest() throws Exception {
@@ -59,10 +62,13 @@ class ViewCardControllerTest extends BaseContainerTest {
         request.setCardNumber("1234 5678");
         request.setGameAccount("test-name");
 
+        final DateTime createTime = bankCardDAO.findById(1L).get().getCreateTime();
+
         final BankCardItem response = new BankCardItem()
             .setId(1L)
             .setCardNumber("1234 5678")
             .setCurrency(0L)
+            .setCreateTime(createTime.toString(DateUtils.DATETIME))
             .setDisabled(false)
             .setGameAccount("test-name");
 
@@ -123,6 +129,8 @@ class ViewCardControllerTest extends BaseContainerTest {
         final CardRequest request = new CardRequest();
         request.setGameAccount("test-name");
 
+        final DateTime createTime = bankCardDAO.findById(1L).get().getCreateTime();
+
         final BankCardPaginationResponse response = new BankCardPaginationResponse();
         response.setTotal(1);
         response.setItems(List.of(
@@ -130,6 +138,7 @@ class ViewCardControllerTest extends BaseContainerTest {
                 .setId(1L)
                 .setCardNumber("1234 5678")
                 .setCurrency(0L)
+                .setCreateTime(createTime.toString(DateUtils.DATETIME))
                 .setDisabled(false)
                 .setGameAccount("test-name")
         ));
