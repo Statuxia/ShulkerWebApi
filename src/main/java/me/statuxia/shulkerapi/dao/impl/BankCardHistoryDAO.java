@@ -22,6 +22,14 @@ public class BankCardHistoryDAO extends BaseDAO<BankCardHistory, Long, BankCardH
     ) {
         final List<Predicate> predicates = new ArrayList<>();
 
+        if (CollectionUtils.isEmpty(searchDTO.getIds())
+            && searchDTO.getUuid() == null
+            && searchDTO.getCard() == null
+            && CollectionUtils.isEmpty(searchDTO.getCards())
+        ) {
+            return cb.disjunction();
+        }
+
         if (!CollectionUtils.isEmpty(searchDTO.getIds())) {
             predicates.add(root.get("id").in(searchDTO.getIds()));
         }
@@ -32,6 +40,10 @@ public class BankCardHistoryDAO extends BaseDAO<BankCardHistory, Long, BankCardH
 
         if (searchDTO.getCard() != null) {
             predicates.add(cb.equal(root.get("card"), searchDTO.getCard()));
+        }
+
+        if (!CollectionUtils.isEmpty(searchDTO.getCards())) {
+            predicates.add(root.get("card").in(searchDTO.getCards()));
         }
 
         if (!CollectionUtils.isEmpty(searchDTO.getTypes())) {

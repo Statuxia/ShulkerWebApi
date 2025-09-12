@@ -24,6 +24,10 @@ public class BankCardDAO extends BaseDAO<BankCard, Long, BankCardSearchDTO> {
     }
 
     public Optional<BankCard> findByNumber(String number) {
+        if (!StringUtils.hasText(number)) {
+            return Optional.empty();
+        }
+
         final BankCardSearchDTO dto = new BankCardSearchDTO();
         dto.setNumber(number);
         return bankCardDAO.findList(dto).stream().findFirst();
@@ -32,6 +36,10 @@ public class BankCardDAO extends BaseDAO<BankCard, Long, BankCardSearchDTO> {
     @Override
     public Predicate buildPredicate(CriteriaBuilder cb, Root<BankCard> root, BankCardSearchDTO searchDTO) {
         final List<Predicate> predicates = new ArrayList<>();
+
+        if (!StringUtils.hasText(searchDTO.getNumber()) && searchDTO.getGameAccount() == null) {
+            return cb.disjunction();
+        }
 
         if (StringUtils.hasText(searchDTO.getNumber())) {
             predicates.add(cb.equal(root.get("number"), searchDTO.getNumber()));

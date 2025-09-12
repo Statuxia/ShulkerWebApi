@@ -14,6 +14,7 @@ public class BankCardHistorySearchDTO implements ISearchDTO {
     protected List<Long> ids;
     protected UUID uuid;
     protected BankCard card;
+    protected List<BankCard> cards;
     protected List<BankCardHistoryType> types;
 
     protected DateTime startCreateTime;
@@ -45,6 +46,15 @@ public class BankCardHistorySearchDTO implements ISearchDTO {
 
     public BankCardHistorySearchDTO setCard(BankCard card) {
         this.card = card;
+        return this;
+    }
+
+    public List<BankCard> getCards() {
+        return cards;
+    }
+
+    public BankCardHistorySearchDTO setCards(List<BankCard> cards) {
+        this.cards = cards;
         return this;
     }
 

@@ -11,6 +11,7 @@ import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.search.impl.BankCardHistorySearchDTO;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.request.CardHistoryRequest;
@@ -31,11 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -89,13 +92,25 @@ public class ViewCardHistoryController extends CardController {
         @AuthData TokenData token,
         @RequestBody @Valid CardHistoryRequest request
     ) {
-        final BankCard card = getController().getBankCard(request, token, TokenAuthorityEnum.LIST_BANK_CARD_HISTORY);
-        if (card.isDisabled()) {
-            throw CardException.CARD_DISABLED;
+        final List<BankCard> cards = new ArrayList<>();
+        if (StringUtils.hasText(request.getCardNumber())) {
+            final BankCard card = getController().getBankCard(
+                request, token,
+                TokenAuthorityEnum.LIST_BANK_CARD_HISTORY
+            );
+            if (card.isDisabled()) {
+                throw CardException.CARD_DISABLED;
+            }
+            cards.add(card);
+        } else {
+            final BankCardSearchDTO bankCardSearchDTO = new BankCardSearchDTO();
+            final GameAccount gameAccount = getGameAccountService().getGameAccount(request.getGameAccount());
+            bankCardSearchDTO.setGameAccount(gameAccount);
+            cards.addAll(getController().getBankCardDAO().findList(bankCardSearchDTO));
         }
 
         final BankCardHistorySearchDTO dto = new BankCardHistorySearchDTO()
-            .setCard(card)
+            .setCards(cards)
             .setStartCreateTime(request.getCreateFrom())
             .setEndCreateTime(request.getCreateTo())
             .setTypes(request.getHistoryTypes())

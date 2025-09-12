@@ -61,7 +61,8 @@ class CardActionControllerTest extends BaseContainerTest {
         request.setFunds(100L);
         request.setGameAccount("test-name");
 
-        assertEquals(0, (long) bankCardDAO.findByNumber("1234 5678").get().getCurrency());
+        final BankCard card = bankCardDAO.findByNumber("1234 5678").get();
+        assertEquals(0, (long) card.getCurrency());
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardActionController.DEPOSIT)
@@ -72,8 +73,8 @@ class CardActionControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals("", result.getResponse().getContentAsString());
-        assertEquals(100, (long) bankCardDAO.findByNumber("1234 5678").get().getCurrency());
-        final BankCardHistory history = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO()).getLast();
+        assertEquals(100, (long) card.getCurrency());
+        final BankCardHistory history = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast();
         assertEquals(BankCardHistoryType.DEPOSIT, history.getType());
         assertNotNull(history.getHistoryData());
         assertEquals("0 -> 100 (+100)", history.getHistoryData().get("valueChange").asText());
@@ -155,8 +156,8 @@ class CardActionControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals("", result.getResponse().getContentAsString());
-        assertEquals(0, (long) bankCardDAO.findByNumber("1234 5678").get().getCurrency());
-        final BankCardHistory history = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO()).getLast();
+        assertEquals(0, (long) card.getCurrency());
+        final BankCardHistory history = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast();
         assertEquals(BankCardHistoryType.WITHDRAW, history.getType());
         assertNotNull(history.getHistoryData());
         assertEquals("100 -> 0 (-100)", history.getHistoryData().get("valueChange").asText());

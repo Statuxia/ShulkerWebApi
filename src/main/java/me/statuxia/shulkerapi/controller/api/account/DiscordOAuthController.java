@@ -14,6 +14,7 @@ import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import me.statuxia.shulkerapi.service.TokenService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,8 +61,14 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         Эндпоинт для авторизации полученного от Discord OAuth кода с последующим редиректом в лк
         """)
     public void auth(
-        HttpServletRequest request, HttpServletResponse response, @RequestParam("code") String code
+        HttpServletRequest request, HttpServletResponse response,
+        @RequestParam(value = "code", required = false) String code
     ) throws IOException {
+        if (!StringUtils.hasText(code)) {
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            return;
+        }
+
         final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
             = getDiscordIntegrationService().getAccessToken(code);
         if (accessToken.getException() != null) {
