@@ -111,7 +111,7 @@ public class ViewCardController extends CardController {
             .setStartCreateTime(request.getCreateFrom())
             .setEndCreateTime(request.getCreateTo());
         response.setTotal(getBankCardDAO().count(dto));
-        response.setItems(getBankCardDAO().find(dto).stream().map(this::buildItem).toList());
+        response.setItems(getBankCardDAO().findList(dto).stream().map(this::buildItem).toList());
 
         return response;
     }
