@@ -11,7 +11,7 @@ import java.util.Map;
 public class BankCardHistoryLogItem {
 
     protected String username;
-    protected String dateTime;
+    protected Long dateTime;
     @Schema(description = "i18n данные, можно возвращать как есть")
     protected Map<String, String> data;
 
@@ -23,11 +23,11 @@ public class BankCardHistoryLogItem {
         this.username = username;
     }
 
-    public String getDateTime() {
+    public Long getDateTime() {
         return dateTime;
     }
 
-    public void setDateTime(String dateTime) {
+    public void setDateTime(Long dateTime) {
         this.dateTime = dateTime;
     }
 

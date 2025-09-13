@@ -6,7 +6,6 @@ import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
-import me.statuxia.shulkerapi.utils.DateUtils;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,7 +67,7 @@ class ViewCardControllerTest extends BaseContainerTest {
             .setId(1L)
             .setCardNumber("1234 5678")
             .setCurrency(0L)
-            .setCreateTime(createTime.toString(DateUtils.DATETIME))
+            .setCreateTime(createTime.getMillis())
             .setDisabled(false)
             .setGameAccount("test-name");
 
@@ -138,7 +137,7 @@ class ViewCardControllerTest extends BaseContainerTest {
                 .setId(1L)
                 .setCardNumber("1234 5678")
                 .setCurrency(0L)
-                .setCreateTime(createTime.toString(DateUtils.DATETIME))
+                .setCreateTime(createTime.getMillis())
                 .setDisabled(false)
                 .setGameAccount("test-name")
         ));

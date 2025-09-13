@@ -13,7 +13,7 @@ public class BankCardItem {
     protected String cardNumber;
     protected String gameAccount;
     protected Long currency;
-    protected String createTime;
+    protected Long createTime;
     protected Boolean disabled;
 
     public Long getId() {
@@ -52,11 +52,11 @@ public class BankCardItem {
         return this;
     }
 
-    public String getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public BankCardItem setCreateTime(String createTime) {
+    public BankCardItem setCreateTime(Long createTime) {
         this.createTime = createTime;
         return this;
     }

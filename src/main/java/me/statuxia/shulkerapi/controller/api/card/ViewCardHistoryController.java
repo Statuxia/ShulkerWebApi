@@ -29,7 +29,6 @@ import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardHistoryControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
-import me.statuxia.shulkerapi.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -139,7 +138,7 @@ public class ViewCardHistoryController extends CardController {
         final BankCardHistoryItem item = new BankCardHistoryItem();
         item.setId(history.getId());
         item.setType(getMessageService().message(history.getType()));
-        item.setDateTime(history.getCreateTime().toString(DateUtils.DATETIME));
+        item.setDateTime(history.getCreateTime().getMillis());
         item.setData(jsonNodeConverter.convertToI18nMap(history.getHistoryData()));
         item.setLogs(logs.stream().map(this::map).toList());
 
@@ -153,7 +152,7 @@ public class ViewCardHistoryController extends CardController {
     protected BankCardHistoryLogItem map(BankCardLog log) {
         final BankCardHistoryLogItem logItem = new BankCardHistoryLogItem();
         logItem.setUsername(log.getActionBy());
-        logItem.setDateTime(log.getActionTime().toString(DateUtils.DATETIME));
+        logItem.setDateTime(log.getActionTime().getMillis());
         logItem.setData(jsonNodeConverter.convertToI18nMap(log.getData()));
         return logItem;
     }

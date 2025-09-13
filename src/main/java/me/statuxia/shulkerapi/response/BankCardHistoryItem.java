@@ -15,7 +15,7 @@ public class BankCardHistoryItem {
 
     protected Long id;
     protected String type;
-    protected String dateTime;
+    protected Long dateTime;
     @Schema(description = "i18n данные, можно возвращать как есть")
     protected Map<String, String> data;
     protected List<BankCardHistoryLogItem> logs;
@@ -39,11 +39,11 @@ public class BankCardHistoryItem {
         return this;
     }
 
-    public String getDateTime() {
+    public Long getDateTime() {
         return dateTime;
     }
 
-    public BankCardHistoryItem setDateTime(String dateTime) {
+    public BankCardHistoryItem setDateTime(Long dateTime) {
         this.dateTime = dateTime;
         return this;
     }

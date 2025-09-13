@@ -24,7 +24,6 @@ import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
-import me.statuxia.shulkerapi.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -136,7 +135,7 @@ public class ViewCardController extends CardController {
             .setCardNumber(card.getNumber())
             .setGameAccount(card.getGameAccount() == null ? null : card.getGameAccount().getName())
             .setCurrency(card.getCurrency())
-            .setCreateTime(card.getCreateTime().toString(DateUtils.DATETIME))
+            .setCreateTime(card.getCreateTime().getMillis())
             .setDisabled(card.isDisabled());
     }
 }
