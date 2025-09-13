@@ -14,6 +14,7 @@ import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.request.CardOperationRequest;
 import me.statuxia.shulkerapi.service.*;
+import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownActionByAccountOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -52,7 +53,7 @@ public class CardOperationController extends CardController {
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService, BankCardService bankCardService,
-        BankCardHistoryDAO bankCardHistoryDAO
+        BankCardHistoryDAO bankCardHistoryDAO, MessageService messageService
     ) {
         super(
             tokenService,
@@ -60,7 +61,8 @@ public class CardOperationController extends CardController {
             bankCardDAO,
             cardProperties,
             operationProcessorService,
-            cardHistoryService
+            cardHistoryService,
+            messageService
         );
         this.bankCardService = bankCardService;
         this.bankCardHistoryDAO = bankCardHistoryDAO;

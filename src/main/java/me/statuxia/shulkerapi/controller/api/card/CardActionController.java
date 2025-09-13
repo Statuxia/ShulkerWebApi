@@ -17,6 +17,7 @@ import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.CardActionControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
@@ -51,11 +52,11 @@ public class CardActionController extends CardController {
         GameAccountService gameAccountService, BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
-        CardHistoryService cardHistoryService
+        CardHistoryService cardHistoryService, MessageService messageService
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService
+            operationProcessorService, cardHistoryService, messageService
         );
         this.controller = this;
     }

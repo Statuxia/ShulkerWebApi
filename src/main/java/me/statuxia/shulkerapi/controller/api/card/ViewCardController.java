@@ -9,15 +9,18 @@ import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.CardType;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
+import me.statuxia.shulkerapi.response.NamedItem;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
@@ -26,11 +29,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -39,6 +41,7 @@ public class ViewCardController extends CardController {
 
     public static final String GET = "/get";
     public static final String LIST = "/list";
+    public static final String TYPES = "/types";
 
     @Autowired
     public ViewCardController(
@@ -47,11 +50,11 @@ public class ViewCardController extends CardController {
         BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
-        CardHistoryService cardHistoryService
+        CardHistoryService cardHistoryService, MessageService messageService
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService
+            operationProcessorService, cardHistoryService, messageService
         );
     }
 
@@ -94,6 +97,17 @@ public class ViewCardController extends CardController {
             item.setCreateTime(null);
         }
         return ResponseEntity.ok(item);
+    }
+
+    @GetMapping(value = TYPES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @UnknownAccountOperation
+    @UnknownCardOperation
+    @ViewCardControllerOperation.Types
+    public ResponseEntity<List<NamedItem>> types() {
+        return ResponseEntity.ok(Arrays.stream(CardType.values()).map(type -> new NamedItem(
+            getMessageService().message(type), type.name()
+        )).toList());
     }
 
     private BankCardPaginationResponse getBankCards(CardRequest request, TokenData token) {

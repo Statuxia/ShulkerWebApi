@@ -18,12 +18,14 @@ import me.statuxia.shulkerapi.request.CardHistoryRequest;
 import me.statuxia.shulkerapi.response.BankCardHistoryItem;
 import me.statuxia.shulkerapi.response.BankCardHistoryLogItem;
 import me.statuxia.shulkerapi.response.BankCardHistoryPaginationResponse;
+import me.statuxia.shulkerapi.response.NamedItem;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
+import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardHistoryControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
@@ -33,12 +35,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -46,11 +46,11 @@ import java.util.List;
 public class ViewCardHistoryController extends CardController {
 
     public static final String LIST = "/history/list";
+    public static final String TYPES = "/history/types";
 
     private final BankCardHistoryDAO bankCardHistoryDAO;
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
     private final BankCardLogDAO bankCardLogDAO;
-    private final MessageService messageService;
     private final JsonNodeConverter jsonNodeConverter;
     private final ViewCardHistoryController controller;
 
@@ -72,12 +72,12 @@ public class ViewCardHistoryController extends CardController {
             bankCardDAO,
             cardProperties,
             operationProcessorService,
-            cardHistoryService
+            cardHistoryService,
+            messageService
         );
         this.bankCardHistoryDAO = bankCardHistoryDAO;
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
         this.bankCardLogDAO = bankCardLogDAO;
-        this.messageService = messageService;
         this.jsonNodeConverter = jsonNodeConverter;
         this.controller = this;
     }
@@ -122,6 +122,15 @@ public class ViewCardHistoryController extends CardController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping(value = TYPES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @ViewCardControllerOperation.Types
+    public ResponseEntity<List<NamedItem>> types() {
+        return ResponseEntity.ok(Arrays.stream(BankCardHistoryType.values()).map(type -> new NamedItem(
+            getMessageService().message(type), type.name()
+        )).toList());
+    }
+
     protected BankCardHistoryItem map(BankCardHistory history) {
         final List<BankCardOperationHistory> list = bankCardOperationHistoryDAO.findByUuidAndCard(
             history.getUuid(), history.getCard()
@@ -129,7 +138,7 @@ public class ViewCardHistoryController extends CardController {
         final List<BankCardLog> logs = bankCardLogDAO.findByUuidAndCard(history.getUuid(), history.getCard());
         final BankCardHistoryItem item = new BankCardHistoryItem();
         item.setId(history.getId());
-        item.setType(messageService.message(history.getType()));
+        item.setType(getMessageService().message(history.getType()));
         item.setDateTime(history.getCreateTime().toString(DateUtils.DATETIME));
         item.setData(jsonNodeConverter.convertToI18nMap(history.getHistoryData()));
         item.setLogs(logs.stream().map(this::map).toList());

@@ -14,6 +14,7 @@ import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
+import me.statuxia.shulkerapi.service.impl.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,7 @@ public abstract class CardController implements AuthController {
     private final CardProperties cardProperties;
     private final OperationProcessorService operationProcessorService;
     private final CardHistoryService cardHistoryService;
+    private final MessageService messageService;
 
     @Autowired
     protected CardController(
@@ -42,7 +44,7 @@ public abstract class CardController implements AuthController {
         BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
-        CardHistoryService cardHistoryService
+        CardHistoryService cardHistoryService, MessageService messageService
     ) {
         this.tokenService = tokenService;
         this.gameAccountService = gameAccountService;
@@ -50,6 +52,7 @@ public abstract class CardController implements AuthController {
         this.cardProperties = cardProperties;
         this.operationProcessorService = operationProcessorService;
         this.cardHistoryService = cardHistoryService;
+        this.messageService = messageService;
     }
 
     @Transactional
@@ -95,5 +98,9 @@ public abstract class CardController implements AuthController {
 
     public CardHistoryService getCardHistoryService() {
         return cardHistoryService;
+    }
+
+    public MessageService getMessageService() {
+        return messageService;
     }
 }
