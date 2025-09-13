@@ -24,6 +24,11 @@ public class CardHistoryDataBuilder {
         return add("valueChange", message);
     }
 
+    public CardHistoryDataBuilder fromTo(Long from, Long to) {
+        return add("oldBalance", String.valueOf(from == null ? 0 : from))
+            .add("newBalance", String.valueOf(to == null ? 0 : to));
+    }
+
     public CardHistoryDataBuilder dataChange(String message) {
         return add("dataChange", message);
     }

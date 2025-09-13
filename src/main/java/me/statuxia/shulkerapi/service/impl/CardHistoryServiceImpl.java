@@ -87,6 +87,7 @@ public class CardHistoryServiceImpl implements CardHistoryService {
                         diff > 0 ? "+" + diff : String.valueOf(diff)
                     )
                 ))
+                .fromTo(from, to)
                 .getData()
         );
         history.setUuid(UUID.randomUUID());
