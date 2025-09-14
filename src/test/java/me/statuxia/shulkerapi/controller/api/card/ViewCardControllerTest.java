@@ -72,7 +72,7 @@ class ViewCardControllerTest extends BaseContainerTest {
             .setCurrency(0L)
             .setCreateTime(createTime.getMillis())
             .setDisabled(false)
-            .setDisabledTime(disabledTime.getMillis())
+            .setDisabledTime(disabledTime == null ? null : disabledTime.getMillis())
             .setGameAccount("test-name");
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
@@ -145,7 +145,7 @@ class ViewCardControllerTest extends BaseContainerTest {
                 .setCurrency(0L)
                 .setCreateTime(createTime.getMillis())
                 .setDisabled(false)
-                .setDisabledTime(disabledTime.getMillis())
+                .setDisabledTime(disabledTime == null ? null : disabledTime.getMillis())
                 .setGameAccount("test-name")
         ));
 
