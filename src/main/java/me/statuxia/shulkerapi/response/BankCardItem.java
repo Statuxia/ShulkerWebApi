@@ -15,6 +15,7 @@ public class BankCardItem {
     protected Long currency;
     protected Long createTime;
     protected Boolean disabled;
+    protected Long disabledTime;
 
     public Long getId() {
         return id;
@@ -70,6 +71,15 @@ public class BankCardItem {
         return this;
     }
 
+    public Long getDisabledTime() {
+        return disabledTime;
+    }
+
+    public BankCardItem setDisabledTime(Long disabledTime) {
+        this.disabledTime = disabledTime;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -80,12 +90,13 @@ public class BankCardItem {
             && Objects.equals(cardNumber, that.cardNumber)
             && Objects.equals(gameAccount, that.gameAccount)
             && Objects.equals(currency, that.currency)
-            && Objects.equals(disabled, that.disabled);
+            && Objects.equals(disabled, that.disabled)
+            && Objects.equals(disabledTime, that.disabledTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, cardNumber, gameAccount, currency, disabled);
+        return Objects.hash(id, cardNumber, gameAccount, currency, disabled, disabledTime);
     }
 
     @Override
@@ -97,6 +108,7 @@ public class BankCardItem {
         sb.append(", currency=").append(currency);
         sb.append(", createTime=").append(createTime);
         sb.append(", disabled=").append(disabled);
+        sb.append(", disabledTime=").append(disabledTime);
         sb.append('}');
         return sb.toString();
     }

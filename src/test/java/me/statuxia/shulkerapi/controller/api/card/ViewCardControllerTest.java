@@ -3,6 +3,7 @@ package me.statuxia.shulkerapi.controller.api.card;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
@@ -61,7 +62,9 @@ class ViewCardControllerTest extends BaseContainerTest {
         request.setCardNumber("1234 5678");
         request.setGameAccount("test-name");
 
-        final DateTime createTime = bankCardDAO.findById(1L).get().getCreateTime();
+        final BankCard card = bankCardDAO.findById(1L).get();
+        final DateTime createTime = card.getCreateTime();
+        final DateTime disabledTime = card.getDisabledTime();
 
         final BankCardItem response = new BankCardItem()
             .setId(1L)
@@ -69,6 +72,7 @@ class ViewCardControllerTest extends BaseContainerTest {
             .setCurrency(0L)
             .setCreateTime(createTime.getMillis())
             .setDisabled(false)
+            .setDisabledTime(disabledTime.getMillis())
             .setGameAccount("test-name");
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
@@ -128,7 +132,9 @@ class ViewCardControllerTest extends BaseContainerTest {
         final CardRequest request = new CardRequest();
         request.setGameAccount("test-name");
 
-        final DateTime createTime = bankCardDAO.findById(1L).get().getCreateTime();
+        final BankCard card = bankCardDAO.findById(1L).get();
+        final DateTime createTime = card.getCreateTime();
+        final DateTime disabledTime = card.getDisabledTime();
 
         final BankCardPaginationResponse response = new BankCardPaginationResponse();
         response.setTotal(1);
@@ -139,6 +145,7 @@ class ViewCardControllerTest extends BaseContainerTest {
                 .setCurrency(0L)
                 .setCreateTime(createTime.getMillis())
                 .setDisabled(false)
+                .setDisabledTime(disabledTime.getMillis())
                 .setGameAccount("test-name")
         ));
 

@@ -93,6 +93,7 @@ public class ViewCardController extends CardController {
         ) {
             item.setCurrency(null);
             item.setDisabled(null);
+            item.setDisabledTime(null);
             item.setCreateTime(null);
         }
         return ResponseEntity.ok(item);
@@ -136,6 +137,7 @@ public class ViewCardController extends CardController {
             .setGameAccount(card.getGameAccount() == null ? null : card.getGameAccount().getName())
             .setCurrency(card.getCurrency())
             .setCreateTime(card.getCreateTime().getMillis())
-            .setDisabled(card.isDisabled());
+            .setDisabled(card.isDisabled())
+            .setDisabledTime(card.getDisabledTime().getMillis());
     }
 }

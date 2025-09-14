@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -54,6 +55,7 @@ public class PaginationRequest {
         this.sortProperty = sortProperty;
     }
 
+    @JsonIgnore
     public Pageable getPageable() {
         return PaginationUtils.convert(this);
     }

@@ -65,7 +65,7 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         @RequestParam(value = "code", required = false) String code
     ) throws IOException {
         if (!StringUtils.hasText(code)) {
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
@@ -73,13 +73,13 @@ public class DiscordOAuthController extends BaseDiscordApiController {
             = getDiscordIntegrationService().getAccessToken(code);
         if (accessToken.getException() != null) {
             logger.error("error occured", accessToken.getException());
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
         final DiscordAccessTokenResponse tokenResponse = accessToken.getBody();
         if (tokenResponse == null) {
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
@@ -87,13 +87,13 @@ public class DiscordOAuthController extends BaseDiscordApiController {
             = getDiscordIntegrationService().getUserInfo(tokenResponse.getAccessToken());
         if (userInfo.getException() != null) {
             logger.error("error occured", userInfo.getException());
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
         final DiscordIdentityResponse userIdentify = userInfo.getBody();
         if (userIdentify == null) {
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
@@ -106,7 +106,7 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         final String tokenCode = UUID.randomUUID().toString().toLowerCase();
         codeTokenService.addCodeToken(sessionToken, tokenCode);
 
-        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl() + "?code=" + tokenCode);
+        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl(request) + "?code=" + tokenCode);
     }
 
     public DiscordOAuthRedirectProvider getProvider() {

@@ -12,7 +12,6 @@ import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.search.impl.BankCardHistorySearchDTO;
 import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
-import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.request.CardHistoryRequest;
 import me.statuxia.shulkerapi.response.BankCardHistoryItem;
@@ -97,9 +96,6 @@ public class ViewCardHistoryController extends CardController {
                 request, token,
                 TokenAuthorityEnum.LIST_BANK_CARD_HISTORY
             );
-            if (card.isDisabled()) {
-                throw CardException.CARD_DISABLED;
-            }
             cards.add(card);
         } else {
             final BankCardSearchDTO bankCardSearchDTO = new BankCardSearchDTO();
