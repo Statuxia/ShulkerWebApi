@@ -12,7 +12,9 @@ import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardOperationType;
 import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
+import me.statuxia.shulkerapi.processor.impl.card.TransferFundsProcessor;
 import me.statuxia.shulkerapi.request.ChangeCardBalanceRequest;
+import me.statuxia.shulkerapi.request.TransferFundsRequest;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
@@ -20,9 +22,8 @@ import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.CardActionControllerOperation;
-import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
-import me.statuxia.shulkerapi.swagger.controller.card.InvalidPinOperation;
-import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.*;
+import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
-import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.DEPOSIT_FUNDS_TO_CARD;
-import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.WITHDRAW_FUNDS_FROM_CARD;
+import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.*;
 
 @RestController
 @RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
@@ -43,6 +43,7 @@ public class CardActionController extends CardController {
 
     public static final String DEPOSIT = "/deposit";
     public static final String WITHDRAW = "/withdraw";
+    public static final String TRANSFER = "/transfer";
 
     private final CardActionController controller;
 
@@ -68,6 +69,7 @@ public class CardActionController extends CardController {
     @CardDisabledOperation
     @UnknownCardOperation
     @UnknownAccountOperation
+    @AmountGreaterZeroOperation
     public ResponseEntity<Void> deposit(
         @RequestBody @Valid ChangeCardBalanceRequest request,
         @AuthData TokenData token
@@ -96,6 +98,7 @@ public class CardActionController extends CardController {
     @InvalidPinOperation
     @CardActionControllerOperation.Withdraw
     @UnknownAccountOperation
+    @AmountGreaterZeroOperation
     public ResponseEntity<Void> withdraw(
         @RequestBody @Valid ChangeCardBalanceRequest request,
         @AuthData TokenData token
@@ -115,6 +118,47 @@ public class CardActionController extends CardController {
             .addData(BalanceProcessor.CARD, card)
             .addData(BalanceProcessor.OPERATION, CardOperationType.WITHDRAW)
             .addData(BalanceProcessor.VALUE, request.getFunds());
+        getOperationProcessorService().process(data);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = TRANSFER, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @CardDisabledOperation
+    @ReceiverCardDisabledOperation
+    @UnknownCardOperation
+    @InvalidPinOperation
+    @CardActionControllerOperation.Transfer
+    @UnknownAccountOperation
+    @AmountGreaterZeroOperation
+    @SameCardReceiverOperation
+    public ResponseEntity<Void> transfer(
+        @RequestBody @Valid TransferFundsRequest request,
+        @AuthData TokenData token
+    ) {
+        final BankCard card = getController().getBankCard(request, token, TRANSFER_FUNDS_FROM_CARD);
+        final BankCard receiverCard = getBankCardDAO().findByNumber(request.getReceiverCard())
+            .orElseThrow(() -> CardException.UNKNOWN_RECEIVER_CARD);
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        if (receiverCard.isDisabled()) {
+            throw CardException.RECEIVER_CARD_DISABLED;
+        }
+
+        if (card.getPin() == null || !Objects.equals(card.getPin(), request.getPin())) {
+            throw CardException.INVALID_PIN;
+        }
+
+        final OperationData data = new OperationData()
+            .addProcessor(TransferFundsProcessor.class)
+            .addData(TransferFundsProcessor.MESSAGE, request.getMessage() == null ? "" : request.getMessage())
+            .addData(TransferFundsProcessor.CARD, card)
+            .addData(TransferFundsProcessor.RECEIVER, receiverCard)
+            .addData(TransferFundsProcessor.VALUE, request.getFunds());
         getOperationProcessorService().process(data);
 
         return ResponseEntity.ok().build();

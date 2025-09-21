@@ -1,7 +1,7 @@
 package me.statuxia.shulkerapi.service;
 
+import me.statuxia.shulkerapi.dto.ChangeCurrencyDTO;
 import me.statuxia.shulkerapi.model.BankCard;
-import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.model.GameAccount;
 
 public interface CardHistoryService {
@@ -12,9 +12,5 @@ public interface CardHistoryService {
 
     void writeDisable(BankCard card, GameAccount actionBy, boolean disable);
 
-    void writeChangeCurrency(
-        BankCard card, BankCardHistoryType type,
-        Long from, Long to, Long diff,
-        String message
-    );
+    void writeChangeCurrency(ChangeCurrencyDTO dto);
 }

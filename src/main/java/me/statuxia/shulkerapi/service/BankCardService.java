@@ -18,6 +18,11 @@ public interface BankCardService {
     void depositFunds(BankCard card, Long amount);
 
     /**
+     * Перевод средств
+     */
+    void transferFunds(BankCard card, BankCard receiverCard, Long amount, String message);
+
+    /**
      * Откат средств
      */
     void rollbackFunds(UUID historyUuid, GameAccount actionBy);

@@ -35,4 +35,16 @@ public class CardActionControllerOperation {
     )
     public @interface Withdraw {
     }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Перевод средств<br>Авторити: TRANSFER_FUNDS_FROM_CARD",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema())
+        )
+    )
+    public @interface Transfer {
+    }
 }

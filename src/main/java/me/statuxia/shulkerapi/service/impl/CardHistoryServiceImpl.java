@@ -1,8 +1,11 @@
 package me.statuxia.shulkerapi.service.impl;
 
-import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
+import me.statuxia.shulkerapi.dto.ChangeCurrencyDTO;
+import me.statuxia.shulkerapi.dto.FromToDiff;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.utils.CardHistoryDataBuilder;
@@ -56,7 +59,7 @@ public class CardHistoryServiceImpl implements CardHistoryService {
     public void writeDisable(BankCard card, GameAccount actionBy, boolean disable) {
         final BankCardHistory history = write(
             card,
-            disable ? BankCardHistoryType.DISABLE_CARD : BankCardHistoryType.ENABLE_CARD
+            disable ? BankCardHistoryType.DISABLE_CARD : me.statuxia.shulkerapi.model.BankCardHistoryType.ENABLE_CARD
         );
         history.setHistoryData(new CardHistoryDataBuilder().markAsAdmin().getData());
 
@@ -72,28 +75,31 @@ public class CardHistoryServiceImpl implements CardHistoryService {
     }
 
     @Override
-    public void writeChangeCurrency(
-        BankCard card, BankCardHistoryType type,
-        Long from, Long to, Long diff,
-        String message
-    ) {
+    public void writeChangeCurrency(ChangeCurrencyDTO dto) {
+        final BankCard card = dto.getCard();
+        final BankCardHistoryType type = dto.getType();
+        final String message = dto.getMessage();
+        final FromToDiff fromToDiff = dto.getFromToDiff();
+        final List<CardHistoryAdditionalData> additionalData = dto.getAdditionalData();
+
         final BankCardHistory history = build(card, type);
         history.setHistoryData(
             new CardHistoryDataBuilder()
                 .description(message)
                 .valueChange(messageService.message(
                     "value.change", List.of(
-                        from, to,
-                        diff > 0 ? "+" + diff : String.valueOf(diff)
+                        fromToDiff.from(), fromToDiff.to(),
+                        fromToDiff.diff() > 0 ? "+" + fromToDiff.diff() : String.valueOf(fromToDiff.diff())
                     )
                 ))
-                .fromTo(from, to)
+                .fromTo(fromToDiff.from(), fromToDiff.to())
+                .additional(additionalData)
                 .getData()
         );
         history.setUuid(UUID.randomUUID());
         bankCardHistoryDAO.save(history);
 
-        final BankCardOperationHistory operationHistory = build(history, diff);
+        final BankCardOperationHistory operationHistory = build(history, fromToDiff.diff());
         bankCardOperationHistoryDAO.save(operationHistory);
     }
 

@@ -2,9 +2,12 @@ package me.statuxia.shulkerapi.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CardHistoryDataBuilder {
@@ -27,6 +30,18 @@ public class CardHistoryDataBuilder {
     public CardHistoryDataBuilder fromTo(Long from, Long to) {
         return add("oldBalance", String.valueOf(from == null ? 0 : from))
             .add("newBalance", String.valueOf(to == null ? 0 : to));
+    }
+
+    public CardHistoryDataBuilder additional(List<CardHistoryAdditionalData> additionalData) {
+        if (CollectionUtils.isEmpty(additionalData)) {
+            return this;
+        }
+
+        for (CardHistoryAdditionalData data : additionalData) {
+            add(data.key(), data.value());
+        }
+
+        return this;
     }
 
     public CardHistoryDataBuilder dataChange(String message) {

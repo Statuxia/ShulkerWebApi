@@ -1,8 +1,11 @@
 package me.statuxia.shulkerapi.service.impl;
 
-import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
+import me.statuxia.shulkerapi.dto.ChangeCurrencyDTO;
+import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.exception.CardHistoryException;
 import me.statuxia.shulkerapi.exception.FundsException;
 import me.statuxia.shulkerapi.model.*;
@@ -56,11 +59,10 @@ public class BankCardServiceImpl implements BankCardService {
         final Long newCurrency = card.getCurrency();
 
         bankCardDAO.save(card);
-        cardHistoryService.writeChangeCurrency(
+        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
             card, BankCardHistoryType.WITHDRAW,
-            oldCurrency, newCurrency, newCurrency - oldCurrency,
-            null
-        );
+            oldCurrency, newCurrency, newCurrency - oldCurrency
+        ));
     }
 
     /**
@@ -76,11 +78,39 @@ public class BankCardServiceImpl implements BankCardService {
         card.setCurrency(oldCurrency + amount);
         final Long newCurrency = card.getCurrency();
         bankCardDAO.save(card);
-        cardHistoryService.writeChangeCurrency(
+        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
             card, BankCardHistoryType.DEPOSIT,
-            oldCurrency, newCurrency, newCurrency - oldCurrency,
-            null
-        );
+            oldCurrency, newCurrency, newCurrency - oldCurrency
+        ));
+    }
+
+    @Override
+    public void transferFunds(BankCard card, BankCard receiverCard, Long amount, String message) {
+        if (amount <= 0) {
+            throw FundsException.AMOUNT_GREATER_ZERO;
+        }
+
+        if (card.getId().equals(receiverCard.getId())) {
+            throw CardException.SAME_CARD_RECEIVER;
+        }
+
+        Long oldCurrency = card.getCurrency();
+        card.setCurrency(oldCurrency - amount);
+        Long newCurrency = card.getCurrency();
+        bankCardDAO.save(card);
+        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+            card, BankCardHistoryType.TRANSFER_FROM,
+            oldCurrency, newCurrency, newCurrency - oldCurrency
+        ).setMessage(message).addAdditionalData(new CardHistoryAdditionalData("receiver", receiverCard.getNumber())));
+
+        oldCurrency = receiverCard.getCurrency();
+        receiverCard.setCurrency(oldCurrency + amount);
+        newCurrency = receiverCard.getCurrency();
+        bankCardDAO.save(receiverCard);
+        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+            receiverCard, BankCardHistoryType.TRANSFER_TO,
+            oldCurrency, newCurrency, newCurrency - oldCurrency
+        ).setMessage(message).addAdditionalData(new CardHistoryAdditionalData("sender", card.getNumber())));
     }
 
     /**

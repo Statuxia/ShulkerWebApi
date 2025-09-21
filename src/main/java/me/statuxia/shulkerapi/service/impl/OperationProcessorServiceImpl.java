@@ -24,7 +24,7 @@ public class OperationProcessorServiceImpl implements OperationProcessorService 
     public void process(OperationData data) {
         for (OperationProcessor processor : processors) {
             if (!processor.isSuitable(data)) {
-                return;
+                continue;
             }
 
             processor.validate(data);
