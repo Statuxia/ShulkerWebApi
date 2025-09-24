@@ -11,6 +11,8 @@ import me.statuxia.shulkerapi.dto.RateLimit;
 import me.statuxia.shulkerapi.exception.ApiException;
 import me.statuxia.shulkerapi.exception.AuthenticationException;
 import me.statuxia.shulkerapi.model.TokenLimitation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -31,7 +34,9 @@ public class TokenFilter implements Filter {
     public static final String X_RATE_LIMIT_LIMIT = "X-RateLimit-Limit";
     public static final String X_RATE_LIMIT_RESET = "X-RateLimit-Reset";
     public static final String X_RATE_LIMIT_REMAINING = "X-RateLimit-Remaining";
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     private final Map<String, RateLimit> rateLimits = new ConcurrentHashMap<>();
+    private final List<String> ignoredMethods = List.of("OPTIONS", "HEAD");
     private final List<String> whitelistUrls = List.of(
         "/api/v1/oauth2/discord",
         TokenController.PREFIX + TokenController.GET_BY_CODE
@@ -74,6 +79,12 @@ public class TokenFilter implements Filter {
         throws IOException, ServletException {
         if (!(request instanceof HttpServletRequest httpServletRequest
             && response instanceof HttpServletResponse httpServletResponse)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        logger.debug("method: {}", httpServletRequest.getMethod());
+        if (ignoredMethods.contains(httpServletRequest.getMethod().toUpperCase(Locale.ROOT))) {
             chain.doFilter(request, response);
             return;
         }

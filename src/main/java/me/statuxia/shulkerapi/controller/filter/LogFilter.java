@@ -10,10 +10,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 @Component
 public class LogFilter implements Filter {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private final List<String> ignoredMethods = List.of("OPTIONS", "HEAD");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -24,6 +27,11 @@ public class LogFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
         final HttpServletRequest httpRequest = new CachedBodyHttpServletRequest((HttpServletRequest) request);
+
+        if (ignoredMethods.contains(httpRequest.getMethod().toUpperCase(Locale.ROOT))) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         logger.info(
             """
