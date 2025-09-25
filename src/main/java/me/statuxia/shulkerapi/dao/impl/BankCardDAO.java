@@ -7,6 +7,7 @@ import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.model.BankCard;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -43,6 +44,10 @@ public class BankCardDAO extends BaseDAO<BankCard, Long, BankCardSearchDTO> {
 
         if (StringUtils.hasText(searchDTO.getNumber())) {
             predicates.add(cb.equal(root.get("number"), searchDTO.getNumber()));
+        }
+
+        if (!CollectionUtils.isEmpty(searchDTO.getNumbers())) {
+            predicates.add(root.get("number").in(searchDTO.getNumbers()));
         }
 
         if (searchDTO.getCardType() != null) {

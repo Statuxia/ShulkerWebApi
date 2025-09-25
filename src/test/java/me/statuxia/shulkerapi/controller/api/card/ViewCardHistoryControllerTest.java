@@ -61,7 +61,7 @@ class ViewCardHistoryControllerTest extends BaseContainerTest {
     @Test
     void listTest() throws Exception {
         final CardHistoryRequest request = new CardHistoryRequest();
-        request.setCardNumber("1234 5678");
+        request.setCardNumbers(List.of("1234 5678"));
         request.setGameAccount("test-name");
         request.setDirection(Sort.Direction.ASC);
 

@@ -20,6 +20,7 @@ public class BankCardHistoryItem {
     protected Map<String, String> data;
     protected List<BankCardHistoryLogItem> logs;
     protected BankOperationState state;
+    protected String cardNumber;
 
     public Long getId() {
         return id;
@@ -74,6 +75,15 @@ public class BankCardHistoryItem {
         return this;
     }
 
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public BankCardHistoryItem setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -85,12 +95,17 @@ public class BankCardHistoryItem {
             && Objects.equals(getDateTime(), item.getDateTime())
             && Objects.equals(getData(), item.getData())
             && Objects.equals(getLogs(), item.getLogs())
+            && Objects.equals(getCardNumber(), item.getCardNumber())
             && getState() == item.getState();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getType(), getDateTime(), getData(), getLogs(), getState());
+        return Objects.hash(
+            getId(), getType(),
+            getDateTime(), getData(),
+            getLogs(), getCardNumber(), getState()
+        );
     }
 
     @Override
@@ -101,6 +116,7 @@ public class BankCardHistoryItem {
         sb.append(", dateTime='").append(dateTime).append('\'');
         sb.append(", data=").append(data);
         sb.append(", logs=").append(logs);
+        sb.append(", cardNumber=").append(cardNumber);
         sb.append(", state=").append(state);
         sb.append('}');
         return sb.toString();

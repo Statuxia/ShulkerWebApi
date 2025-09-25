@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -101,6 +102,10 @@ public class ViewCardHistoryController extends CardController {
             final BankCardSearchDTO bankCardSearchDTO = new BankCardSearchDTO();
             final GameAccount gameAccount = getGameAccountService().getGameAccount(request.getGameAccount());
             bankCardSearchDTO.setGameAccount(gameAccount);
+            if (CollectionUtils.isEmpty(request.getCardNumbers())) {
+                bankCardSearchDTO.setNumbers(request.getCardNumbers());
+            }
+
             cards.addAll(getController().getBankCardDAO().findList(bankCardSearchDTO));
         }
 
@@ -137,6 +142,7 @@ public class ViewCardHistoryController extends CardController {
         item.setDateTime(history.getCreateTime().getMillis());
         item.setData(jsonNodeConverter.convertToI18nMap(history.getHistoryData()));
         item.setLogs(logs.stream().map(this::map).toList());
+        item.setCardNumber(history.getCard().getNumber());
 
         if (!list.isEmpty()) {
             item.setState(list.getFirst().getState());
