@@ -89,6 +89,7 @@ public class CardManagementController extends CardController {
         bankCard.setNumber(CardNumberGenerator.generate());
         bankCard.setType(request.getType());
         bankCard.setCreateTime(DateTime.now());
+        bankCard.updatePatternSeed();
         bankCard.setGameAccount(gameAccount);
         bankCard.setPin(request.getPin());
 

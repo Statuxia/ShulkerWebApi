@@ -6,6 +6,7 @@ public enum BankCardHistoryType {
     UPDATE_PIN,
     DISABLE_CARD,
     ENABLE_CARD,
+    CHANGE_STYLE,
 
     DEPOSIT,
     WITHDRAW,

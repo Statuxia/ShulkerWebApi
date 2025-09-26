@@ -1,6 +1,7 @@
 package me.statuxia.shulkerapi.service;
 
 import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.CardStyleType;
 import me.statuxia.shulkerapi.model.GameAccount;
 
 import java.util.UUID;
@@ -11,6 +12,11 @@ public interface BankCardService {
      * Списание средств
      */
     void withdrawFunds(BankCard card, Long amount);
+
+    /**
+     * Изменение стиля карты
+     */
+    void changeStyle(BankCard card, CardStyleType styleType);
 
     /**
      * Начисление средств

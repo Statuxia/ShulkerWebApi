@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import org.joda.time.DateTime;
 
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Entity(name = "BankCard")
 @Table(name = "bank_card")
@@ -44,6 +45,13 @@ public class BankCard implements Identifiable<Long> {
 
     @Column(name = "disabled_time")
     private DateTime disabledTime;
+
+    @Column(name = "card_style", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CardStyleType cardStyle = CardStyleType.DEFAULT;
+
+    @Column(name = "pattern_seed", nullable = false)
+    private Long patternSeed = 0L;
 
     @Override
     public Long getId() {
@@ -119,6 +127,26 @@ public class BankCard implements Identifiable<Long> {
         this.createTime = createTime;
     }
 
+    public CardStyleType getCardStyle() {
+        return cardStyle;
+    }
+
+    public void setCardStyle(CardStyleType cardStyle) {
+        this.cardStyle = cardStyle;
+    }
+
+    public Long getPatternSeed() {
+        return patternSeed;
+    }
+
+    public void setPatternSeed(Long patternSeed) {
+        this.patternSeed = patternSeed;
+    }
+
+    public void updatePatternSeed() {
+        this.patternSeed = ThreadLocalRandom.current().nextLong(0, 1001);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -145,6 +173,8 @@ public class BankCard implements Identifiable<Long> {
         sb.append(", createTime=").append(createTime);
         sb.append(", disabled=").append(disabled);
         sb.append(", disabledTime=").append(disabledTime);
+        sb.append(", cardStyle=").append(cardStyle);
+        sb.append(", patternSeed=").append(patternSeed);
         sb.append('}');
         return sb.toString();
     }

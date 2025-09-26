@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.CardStyleType;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
@@ -73,7 +74,9 @@ class ViewCardControllerTest extends BaseContainerTest {
             .setCreateTime(createTime.getMillis())
             .setDisabled(false)
             .setDisabledTime(disabledTime == null ? null : disabledTime.getMillis())
-            .setGameAccount("test-name");
+            .setGameAccount("test-name")
+            .setStyle(CardStyleType.DEFAULT)
+            .setPatternSeed(0L);
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
 
@@ -98,7 +101,9 @@ class ViewCardControllerTest extends BaseContainerTest {
         final BankCardItem response = new BankCardItem()
             .setId(1L)
             .setCardNumber("1234 5678")
-            .setGameAccount("test-name");
+            .setGameAccount("test-name")
+            .setStyle(CardStyleType.DEFAULT)
+            .setPatternSeed(0L);
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
 
@@ -147,6 +152,8 @@ class ViewCardControllerTest extends BaseContainerTest {
                 .setDisabled(false)
                 .setDisabledTime(disabledTime == null ? null : disabledTime.getMillis())
                 .setGameAccount("test-name")
+                .setStyle(CardStyleType.DEFAULT)
+                .setPatternSeed(0L)
         ));
 
         final MvcResult result = mockMvc.perform(

@@ -3,10 +3,12 @@ package me.statuxia.shulkerapi.service.impl;
 import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.CardStyleDAO;
 import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
 import me.statuxia.shulkerapi.dto.ChangeCurrencyDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.exception.CardHistoryException;
+import me.statuxia.shulkerapi.exception.CardStyleException;
 import me.statuxia.shulkerapi.exception.FundsException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.service.BankCardService;
@@ -19,12 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Transactional
 public class BankCardServiceImpl implements BankCardService {
 
+    private final CardStyleDAO cardStyleDAO;
     private final BankCardDAO bankCardDAO;
     private final BankCardLogDAO bankCardLogDAO;
     private final CardHistoryService cardHistoryService;
@@ -32,9 +36,10 @@ public class BankCardServiceImpl implements BankCardService {
 
     @Autowired
     public BankCardServiceImpl(
-        BankCardDAO bankCardDAO, BankCardLogDAO bankCardLogDAO,
+        CardStyleDAO cardStyleDAO, BankCardDAO bankCardDAO, BankCardLogDAO bankCardLogDAO,
         CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO
     ) {
+        this.cardStyleDAO = cardStyleDAO;
         this.bankCardDAO = bankCardDAO;
         this.bankCardLogDAO = bankCardLogDAO;
         this.cardHistoryService = cardHistoryService;
@@ -61,6 +66,40 @@ public class BankCardServiceImpl implements BankCardService {
         bankCardDAO.save(card);
         cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
             card, BankCardHistoryType.WITHDRAW,
+            oldCurrency, newCurrency, newCurrency - oldCurrency
+        ));
+    }
+
+    /**
+     * Изменение стиля карты
+     */
+    @Override
+    public void changeStyle(BankCard card, CardStyleType styleType) {
+        final Optional<CardStyle> optCardStyle = cardStyleDAO.findById(styleType);
+        if (optCardStyle.isEmpty()) {
+            throw CardStyleException.UNKNOWN_STYLE;
+        }
+
+        final CardStyle cardStyle = optCardStyle.get();
+
+        final Long amount = cardStyle.getPrice();
+        if (amount < 0) {
+            throw CardStyleException.NOT_FOR_PURCHASE;
+        }
+
+        final Long oldCurrency = card.getCurrency();
+        if (oldCurrency < amount) {
+            throw FundsException.NOT_ENOUGH_FUNDS;
+        }
+
+        card.setCurrency(oldCurrency - amount);
+        card.setCardStyle(cardStyle.getType());
+        card.updatePatternSeed();
+        final Long newCurrency = card.getCurrency();
+
+        bankCardDAO.save(card);
+        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+            card, BankCardHistoryType.CHANGE_STYLE,
             oldCurrency, newCurrency, newCurrency - oldCurrency
         ));
     }

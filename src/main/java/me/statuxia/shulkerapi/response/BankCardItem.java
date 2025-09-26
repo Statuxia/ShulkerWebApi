@@ -2,6 +2,7 @@ package me.statuxia.shulkerapi.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import me.statuxia.shulkerapi.model.CardStyleType;
 
 import java.util.Objects;
 
@@ -16,6 +17,8 @@ public class BankCardItem {
     protected Long createTime;
     protected Boolean disabled;
     protected Long disabledTime;
+    protected CardStyleType style;
+    protected Long patternSeed;
 
     public Long getId() {
         return id;
@@ -80,6 +83,24 @@ public class BankCardItem {
         return this;
     }
 
+    public CardStyleType getStyle() {
+        return style;
+    }
+
+    public BankCardItem setStyle(CardStyleType style) {
+        this.style = style;
+        return this;
+    }
+
+    public Long getPatternSeed() {
+        return patternSeed;
+    }
+
+    public BankCardItem setPatternSeed(Long patternSeed) {
+        this.patternSeed = patternSeed;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -91,12 +112,14 @@ public class BankCardItem {
             && Objects.equals(gameAccount, that.gameAccount)
             && Objects.equals(currency, that.currency)
             && Objects.equals(disabled, that.disabled)
-            && Objects.equals(disabledTime, that.disabledTime);
+            && Objects.equals(disabledTime, that.disabledTime)
+            && Objects.equals(style, that.style)
+            && Objects.equals(patternSeed, that.patternSeed);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, cardNumber, gameAccount, currency, disabled, disabledTime);
+        return Objects.hash(id, cardNumber, gameAccount, currency, disabled, disabledTime, style, patternSeed);
     }
 
     @Override
@@ -109,6 +132,8 @@ public class BankCardItem {
         sb.append(", createTime=").append(createTime);
         sb.append(", disabled=").append(disabled);
         sb.append(", disabledTime=").append(disabledTime);
+        sb.append(", style=").append(style);
+        sb.append(", patternSeed=").append(patternSeed);
         sb.append('}');
         return sb.toString();
     }

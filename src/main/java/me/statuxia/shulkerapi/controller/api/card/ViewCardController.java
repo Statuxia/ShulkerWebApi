@@ -138,6 +138,8 @@ public class ViewCardController extends CardController {
             .setCurrency(card.getCurrency())
             .setCreateTime(card.getCreateTime().getMillis())
             .setDisabled(card.isDisabled())
-            .setDisabledTime(card.getDisabledTime() == null ? null : card.getDisabledTime().getMillis());
+            .setDisabledTime(card.getDisabledTime() == null ? null : card.getDisabledTime().getMillis())
+            .setStyle(card.getCardStyle())
+            .setPatternSeed(card.getPatternSeed());
     }
 }
