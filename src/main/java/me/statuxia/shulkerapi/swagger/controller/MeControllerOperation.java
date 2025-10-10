@@ -25,4 +25,15 @@ public class MeControllerOperation {
     public @interface Me {
     }
 
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Получение информации об аккаунте по Discord ID или никнейму",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema(implementation = MeResponse.class))
+        )
+    )
+    public @interface Find {
+    }
 }

@@ -74,6 +74,11 @@ public class DiscordAccountServiceImpl implements DiscordAccountService {
         return account;
     }
 
+    @Override
+    public Optional<DiscordAccount> get(Long discordId) {
+        return getDiscordAccountDAO().findById(discordId);
+    }
+
     @Cacheable(value = "discord_identity", key = "#discordId")
     public DiscordIdentityResponse getByDiscordId(Long discordId) {
         final Optional<DiscordAccount> discordAccount = discordAccountDAO.findById(discordId);
