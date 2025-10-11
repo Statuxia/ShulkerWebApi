@@ -3,6 +3,7 @@ package me.statuxia.shulkerapi.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import org.hibernate.validator.constraints.Length;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TransferFundsRequest extends CardRequest {
@@ -16,6 +17,7 @@ public class TransferFundsRequest extends CardRequest {
     @Min(1)
     private Long funds;
 
+    @Length(max = 500)
     private String message;
 
     public String getPin() {
