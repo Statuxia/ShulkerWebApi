@@ -133,23 +133,32 @@ public class BankCardServiceImpl implements BankCardService {
             throw CardException.SAME_CARD_RECEIVER;
         }
 
+        final UUID historyUuid = UUID.randomUUID();
         Long oldCurrency = card.getCurrency();
         card.setCurrency(oldCurrency - amount);
         Long newCurrency = card.getCurrency();
         bankCardDAO.save(card);
-        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+        final ChangeCurrencyDTO senderDTO = new ChangeCurrencyDTO(
             card, BankCardHistoryType.TRANSFER_FROM,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        ).setMessage(message).addAdditionalData(new CardHistoryAdditionalData("receiver", receiverCard.getNumber())));
+        )
+            .setMessage(message)
+            .addAdditionalData(new CardHistoryAdditionalData("receiver", receiverCard.getNumber()))
+            .setHistoryUuid(historyUuid);
+        cardHistoryService.writeChangeCurrency(senderDTO);
 
         oldCurrency = receiverCard.getCurrency();
         receiverCard.setCurrency(oldCurrency + amount);
         newCurrency = receiverCard.getCurrency();
         bankCardDAO.save(receiverCard);
-        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+        final ChangeCurrencyDTO receiverDTO = new ChangeCurrencyDTO(
             receiverCard, BankCardHistoryType.TRANSFER_TO,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        ).setMessage(message).addAdditionalData(new CardHistoryAdditionalData("sender", card.getNumber())));
+        )
+            .setMessage(message)
+            .addAdditionalData(new CardHistoryAdditionalData("sender", card.getNumber()))
+            .setHistoryUuid(historyUuid);
+        cardHistoryService.writeChangeCurrency(receiverDTO);
     }
 
     /**

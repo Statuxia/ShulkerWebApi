@@ -6,12 +6,14 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ChangeCurrencyDTO {
 
     private final BankCard card;
     private final BankCardHistoryType type;
     private final FromToDiff fromToDiff;
+    private UUID historyUuid;
 
     private String message;
     private List<CardHistoryAdditionalData> additionalData = new ArrayList<>();
@@ -67,6 +69,15 @@ public class ChangeCurrencyDTO {
 
     public ChangeCurrencyDTO addAdditionalData(CardHistoryAdditionalData data) {
         this.additionalData.add(data);
+        return this;
+    }
+
+    public UUID getHistoryUuid() {
+        return historyUuid;
+    }
+
+    public ChangeCurrencyDTO setHistoryUuid(UUID historyUuid) {
+        this.historyUuid = historyUuid;
         return this;
     }
 }

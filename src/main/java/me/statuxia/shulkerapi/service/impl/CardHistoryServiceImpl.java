@@ -96,7 +96,7 @@ public class CardHistoryServiceImpl implements CardHistoryService {
                 .additional(additionalData)
                 .getData()
         );
-        history.setUuid(UUID.randomUUID());
+        history.setUuid(dto.getHistoryUuid() == null ? UUID.randomUUID() : dto.getHistoryUuid());
         bankCardHistoryDAO.save(history);
 
         final BankCardOperationHistory operationHistory = build(history, fromToDiff.diff());
