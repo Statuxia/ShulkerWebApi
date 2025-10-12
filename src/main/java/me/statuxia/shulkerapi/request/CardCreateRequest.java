@@ -17,6 +17,9 @@ public class CardCreateRequest {
 
     private String paymentCardNumber;
 
+    @Pattern(regexp = "\\d{4}")
+    private String paymentCardPin;
+
     @NotNull
     @NotEmpty
     protected String gameAccount;
@@ -51,5 +54,13 @@ public class CardCreateRequest {
 
     public void setPaymentCardNumber(String paymentCardNumber) {
         this.paymentCardNumber = paymentCardNumber;
+    }
+
+    public String getPaymentCardPin() {
+        return paymentCardPin;
+    }
+
+    public void setPaymentCardPin(String paymentCardPin) {
+        this.paymentCardPin = paymentCardPin;
     }
 }

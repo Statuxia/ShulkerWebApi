@@ -70,7 +70,7 @@ public class CardStyleController extends CardController {
     @CardDisabledOperation
     @PaymentCardDisabledOperation
     @NotEnoughFundsOperation
-    @InvalidPinOperation
+    @InvalidPaymentPinOperation
     @NotForPurchaseOperation
     @UnknownStyleOperation
     @CardStyleControllerOperation.ChangeStyle
@@ -84,7 +84,7 @@ public class CardStyleController extends CardController {
         }
 
         if (card.getPin() == null || !Objects.equals(card.getPin(), request.getPin())) {
-            throw CardException.INVALID_PIN;
+            throw CardException.INVALID_PAYMENT_PIN;
         }
 
         bankCardService.changeStyle(card, request.getNewStyle());

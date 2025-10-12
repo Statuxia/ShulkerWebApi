@@ -75,6 +75,8 @@ public class CardManagementController extends CardController {
     @PaymentFromDirectOperation
     @AmountGreaterZeroOperation
     @NotEnoughFundsOperation
+    @InvalidPinOperation
+    @InvalidPaymentPinOperation
     @CardManagementControllerOperation.Create
     public ResponseEntity<CardResponse> createCard(
         @RequestBody @Valid CardCreateRequest request,
@@ -121,6 +123,10 @@ public class CardManagementController extends CardController {
 
             if (!CardType.DIRECT.equals(card.getType())) {
                 throw CardException.PAYMENT_FROM_DIRECT;
+            }
+
+            if (!card.getPin().equals(request.getPaymentCardPin())) {
+                throw CardException.INVALID_PAYMENT_PIN;
             }
 
             final OperationData data = new OperationData()

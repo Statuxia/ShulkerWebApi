@@ -26,6 +26,8 @@ public class CardException extends ApiException {
         = new FundsException("exception.CardException.SAME_CARD_RECEIVER", 1410);
     public static final CardException RECEIVER_CARD_DISABLED
         = new CardException("exception.CardException.RECEIVER_CARD_DISABLED", 1411);
+    public static final CardException INVALID_PAYMENT_PIN
+        = new CardException("exception.CardException.INVALID_PAYMENT_PIN", 1412);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);
