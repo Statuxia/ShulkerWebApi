@@ -113,6 +113,7 @@ class CardManagementControllerTest extends BaseContainerTest {
         request.setType(CardType.DIRECT);
         request.setPin("1234");
         request.setPaymentCardNumber("1234 5678");
+        request.setPaymentCardPin("1234");
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardManagementController.CREATE)
@@ -185,6 +186,7 @@ class CardManagementControllerTest extends BaseContainerTest {
         request.setType(CardType.DIRECT);
         request.setPin("1234");
         request.setPaymentCardNumber("1234 5678");
+        request.setPaymentCardPin("1234");
 
         bankCardDAO.findByNumber("1234 5678").ifPresent(card -> {
             card.setCurrency(1000L);
