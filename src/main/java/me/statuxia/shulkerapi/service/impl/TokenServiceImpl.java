@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.service.impl;
 
+import me.statuxia.shulkerapi.configuration.properties.SessionLimitationProperties;
 import me.statuxia.shulkerapi.dao.SessionTokenDAO;
 import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
 import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
@@ -21,20 +22,20 @@ import java.util.List;
 @Service
 public class TokenServiceImpl implements TokenService {
 
-    public static final long SESSION_RATE_LIMIT = 120L;
-    public static final long SESSION_RATE_RESET_SECONDS = 60L;
-
+    private final SessionLimitationProperties sessionLimitationProperties;
     private final TokenLimitationDAO tokenLimitationDAO;
     private final TokenAuthorityDAO tokenAuthorityDAO;
     private final SessionTokenDAO sessionTokenDAO;
     private final ValidationService validationService;
 
     public TokenServiceImpl(
+        SessionLimitationProperties sessionLimitationProperties,
         TokenLimitationDAO tokenLimitationDAO,
         TokenAuthorityDAO tokenAuthorityDAO,
         SessionTokenDAO sessionTokenDAO,
         ValidationService validationService
     ) {
+        this.sessionLimitationProperties = sessionLimitationProperties;
         this.tokenLimitationDAO = tokenLimitationDAO;
         this.tokenAuthorityDAO = tokenAuthorityDAO;
         this.sessionTokenDAO = sessionTokenDAO;
@@ -73,8 +74,8 @@ public class TokenServiceImpl implements TokenService {
     private void createLimitation(String token) {
         final TokenLimitation limitation = new TokenLimitation();
         limitation.setId(token);
-        limitation.setRateLimit(SESSION_RATE_LIMIT);
-        limitation.setRateResetSeconds(SESSION_RATE_RESET_SECONDS);
+        limitation.setRateLimit(sessionLimitationProperties.getSessionRateLimit());
+        limitation.setRateResetSeconds(sessionLimitationProperties.getSessionRateResetSeconds());
 
         getTokenLimitationDAO().save(limitation);
     }

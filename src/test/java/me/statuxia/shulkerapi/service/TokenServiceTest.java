@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.service;
 
+import me.statuxia.shulkerapi.configuration.properties.SessionLimitationProperties;
 import me.statuxia.shulkerapi.dao.SessionTokenDAO;
 import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
 import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
@@ -15,8 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static me.statuxia.shulkerapi.service.impl.TokenServiceImpl.SESSION_RATE_LIMIT;
-import static me.statuxia.shulkerapi.service.impl.TokenServiceImpl.SESSION_RATE_RESET_SECONDS;
+import static me.statuxia.shulkerapi.configuration.properties.SessionLimitationProperties.SESSION_RATE_LIMIT;
+import static me.statuxia.shulkerapi.configuration.properties.SessionLimitationProperties.SESSION_RATE_RESET_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -39,6 +40,9 @@ class TokenServiceTest {
     @Mock
     protected ValidationService validationService;
 
+    @Mock
+    protected SessionLimitationProperties sessionLimitationProperties;
+
     @Captor
     protected ArgumentCaptor<TokenLimitation> captor;
 
@@ -51,6 +55,8 @@ class TokenServiceTest {
     @Test
     void createAndSaveTokenLimitation() {
         doReturn(new TokenLimitation()).when(tokenLimitationDAO).save(captor.capture());
+        when(sessionLimitationProperties.getSessionRateLimit()).thenReturn(SESSION_RATE_LIMIT);
+        when(sessionLimitationProperties.getSessionRateResetSeconds()).thenReturn(SESSION_RATE_RESET_SECONDS);
 
         tokenService.createSessionToken(new Account());
 

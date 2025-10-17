@@ -5,15 +5,12 @@ import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 
 import java.util.List;
 
-import static me.statuxia.shulkerapi.service.impl.TokenServiceImpl.SESSION_RATE_LIMIT;
-import static me.statuxia.shulkerapi.service.impl.TokenServiceImpl.SESSION_RATE_RESET_SECONDS;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TokenCreateRequest {
 
     private Long accountId;
-    private Long rateLimit = SESSION_RATE_LIMIT;
-    private Long rateResetSeconds = SESSION_RATE_RESET_SECONDS;
+    private Long rateLimit;
+    private Long rateResetSeconds;
     private List<TokenAuthorityEnum> authorities = List.of();
 
     public Long getAccountId() {

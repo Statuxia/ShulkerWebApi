@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.annotations.RequiredAuthority;
+import me.statuxia.shulkerapi.configuration.properties.SessionLimitationProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.AccountDAO;
 import me.statuxia.shulkerapi.dao.CustomTokenDAO;
@@ -48,6 +49,7 @@ public class TokenController {
     public static final String CREATE = "/create";
     public static final String GET_BY_CODE = "/get-by-code";
 
+    private final SessionLimitationProperties sessionLimitationProperties;
     private final CodeTokenService codeTokenService;
     private final CustomTokenDAO customTokenDAO;
     private final TokenLimitationDAO tokenLimitationDAO;
@@ -56,11 +58,14 @@ public class TokenController {
 
     @Autowired
     public TokenController(
-        CodeTokenService codeTokenService, TokenLimitationDAO tokenLimitationDAO,
+        SessionLimitationProperties sessionLimitationProperties,
+        CodeTokenService codeTokenService,
+        TokenLimitationDAO tokenLimitationDAO,
         TokenAuthorityDAO tokenAuthorityDAO,
         AccountDAO accountDAO,
         CustomTokenDAO customTokenDAO
     ) {
+        this.sessionLimitationProperties = sessionLimitationProperties;
         this.codeTokenService = codeTokenService;
         this.tokenLimitationDAO = tokenLimitationDAO;
         this.tokenAuthorityDAO = tokenAuthorityDAO;
@@ -189,8 +194,16 @@ public class TokenController {
     private TokenLimitation buildLimitation(TokenCreateRequest request, CustomToken customToken) {
         final TokenLimitation limitation = new TokenLimitation();
         limitation.setId(customToken.getToken());
-        limitation.setRateLimit(request.getRateLimit());
-        limitation.setRateResetSeconds(request.getRateResetSeconds());
+        limitation.setRateLimit(
+            request.getRateLimit() == null
+                ? sessionLimitationProperties.getSessionRateLimit()
+                : request.getRateLimit()
+        );
+        limitation.setRateResetSeconds(
+            request.getRateResetSeconds() == null
+                ? sessionLimitationProperties.getSessionRateResetSeconds()
+                : request.getRateResetSeconds()
+        );
         return limitation;
     }
 }
