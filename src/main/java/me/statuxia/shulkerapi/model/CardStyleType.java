@@ -1,5 +1,18 @@
 package me.statuxia.shulkerapi.model;
 
 public enum CardStyleType {
-    DEFAULT, SHULKER
+    DEFAULT,
+    SUNSET,
+    FOREST,
+    LAVENDER,
+    CORAL,
+    MINT,
+    NEON,
+    NATURE,
+    OCEAN,
+    FIRE,
+    ROYAL,
+    STEEL,
+    ANONIMUS,
+    LIGHTNING
 }

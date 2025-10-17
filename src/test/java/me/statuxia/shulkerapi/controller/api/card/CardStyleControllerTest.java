@@ -58,7 +58,7 @@ class CardStyleControllerTest extends BaseContainerTest {
     void changeStyleTest() throws Exception {
         final CardStyleRequest request = new CardStyleRequest();
         request.setGameAccount("test-name");
-        request.setNewStyle(CardStyleType.SHULKER);
+        request.setNewStyle(CardStyleType.SUNSET);
         request.setPin("1234");
         request.setCardNumber("1234 5678");
 
@@ -78,7 +78,7 @@ class CardStyleControllerTest extends BaseContainerTest {
         final BankCard card = bankCardDAO.findByNumber(request.getCardNumber()).get();
 
         assertTrue(card.getPatternSeed() >= 0 && card.getPatternSeed() <= 1000);
-        assertEquals(CardStyleType.SHULKER, card.getCardStyle());
+        assertEquals(CardStyleType.SUNSET, card.getCardStyle());
         assertEquals(
             BankCardHistoryType.CHANGE_STYLE,
             bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast().getType()
