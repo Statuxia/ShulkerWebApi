@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.5.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("checkstyle")
+    id("jacoco")
 }
 
 group = "me.statuxia"
@@ -43,4 +44,16 @@ tasks.withType<Checkstyle> {
 
 checkstyle {
     toolVersion = "10.12.4"
+}
+
+jacoco {
+    toolVersion = "0.8.14"
+}
+
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        html.required.set(true)
+    }
 }
