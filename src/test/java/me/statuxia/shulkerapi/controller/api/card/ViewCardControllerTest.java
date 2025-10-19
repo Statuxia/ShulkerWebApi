@@ -5,6 +5,7 @@ import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardStyleType;
+import me.statuxia.shulkerapi.request.CardGetRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
@@ -59,7 +60,7 @@ class ViewCardControllerTest extends BaseContainerTest {
 
     @Test
     void getTest() throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardGetRequest request = new CardGetRequest();
         request.setCardNumber("1234 5678");
         request.setGameAccount("test-name");
 
@@ -94,7 +95,7 @@ class ViewCardControllerTest extends BaseContainerTest {
     @ParameterizedTest
     @CsvSource({"test-name-2", "test-name-1"})
     void getNotOwnedTest(String name) throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardGetRequest request = new CardGetRequest();
         request.setCardNumber("1234 5678");
         request.setGameAccount(name);
 
@@ -121,7 +122,7 @@ class ViewCardControllerTest extends BaseContainerTest {
     @ParameterizedTest
     @CsvSource({"badFormat", "0000 0000"})
     void getBadCardsTest(String card) throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardGetRequest request = new CardGetRequest();
         request.setCardNumber(card);
 
         mockMvc.perform(

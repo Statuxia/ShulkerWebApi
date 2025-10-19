@@ -12,6 +12,7 @@ import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardType;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
+import me.statuxia.shulkerapi.request.CardGetRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
@@ -77,7 +78,7 @@ public class ViewCardController extends CardController {
     @ViewCardControllerOperation.Get
     public ResponseEntity<BankCardItem> get(
         @AuthData TokenData token,
-        @RequestBody @Valid CardRequest request
+        @RequestBody @Valid CardGetRequest request
     ) {
         final Optional<BankCard> optCard = getBankCardDAO().findByNumber(request.getCardNumber());
         if (optCard.isEmpty()) {
