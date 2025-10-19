@@ -87,16 +87,25 @@ public class ViewCardController extends CardController {
         final BankCard card = optCard.get();
 
         final BankCardItem item = buildItem(card);
-        if (
-            !getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())
-                || !getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
+
+        if (getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())
+            && getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
         ) {
-            item.setCurrency(null);
-            item.setDisabled(null);
-            item.setDisabledTime(null);
-            item.setCreateTime(null);
+            return ResponseEntity.ok(item);
         }
+
+        if (getTokenService().hasAuthority(token.token(), TokenAuthorityEnum.GET_CARD_WITHOUT_REMOVE_DATA)) {
+            return ResponseEntity.ok(item);
+
+        }
+
+        item.setCurrency(null);
+        item.setDisabled(null);
+        item.setDisabledTime(null);
+        item.setCreateTime(null);
+
         return ResponseEntity.ok(item);
+
     }
 
     @GetMapping(value = TYPES, produces = MediaType.APPLICATION_JSON_VALUE)
