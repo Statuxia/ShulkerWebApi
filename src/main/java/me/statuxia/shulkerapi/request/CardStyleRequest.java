@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import me.statuxia.shulkerapi.model.CardStyleType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CardStyleRequest extends CardRequest {
+public class CardStyleRequest extends BaseCardRequest {
 
     @NotNull
     private CardStyleType newStyle;

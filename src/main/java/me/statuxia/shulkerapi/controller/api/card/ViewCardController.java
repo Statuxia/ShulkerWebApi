@@ -13,7 +13,7 @@ import me.statuxia.shulkerapi.model.CardType;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.CardGetRequest;
-import me.statuxia.shulkerapi.request.CardRequest;
+import me.statuxia.shulkerapi.request.CardListRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
 import me.statuxia.shulkerapi.response.NamedItem;
@@ -65,7 +65,7 @@ public class ViewCardController extends CardController {
     @ViewCardControllerOperation.List
     public ResponseEntity<BankCardPaginationResponse> list(
         @AuthData TokenData token,
-        @RequestBody @Valid CardRequest request
+        @RequestBody @Valid CardListRequest request
     ) {
 
         return ResponseEntity.ok(getBankCards(request, token));
@@ -120,7 +120,7 @@ public class ViewCardController extends CardController {
         )).toList());
     }
 
-    private BankCardPaginationResponse getBankCards(CardRequest request, TokenData token) {
+    private BankCardPaginationResponse getBankCards(CardListRequest request, TokenData token) {
         final GameAccount gameAccount = getGameAccountService().getGameAccount(
             token,
             request.getGameAccount(),

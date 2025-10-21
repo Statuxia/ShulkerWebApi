@@ -13,8 +13,8 @@ import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
 import me.statuxia.shulkerapi.request.CardCreateRequest;
-import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
+import me.statuxia.shulkerapi.request.ChangeCardStateRequest;
 import me.statuxia.shulkerapi.response.CardResponse;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
@@ -185,7 +185,7 @@ public class CardManagementController extends CardController {
     @UnknownCardOperation
     @CardDisabledOperation
     public ResponseEntity<Void> disable(
-        @RequestBody @Valid CardRequest request,
+        @RequestBody @Valid ChangeCardStateRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, null);
@@ -214,7 +214,7 @@ public class CardManagementController extends CardController {
     @UnknownCardOperation
     @CardDisabledOperation
     public ResponseEntity<Void> enable(
-        @RequestBody @Valid CardRequest request,
+        @RequestBody @Valid ChangeCardStateRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, null);

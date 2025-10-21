@@ -1,34 +1,35 @@
 package me.statuxia.shulkerapi.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CardGetRequest {
+public class BaseCardRequest implements CardRequest {
 
     @Pattern(regexp = "\\d{4} \\d{4}")
     protected String cardNumber;
 
-    @Nullable
-    @Schema(nullable = true, description = "Требуется если нет авторити GET_CARD_WITHOUT_REMOVE_DATA")
+    @NotNull
+    @NotEmpty
     protected String gameAccount;
 
+    @Override
     public String getCardNumber() {
         return cardNumber;
     }
 
+    @Override
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
     }
 
-    @Nullable
+    @Override
     public String getGameAccount() {
         return gameAccount;
     }
 
-    public void setGameAccount(@Nullable String gameAccount) {
+    @Override
+    public void setGameAccount(String gameAccount) {
         this.gameAccount = gameAccount;
     }
 }

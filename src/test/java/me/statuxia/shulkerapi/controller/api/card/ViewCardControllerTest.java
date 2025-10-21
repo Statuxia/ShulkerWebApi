@@ -5,6 +5,7 @@ import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardStyleType;
+import me.statuxia.shulkerapi.request.BaseCardRequest;
 import me.statuxia.shulkerapi.request.CardGetRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
@@ -135,7 +136,7 @@ class ViewCardControllerTest extends BaseContainerTest {
 
     @Test
     void listTest() throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardRequest request = new BaseCardRequest();
         request.setGameAccount("test-name");
 
         final BankCard card = bankCardDAO.findById(1L).get();
@@ -170,7 +171,7 @@ class ViewCardControllerTest extends BaseContainerTest {
 
     @Test
     void listWrongAccountTest() throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardRequest request = new BaseCardRequest();
         request.setGameAccount("test-name-2");
 
         mockMvc.perform(

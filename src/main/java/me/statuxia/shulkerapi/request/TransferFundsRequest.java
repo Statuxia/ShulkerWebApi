@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransferFundsRequest extends CardRequest {
+public class TransferFundsRequest extends BaseCardRequest {
 
     @Pattern(regexp = "\\d{4} \\d{4}")
     protected String receiverCard;

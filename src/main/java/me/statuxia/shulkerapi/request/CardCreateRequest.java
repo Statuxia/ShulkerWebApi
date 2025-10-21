@@ -13,6 +13,7 @@ public class CardCreateRequest {
     private CardType type;
 
     @Pattern(regexp = "\\d{4}")
+    @NotNull
     private String pin;
 
     private String paymentCardNumber;

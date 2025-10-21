@@ -7,7 +7,7 @@ import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CardHistoryRequest extends CardRequest {
+public class CardHistoryRequest extends CardListRequest {
 
     protected List<@Pattern(regexp = "\\d{4} \\d{4}") String> cardNumbers;
     protected List<BankCardHistoryType> historyTypes;
