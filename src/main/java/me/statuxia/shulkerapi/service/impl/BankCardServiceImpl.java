@@ -133,8 +133,12 @@ public class BankCardServiceImpl implements BankCardService {
             throw CardException.SAME_CARD_RECEIVER;
         }
 
-        final UUID historyUuid = UUID.randomUUID();
         Long oldCurrency = card.getCurrency();
+        if (oldCurrency < amount) {
+            throw FundsException.NOT_ENOUGH_FUNDS;
+        }
+
+        final UUID historyUuid = UUID.randomUUID();
         card.setCurrency(oldCurrency - amount);
         Long newCurrency = card.getCurrency();
         bankCardDAO.save(card);
