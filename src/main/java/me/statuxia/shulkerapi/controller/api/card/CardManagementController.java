@@ -159,7 +159,8 @@ public class CardManagementController extends CardController {
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, UPDATE_PIN_CODE);
-        final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
+        final GameAccount actionBy = request.getActionBy() == null
+            ? null : getGameAccountService().getActionGameAccount(request.getActionBy());
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;

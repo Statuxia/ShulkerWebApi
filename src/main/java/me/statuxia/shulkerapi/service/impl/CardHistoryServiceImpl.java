@@ -6,6 +6,7 @@ import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
 import me.statuxia.shulkerapi.dto.ChangeCurrencyDTO;
 import me.statuxia.shulkerapi.dto.FromToDiff;
+import me.statuxia.shulkerapi.exception.AccountException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.utils.CardHistoryDataBuilder;
@@ -53,6 +54,9 @@ public class CardHistoryServiceImpl implements CardHistoryService {
         final List<BankCardLog> logs = new ArrayList<>();
         final BankCardHistory history = write(card, BankCardHistoryType.UPDATE_PIN);
         if (isAdmin) {
+            if (actionBy == null) {
+                throw AccountException.UNKNOWN_ACTION_ACCOUNT;
+            }
             history.setHistoryData(new CardHistoryDataBuilder().markAsAdmin().getData());
             final BankCardLog log = CardHistoryUtils.build(card, actionBy.getName(), history.getUuid());
             log.setData(
