@@ -185,7 +185,7 @@ public class BankCardServiceImpl implements BankCardService {
             card.setCurrency(currency + (operation.getValue() * -1));
 
             final BankCardLog log = CardHistoryUtils.build(card, actionBy.getName(), operation.getUuid());
-            log.setData(new CardLogDataBuilder().action(BankCardLogType.RESTORE).getData());
+            log.setData(new CardLogDataBuilder().action(BankCardLogType.ROLLBACK).getData());
 
             updatedCards.add(card);
             updatedOperations.add(operation);

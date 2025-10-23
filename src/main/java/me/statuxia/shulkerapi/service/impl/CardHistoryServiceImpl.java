@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,12 +49,22 @@ public class CardHistoryServiceImpl implements CardHistoryService {
     }
 
     @Override
-    public void writeUpdatePin(BankCard card, boolean isAdmin) {
+    public void writeUpdatePin(BankCard card, GameAccount actionBy, boolean isAdmin) {
+        final List<BankCardLog> logs = new ArrayList<>();
         final BankCardHistory history = write(card, BankCardHistoryType.UPDATE_PIN);
         if (isAdmin) {
             history.setHistoryData(new CardHistoryDataBuilder().markAsAdmin().getData());
+            final BankCardLog log = CardHistoryUtils.build(card, actionBy.getName(), history.getUuid());
+            log.setData(
+                new CardLogDataBuilder()
+                    .action(BankCardLogType.UPDATE_PIN)
+                    .getData()
+            );
+            logs.add(log);
         }
+
         bankCardHistoryDAO.save(history);
+        bankCardLogDAO.saveAll(logs);
     }
 
     public void writeDisable(BankCard card, GameAccount actionBy, boolean disable) {
