@@ -1,6 +1,7 @@
 package me.statuxia.shulkerapi.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -19,7 +20,9 @@ public class CardListRequest extends PaginationRequest implements CardRequest {
 
     protected CardType cardType;
 
+    @Schema(example = "01.01.2025 00:00:00")
     protected DateTime createFrom;
+    @Schema(example = "01.01.2025 00:00:00")
     protected DateTime createTo;
 
     @Override
