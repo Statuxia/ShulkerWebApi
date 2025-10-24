@@ -2,6 +2,7 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
+import me.statuxia.shulkerapi.annotations.RequiredAuthority;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
@@ -40,6 +41,7 @@ import java.util.Optional;
 public class ViewCardController extends CardController {
 
     public static final String GET = "/get";
+    public static final String GET_ADMIN_CARD = "/get-admin-card";
     public static final String LIST = "/list";
     public static final String TYPES = "/types";
 
@@ -106,7 +108,23 @@ public class ViewCardController extends CardController {
         item.setCreateTime(null);
 
         return ResponseEntity.ok(item);
+    }
 
+    @RequiredAuthority(requireAll = TokenAuthorityEnum.ADMIN_CARD_GET)
+    @PostMapping(value = GET_ADMIN_CARD, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @UnknownCardOperation
+    @UnknownAccountOperation
+    @ViewCardControllerOperation.Get
+    public ResponseEntity<BankCardItem> getAdminCard(
+        @AuthData TokenData token
+    ) {
+        final Optional<BankCard> optCard = getBankCardDAO().find(new BankCardSearchDTO().setCardType(CardType.ADMIN));
+        if (optCard.isEmpty()) {
+            throw CardException.UNKNOWN_CARD;
+        }
+
+        return ResponseEntity.ok(buildItem(optCard.get()));
     }
 
     @GetMapping(value = TYPES, produces = MediaType.APPLICATION_JSON_VALUE)

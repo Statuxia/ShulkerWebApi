@@ -1,10 +1,7 @@
 package me.statuxia.shulkerapi.service;
 
 import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
-import me.statuxia.shulkerapi.model.BankCard;
-import me.statuxia.shulkerapi.model.CardStyleType;
-import me.statuxia.shulkerapi.model.Fine;
-import me.statuxia.shulkerapi.model.GameAccount;
+import me.statuxia.shulkerapi.model.*;
 
 import java.util.UUID;
 
@@ -15,7 +12,7 @@ public interface BankCardService {
     /**
      * Списание средств
      */
-    void withdrawFunds(BankCard card, Long amount);
+    void withdrawFunds(BankCard card, Long amount, boolean withAdminIncrease);
 
     /**
      * Изменение стиля карты
@@ -46,4 +43,9 @@ public interface BankCardService {
      * Оплата штрафов
      */
     void payFine(BankCard card, Long value, Fine fine);
+
+    /**
+     * Пополнение админского счета
+     */
+    void increaseAdminCard(UUID historyUuid, BankCardHistoryType type, Long amount, BankCard from);
 }

@@ -28,6 +28,10 @@ public class CardException extends ApiException {
         = new CardException("exception.CardException.RECEIVER_CARD_DISABLED", 1411);
     public static final CardException INVALID_PAYMENT_PIN
         = new CardException("exception.CardException.INVALID_PAYMENT_PIN", 1412);
+    public static final CardException WRONG_CARD_TYPE_CREATION
+        = new CardException("exception.CardException.WRONG_CARD_TYPE_CREATION", 1413);
+    public static final CardException UNSUPPORTED_FOR_ADMIN_CARD
+        = new CardException("exception.CardException.UNSUPPORTED_FOR_ADMIN_CARD", 1414);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);
