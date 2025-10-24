@@ -8,7 +8,7 @@ public interface CardHistoryService {
 
     void writeCreateCard(BankCard card);
 
-    void writeUpdatePin(BankCard card, boolean isAdmin);
+    void writeUpdatePin(BankCard card, GameAccount actionBy, boolean isAdmin);
 
     void writeDisable(BankCard card, GameAccount actionBy, boolean disable);
 

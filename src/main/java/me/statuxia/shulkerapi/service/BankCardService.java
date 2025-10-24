@@ -1,12 +1,16 @@
 package me.statuxia.shulkerapi.service;
 
+import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardStyleType;
+import me.statuxia.shulkerapi.model.Fine;
 import me.statuxia.shulkerapi.model.GameAccount;
 
 import java.util.UUID;
 
 public interface BankCardService {
+
+    BankCard getPaymentCard(BankCardSearchDTO dto, String paymentCardPin);
 
     /**
      * Списание средств
@@ -37,4 +41,9 @@ public interface BankCardService {
      * Возврат средств
      */
     void restoreFunds(UUID historyUuid, GameAccount actionBy);
+
+    /**
+     * Оплата штрафов
+     */
+    void payFine(BankCard card, Long value, Fine fine);
 }

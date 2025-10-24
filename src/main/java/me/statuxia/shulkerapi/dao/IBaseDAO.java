@@ -24,6 +24,10 @@ public interface IBaseDAO<E extends Identifiable<I>, I extends Serializable, T e
 
     Optional<E> findById(I id);
 
+    List<E> findAll();
+
+    Long countAll();
+
     void save(E entity);
 
     void saveAll(Collection<E> entities);

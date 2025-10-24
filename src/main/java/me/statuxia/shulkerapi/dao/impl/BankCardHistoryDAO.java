@@ -51,11 +51,11 @@ public class BankCardHistoryDAO extends BaseDAO<BankCardHistory, Long, BankCardH
         }
 
         if (searchDTO.getStartCreateTime() != null) {
-            predicates.add(cb.equal(root.get("createTime"), searchDTO.getStartCreateTime()));
+            predicates.add(cb.greaterThanOrEqualTo(root.get("createTime"), searchDTO.getStartCreateTime()));
         }
 
         if (searchDTO.getEndCreateTime() != null) {
-            predicates.add(cb.equal(root.get("createTime"), searchDTO.getEndCreateTime()));
+            predicates.add(cb.lessThanOrEqualTo(root.get("createTime"), searchDTO.getEndCreateTime()));
         }
 
         return cb.and(predicates.toArray(new Predicate[0]));

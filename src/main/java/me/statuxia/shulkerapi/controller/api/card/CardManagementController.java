@@ -152,12 +152,15 @@ public class CardManagementController extends CardController {
     @UnknownCardOperation
     @CardDisabledOperation
     @InvalidPinOperation
+    @UnknownActionByAccountOperation
     @CardManagementControllerOperation.UpdatePin
     public ResponseEntity<Void> updatePin(
         @RequestBody @Valid CardUpdatePinRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, UPDATE_PIN_CODE);
+        final GameAccount actionBy = request.getActionBy() == null
+            ? null : getGameAccountService().getActionGameAccount(request.getActionBy());
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;
@@ -171,7 +174,7 @@ public class CardManagementController extends CardController {
 
         card.setPin(request.getNewPin());
         getBankCardDAO().save(card);
-        getCardHistoryService().writeUpdatePin(card, isAdmin);
+        getCardHistoryService().writeUpdatePin(card, actionBy, isAdmin);
 
         return ResponseEntity.ok().build();
     }

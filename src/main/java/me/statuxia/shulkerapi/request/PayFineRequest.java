@@ -1,20 +1,17 @@
 package me.statuxia.shulkerapi.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import me.statuxia.shulkerapi.model.CardType;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CardCreateRequest {
+public class PayFineRequest {
 
     @NotNull
-    private CardType type;
-
-    @Pattern(regexp = "\\d{4}")
-    @NotNull
-    private String pin;
+    private Long id;
 
     @Pattern(regexp = "\\d{4} \\d{4}")
     private String paymentCardNumber;
@@ -24,45 +21,41 @@ public class CardCreateRequest {
 
     @NotNull
     @NotEmpty
-    protected String gameAccount;
+    private String gameAccount;
 
-    public String getGameAccount() {
-        return gameAccount;
+    public Long getId() {
+        return id;
     }
 
-    public void setGameAccount(String gameAccount) {
-        this.gameAccount = gameAccount;
-    }
-
-    public CardType getType() {
-        return type;
-    }
-
-    public void setType(CardType type) {
-        this.type = type;
-    }
-
-    public String getPin() {
-        return pin;
-    }
-
-    public void setPin(String pin) {
-        this.pin = pin;
+    public PayFineRequest setId(Long id) {
+        this.id = id;
+        return this;
     }
 
     public String getPaymentCardNumber() {
         return paymentCardNumber;
     }
 
-    public void setPaymentCardNumber(String paymentCardNumber) {
+    public PayFineRequest setPaymentCardNumber(String paymentCardNumber) {
         this.paymentCardNumber = paymentCardNumber;
+        return this;
     }
 
     public String getPaymentCardPin() {
         return paymentCardPin;
     }
 
-    public void setPaymentCardPin(String paymentCardPin) {
+    public PayFineRequest setPaymentCardPin(String paymentCardPin) {
         this.paymentCardPin = paymentCardPin;
+        return this;
+    }
+
+    public String getGameAccount() {
+        return gameAccount;
+    }
+
+    public PayFineRequest setGameAccount(String gameAccount) {
+        this.gameAccount = gameAccount;
+        return this;
     }
 }
