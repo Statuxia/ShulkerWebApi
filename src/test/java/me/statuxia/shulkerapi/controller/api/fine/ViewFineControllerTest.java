@@ -8,6 +8,7 @@ import me.statuxia.shulkerapi.dao.GameAccountDAO;
 import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
 import me.statuxia.shulkerapi.dao.impl.FineDAO;
 import me.statuxia.shulkerapi.dao.impl.FineLogDAO;
+import me.statuxia.shulkerapi.model.Fine;
 import me.statuxia.shulkerapi.model.FineStatus;
 import me.statuxia.shulkerapi.request.FineListRequest;
 import me.statuxia.shulkerapi.response.NamedItem;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -147,6 +149,8 @@ class ViewFineControllerTest extends BaseContainerTest {
                 .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.total").value(String.valueOf(3)));
+
+        assertTrue(fineDAO.findAll().stream().allMatch(Fine::isNotified));
     }
 
     @Test
