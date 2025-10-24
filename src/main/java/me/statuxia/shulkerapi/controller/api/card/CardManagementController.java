@@ -27,6 +27,7 @@ import me.statuxia.shulkerapi.swagger.controller.CardManagementControllerOperati
 import me.statuxia.shulkerapi.swagger.controller.card.*;
 import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperation;
 import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
+import me.statuxia.shulkerapi.utils.AdminCardHelper;
 import me.statuxia.shulkerapi.utils.CardNumberGenerator;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,10 +79,15 @@ public class CardManagementController extends CardController {
     @InvalidPinOperation
     @InvalidPaymentPinOperation
     @CardManagementControllerOperation.Create
+    @WrongCardCreationOperation
     public ResponseEntity<CardResponse> createCard(
         @RequestBody @Valid CardCreateRequest request,
         @AuthData TokenData token
     ) {
+        if (CardType.ADMIN.equals(request.getType())) {
+            throw CardException.WRONG_CARD_TYPE_CREATION;
+        }
+
         final GameAccount gameAccount = getGameAccountService().getGameAccount(
             token,
             request.getGameAccount(),
@@ -133,7 +139,8 @@ public class CardManagementController extends CardController {
                 .addProcessor(BalanceProcessor.class)
                 .addData(BalanceProcessor.CARD, card)
                 .addData(BalanceProcessor.OPERATION, CardOperationType.WITHDRAW)
-                .addData(BalanceProcessor.VALUE, getCardProperties().getNewDirectCardPayment());
+                .addData(BalanceProcessor.VALUE, getCardProperties().getNewDirectCardPayment())
+                .addData(BalanceProcessor.WITH_ADMIN_INCREASE, true);
             getOperationProcessorService().process(data);
         }
 
@@ -153,12 +160,15 @@ public class CardManagementController extends CardController {
     @CardDisabledOperation
     @InvalidPinOperation
     @UnknownActionByAccountOperation
+    @UnsupportedForAdminCardOperation
     @CardManagementControllerOperation.UpdatePin
     public ResponseEntity<Void> updatePin(
         @RequestBody @Valid CardUpdatePinRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, UPDATE_PIN_CODE);
+        AdminCardHelper.unsupportedForAdminCard(card);
+
         final GameAccount actionBy = request.getActionBy() == null
             ? null : getGameAccountService().getActionGameAccount(request.getActionBy());
 
@@ -187,11 +197,13 @@ public class CardManagementController extends CardController {
     @UnknownActionByAccountOperation
     @UnknownCardOperation
     @CardDisabledOperation
+    @UnsupportedForAdminCardOperation
     public ResponseEntity<Void> disable(
         @RequestBody @Valid ChangeCardStateRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, null);
+        AdminCardHelper.unsupportedForAdminCard(card);
         final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
 
         if (card.isDisabled()) {
@@ -216,11 +228,13 @@ public class CardManagementController extends CardController {
     @UnknownActionByAccountOperation
     @UnknownCardOperation
     @CardDisabledOperation
+    @UnsupportedForAdminCardOperation
     public ResponseEntity<Void> enable(
         @RequestBody @Valid ChangeCardStateRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, null);
+        AdminCardHelper.unsupportedForAdminCard(card);
         final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
 
         if (!card.isDisabled()) {

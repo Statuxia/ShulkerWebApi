@@ -11,6 +11,7 @@ import me.statuxia.shulkerapi.dto.operation.OperationData;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardOperationType;
+import me.statuxia.shulkerapi.model.CardType;
 import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
 import me.statuxia.shulkerapi.processor.impl.card.TransferFundsProcessor;
 import me.statuxia.shulkerapi.request.ChangeCardBalanceRequest;
@@ -24,6 +25,7 @@ import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.CardActionControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.*;
 import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperation;
+import me.statuxia.shulkerapi.utils.AdminCardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,11 +72,13 @@ public class CardActionController extends CardController {
     @UnknownCardOperation
     @UnknownAccountOperation
     @AmountGreaterZeroOperation
+    @UnsupportedForAdminCardOperation
     public ResponseEntity<Void> deposit(
         @RequestBody @Valid ChangeCardBalanceRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, DEPOSIT_FUNDS_TO_CARD);
+        AdminCardHelper.unsupportedForAdminCard(card);
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;
@@ -104,6 +108,11 @@ public class CardActionController extends CardController {
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, WITHDRAW_FUNDS_FROM_CARD);
+        if (CardType.ADMIN.equals(card.getType())
+            && !getTokenService().hasAuthority(token.token(), ADMIN_CARD_WITHDRAW)
+        ) {
+            throw CardException.UNKNOWN_CARD;
+        }
 
         if (card.isDisabled()) {
             throw CardException.CARD_DISABLED;
@@ -132,12 +141,15 @@ public class CardActionController extends CardController {
     @CardActionControllerOperation.Transfer
     @UnknownAccountOperation
     @AmountGreaterZeroOperation
+    @UnsupportedForAdminCardOperation
     @SameCardReceiverOperation
     public ResponseEntity<Void> transfer(
         @RequestBody @Valid TransferFundsRequest request,
         @AuthData TokenData token
     ) {
         final BankCard card = getController().getBankCard(request, token, TRANSFER_FUNDS_FROM_CARD);
+        AdminCardHelper.unsupportedForAdminCard(card);
+
         final BankCard receiverCard = getBankCardDAO().findByNumber(request.getReceiverCard())
             .orElseThrow(() -> CardException.UNKNOWN_RECEIVER_CARD);
 

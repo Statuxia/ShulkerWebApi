@@ -12,5 +12,7 @@ public enum BankCardHistoryType {
     WITHDRAW,
     TRANSFER_FROM,
     TRANSFER_TO,
-    PAY_FINE
+    PAY_FINE,
+
+    ADMIN_TRANSFER
 }
