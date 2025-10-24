@@ -19,6 +19,6 @@ values
 ('FIRE', 'DIRECT', 644),
 ('ROYAL', 'DIRECT', 64),
 ('STEEL', 'DIRECT', 64),
-('ANONIMUS', 'DIRECT', 500),
+('ANONIMOUS', 'DIRECT', 500),
 ('LIGHTNING', 'DIRECT', 5000)
 ;

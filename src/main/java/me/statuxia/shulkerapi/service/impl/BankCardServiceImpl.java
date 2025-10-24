@@ -22,6 +22,8 @@ import me.statuxia.shulkerapi.swagger.controller.card.UnknownPaymentCardOperatio
 import me.statuxia.shulkerapi.utils.CardHistoryUtils;
 import me.statuxia.shulkerapi.utils.CardLogDataBuilder;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +33,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static me.statuxia.shulkerapi.utils.AdminCardHelper.buildSearchDTO;
+
 @Service
 @Transactional
 public class BankCardServiceImpl implements BankCardService {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final CardStyleDAO cardStyleDAO;
     private final BankCardDAO bankCardDAO;
@@ -312,7 +317,8 @@ public class BankCardServiceImpl implements BankCardService {
      */
     @Override
     public void increaseAdminCard(UUID historyUuid, BankCardHistoryType type, Long amount, BankCard from) {
-        final Optional<BankCard> card = bankCardDAO.find(new BankCardSearchDTO().setCardType(CardType.ADMIN));
+        final Optional<BankCard> card = bankCardDAO.find(buildSearchDTO());
+        logger.debug("card: {}", card);
         if (card.isEmpty()) {
             return;
         }

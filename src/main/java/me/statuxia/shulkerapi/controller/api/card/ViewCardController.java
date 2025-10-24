@@ -36,6 +36,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static me.statuxia.shulkerapi.utils.AdminCardHelper.buildSearchDTO;
+
 @RestController
 @RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 public class ViewCardController extends CardController {
@@ -119,7 +121,7 @@ public class ViewCardController extends CardController {
     public ResponseEntity<BankCardItem> getAdminCard(
         @AuthData TokenData token
     ) {
-        final Optional<BankCard> optCard = getBankCardDAO().find(new BankCardSearchDTO().setCardType(CardType.ADMIN));
+        final Optional<BankCard> optCard = getBankCardDAO().find(buildSearchDTO());
         if (optCard.isEmpty()) {
             throw CardException.UNKNOWN_CARD;
         }

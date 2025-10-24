@@ -13,6 +13,6 @@ public enum CardStyleType {
     FIRE,
     ROYAL,
     STEEL,
-    ANONIMUS,
+    ANONIMOUS,
     LIGHTNING
 }

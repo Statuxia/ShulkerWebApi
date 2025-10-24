@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.utils;
 
+import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.model.BankCard;
 import me.statuxia.shulkerapi.model.CardType;
@@ -19,5 +20,11 @@ public class AdminCardHelper {
         if (CardType.ADMIN.equals(card.getType())) {
             throw CardException.UNSUPPORTED_FOR_ADMIN_CARD;
         }
+    }
+
+    public static BankCardSearchDTO buildSearchDTO() {
+        return new BankCardSearchDTO()
+            .setCardType(CardType.ADMIN)
+            .setNumber(ADMIN_CARD_NUMBER);
     }
 }
