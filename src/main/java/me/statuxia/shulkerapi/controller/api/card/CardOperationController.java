@@ -39,7 +39,7 @@ public class CardOperationController extends CardController {
         BankCardHistoryType.WITHDRAW,
         BankCardHistoryType.TRANSFER_FROM,
         BankCardHistoryType.TRANSFER_TO,
-        BankCardHistoryType.PENALTIES
+        BankCardHistoryType.PAY_FINE
     );
 
     private final BankCardService bankCardService;

@@ -71,6 +71,27 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
     }
 
     @Override
+    public List<E> findAll() {
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<E> query = cb.createQuery(getEntityClass());
+
+        Root<E> root = query.from(getEntityClass());
+        query.select(root);
+
+        return getEntityManager().createQuery(query).getResultList();
+    }
+
+    @Override
+    public Long countAll() {
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        final Root<E> root = query.from(getEntityClass());
+
+        query.select(cb.count(root));
+        return getEntityManager().createQuery(query).getSingleResult();
+    }
+
+    @Override
     public void save(E entity) {
         if (entity.getId() != null) {
             getEntityManager().merge(entity);

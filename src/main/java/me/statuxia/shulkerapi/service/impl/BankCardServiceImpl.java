@@ -4,8 +4,10 @@ import me.statuxia.shulkerapi.dao.BankCardLogDAO;
 import me.statuxia.shulkerapi.dao.BankCardOperationHistoryDAO;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
 import me.statuxia.shulkerapi.dao.impl.CardStyleDAO;
+import me.statuxia.shulkerapi.dao.impl.FineDAO;
 import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
 import me.statuxia.shulkerapi.dto.ChangeCurrencyDTO;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.exception.CardException;
 import me.statuxia.shulkerapi.exception.CardHistoryException;
 import me.statuxia.shulkerapi.exception.CardStyleException;
@@ -13,8 +15,13 @@ import me.statuxia.shulkerapi.exception.FundsException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.service.BankCardService;
 import me.statuxia.shulkerapi.service.CardHistoryService;
+import me.statuxia.shulkerapi.swagger.controller.card.InvalidPaymentPinOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.PaymentCardDisabledOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.PaymentFromDirectOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.UnknownPaymentCardOperation;
 import me.statuxia.shulkerapi.utils.CardHistoryUtils;
 import me.statuxia.shulkerapi.utils.CardLogDataBuilder;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,17 +40,46 @@ public class BankCardServiceImpl implements BankCardService {
     private final BankCardLogDAO bankCardLogDAO;
     private final CardHistoryService cardHistoryService;
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
+    private final FineDAO fineDAO;
 
     @Autowired
     public BankCardServiceImpl(
         CardStyleDAO cardStyleDAO, BankCardDAO bankCardDAO, BankCardLogDAO bankCardLogDAO,
-        CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO
+        CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO, FineDAO fineDAO
     ) {
         this.cardStyleDAO = cardStyleDAO;
         this.bankCardDAO = bankCardDAO;
         this.bankCardLogDAO = bankCardLogDAO;
         this.cardHistoryService = cardHistoryService;
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
+        this.fineDAO = fineDAO;
+    }
+
+    @Override
+    @UnknownPaymentCardOperation
+    @PaymentCardDisabledOperation
+    @PaymentFromDirectOperation
+    @InvalidPaymentPinOperation
+    public BankCard getPaymentCard(BankCardSearchDTO dto, String paymentCardPin) {
+        final Optional<BankCard> paymentCard = bankCardDAO.find(dto);
+        if (paymentCard.isEmpty()) {
+            throw CardException.UNKNOWN_PAYMENT_CARD;
+        }
+
+        final BankCard card = paymentCard.get();
+        if (card.isDisabled()) {
+            throw CardException.PAYMENT_CARD_DISABLED;
+        }
+
+        if (!CardType.DIRECT.equals(card.getType())) {
+            throw CardException.PAYMENT_FROM_DIRECT;
+        }
+
+        if (!card.getPin().equals(paymentCardPin)) {
+            throw CardException.INVALID_PAYMENT_PIN;
+        }
+
+        return card;
     }
 
     /**
@@ -228,5 +264,33 @@ public class BankCardServiceImpl implements BankCardService {
         updatedCards.forEach(bankCardDAO::save);
         updatedOperations.forEach(bankCardOperationHistoryDAO::save);
         createdLogs.forEach(bankCardLogDAO::save);
+    }
+
+    /**
+     * Оплата штрафов
+     */
+    @Override
+    public void payFine(BankCard card, Long amount, Fine fine) {
+        if (amount <= 0) {
+            throw FundsException.AMOUNT_GREATER_ZERO;
+        }
+
+        final Long oldCurrency = card.getCurrency();
+        if (oldCurrency < amount) {
+            throw FundsException.NOT_ENOUGH_FUNDS;
+        }
+
+        card.setCurrency(oldCurrency - amount);
+        final Long newCurrency = card.getCurrency();
+        bankCardDAO.save(card);
+        final ChangeCurrencyDTO senderDTO = new ChangeCurrencyDTO(
+            card, BankCardHistoryType.PAY_FINE,
+            oldCurrency, newCurrency, newCurrency - oldCurrency
+        );
+        cardHistoryService.writeChangeCurrency(senderDTO);
+
+        fine.setStatus(FineStatus.PAYED);
+        fine.setStatusDate(DateTime.now());
+        fineDAO.save(fine);
     }
 }
