@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import me.statuxia.shulkerapi.response.BankCardItem;
+import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
+import me.statuxia.shulkerapi.response.NamedItem;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,7 +22,7 @@ public class ViewCardControllerOperation {
         description = "Получение списка карт",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = BankCardItem.class)))
+            content = @Content(schema = @Schema(implementation = BankCardPaginationResponse.class))
         )
     )
     public @interface List {
@@ -29,12 +31,28 @@ public class ViewCardControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-        description = "Списание средств со счета",
+        description = "Получение карты",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
             content = @Content(schema = @Schema(implementation = BankCardItem.class))
         )
     )
     public @interface Get {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Получение списка типов карт",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(
+                array = @ArraySchema(
+                    schema = @Schema(implementation = NamedItem.class)
+                )
+            )
+        )
+    )
+    public @interface Types {
     }
 }

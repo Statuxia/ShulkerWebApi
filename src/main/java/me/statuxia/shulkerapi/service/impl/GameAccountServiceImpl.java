@@ -8,7 +8,6 @@ import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +24,11 @@ public class GameAccountServiceImpl implements GameAccountService {
     @Autowired
     public GameAccountServiceImpl(
         TokenService tokenService,
-        GameAccountDAO gameAccountDAO,
-        @Lazy GameAccountService gameAccountService
+        GameAccountDAO gameAccountDAO
     ) {
         this.tokenService = tokenService;
         this.gameAccountDAO = gameAccountDAO;
-        this.gameAccountService = gameAccountService;
+        this.gameAccountService = this;
     }
 
     /**
@@ -58,6 +56,18 @@ public class GameAccountServiceImpl implements GameAccountService {
         final Optional<GameAccount> optAccount = gameAccountDAO.findByName(name);
         if (optAccount.isEmpty()) {
             throw AccountException.UNKNOWN_ACCOUNT;
+        }
+        return optAccount.get();
+    }
+
+    /**
+     * Получение игрового аккаунта по имени с выбрасыванием исключения при отсутствии
+     */
+    @Transactional
+    public GameAccount getActionGameAccount(String name) {
+        final Optional<GameAccount> optAccount = gameAccountDAO.findByName(name);
+        if (optAccount.isEmpty()) {
+            throw AccountException.UNKNOWN_ACTION_ACCOUNT;
         }
         return optAccount.get();
     }

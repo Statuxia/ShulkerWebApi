@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.5.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("checkstyle")
+    id("jacoco")
 }
 
 group = "me.statuxia"
@@ -28,6 +29,7 @@ dependencies {
     implementation("org.testcontainers:junit-jupiter")
     implementation("org.liquibase:liquibase-core")
     implementation("joda-time:joda-time:2.14.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.0")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 }
@@ -42,4 +44,16 @@ tasks.withType<Checkstyle> {
 
 checkstyle {
     toolVersion = "10.12.4"
+}
+
+jacoco {
+    toolVersion = "0.8.14"
+}
+
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        html.required.set(true)
+    }
 }

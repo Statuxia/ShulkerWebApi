@@ -7,7 +7,6 @@ import me.statuxia.shulkerapi.model.Account;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.SessionToken;
 import me.statuxia.shulkerapi.service.impl.GameAccountServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,7 +14,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -33,16 +31,6 @@ class GameAccountServiceTest {
 
     @Mock
     protected GameAccountDAO gameAccountDAO;
-
-    @Mock
-    @Lazy
-    protected GameAccountServiceImpl gameAccountServiceMock;
-
-    @BeforeEach
-    void setUp() {
-        when(gameAccountServiceMock.validateOwnedWithResult(any(TokenData.class), any(GameAccount.class)))
-            .then(k -> gameAccountService.validateOwnedWithResult(k.getArgument(0), k.getArgument(1)));
-    }
 
     @ParameterizedTest
     @MethodSource("validateOwnedDataSource")

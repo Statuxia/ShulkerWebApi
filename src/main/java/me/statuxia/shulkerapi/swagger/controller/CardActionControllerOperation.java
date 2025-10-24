@@ -15,7 +15,7 @@ public class CardActionControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-        description = "Начисление средств на счет",
+        description = "Пополнение средств на счет<br>Авторити: DEPOSIT_FUNDS_TO_CARD",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
             content = @Content(schema = @Schema())
@@ -27,12 +27,24 @@ public class CardActionControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-        description = "Списание средств со счета",
+        description = "Списание средств со счета<br>Авторити: WITHDRAW_FUNDS_FROM_CARD",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
             content = @Content(schema = @Schema())
         )
     )
     public @interface Withdraw {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Перевод средств<br>Авторити: TRANSFER_FUNDS_FROM_CARD",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema())
+        )
+    )
+    public @interface Transfer {
     }
 }

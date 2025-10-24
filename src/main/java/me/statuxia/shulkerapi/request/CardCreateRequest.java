@@ -13,9 +13,14 @@ public class CardCreateRequest {
     private CardType type;
 
     @Pattern(regexp = "\\d{4}")
+    @NotNull
     private String pin;
 
+    @Pattern(regexp = "\\d{4} \\d{4}")
     private String paymentCardNumber;
+
+    @Pattern(regexp = "\\d{4}")
+    private String paymentCardPin;
 
     @NotNull
     @NotEmpty
@@ -51,5 +56,13 @@ public class CardCreateRequest {
 
     public void setPaymentCardNumber(String paymentCardNumber) {
         this.paymentCardNumber = paymentCardNumber;
+    }
+
+    public String getPaymentCardPin() {
+        return paymentCardPin;
+    }
+
+    public void setPaymentCardPin(String paymentCardPin) {
+        this.paymentCardPin = paymentCardPin;
     }
 }

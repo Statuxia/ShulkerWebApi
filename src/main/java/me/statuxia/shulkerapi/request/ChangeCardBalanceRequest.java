@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ChangeCardBalanceRequest extends CardRequest {
+public class ChangeCardBalanceRequest extends BaseCardRequest {
 
     @Pattern(regexp = "\\d{4}")
     private String pin;

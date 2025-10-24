@@ -2,6 +2,9 @@ package me.statuxia.shulkerapi.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import me.statuxia.shulkerapi.model.CardStyleType;
+
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -11,7 +14,11 @@ public class BankCardItem {
     protected String cardNumber;
     protected String gameAccount;
     protected Long currency;
+    protected Long createTime;
     protected Boolean disabled;
+    protected Long disabledTime;
+    protected CardStyleType style;
+    protected Long patternSeed;
 
     public Long getId() {
         return id;
@@ -49,6 +56,15 @@ public class BankCardItem {
         return this;
     }
 
+    public Long getCreateTime() {
+        return createTime;
+    }
+
+    public BankCardItem setCreateTime(Long createTime) {
+        this.createTime = createTime;
+        return this;
+    }
+
     public Boolean getDisabled() {
         return disabled;
     }
@@ -56,5 +72,69 @@ public class BankCardItem {
     public BankCardItem setDisabled(Boolean disabled) {
         this.disabled = disabled;
         return this;
+    }
+
+    public Long getDisabledTime() {
+        return disabledTime;
+    }
+
+    public BankCardItem setDisabledTime(Long disabledTime) {
+        this.disabledTime = disabledTime;
+        return this;
+    }
+
+    public CardStyleType getStyle() {
+        return style;
+    }
+
+    public BankCardItem setStyle(CardStyleType style) {
+        this.style = style;
+        return this;
+    }
+
+    public Long getPatternSeed() {
+        return patternSeed;
+    }
+
+    public BankCardItem setPatternSeed(Long patternSeed) {
+        this.patternSeed = patternSeed;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final BankCardItem that = (BankCardItem) o;
+        return Objects.equals(id, that.id)
+            && Objects.equals(cardNumber, that.cardNumber)
+            && Objects.equals(gameAccount, that.gameAccount)
+            && Objects.equals(currency, that.currency)
+            && Objects.equals(disabled, that.disabled)
+            && Objects.equals(disabledTime, that.disabledTime)
+            && Objects.equals(style, that.style)
+            && Objects.equals(patternSeed, that.patternSeed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cardNumber, gameAccount, currency, disabled, disabledTime, style, patternSeed);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("BankCardItem{");
+        sb.append("id=").append(id);
+        sb.append(", cardNumber='").append(cardNumber).append('\'');
+        sb.append(", gameAccount='").append(gameAccount).append('\'');
+        sb.append(", currency=").append(currency);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", disabled=").append(disabled);
+        sb.append(", disabledTime=").append(disabledTime);
+        sb.append(", style=").append(style);
+        sb.append(", patternSeed=").append(patternSeed);
+        sb.append('}');
+        return sb.toString();
     }
 }

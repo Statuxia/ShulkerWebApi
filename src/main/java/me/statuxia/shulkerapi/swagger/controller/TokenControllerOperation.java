@@ -36,4 +36,16 @@ public class TokenControllerOperation {
     )
     public @interface Info {
     }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Получение токена по одноразовому коду",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema(implementation = TokenResponse.class))
+        )
+    )
+    public @interface Get {
+    }
 }

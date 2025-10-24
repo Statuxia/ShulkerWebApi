@@ -44,7 +44,8 @@ class GameAccountControllerTest extends BaseContainerTest {
     @Autowired
     protected MockMvc mockMvc;
 
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @Test
     void newNameTest() throws Exception {

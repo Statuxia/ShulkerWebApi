@@ -1,8 +1,14 @@
 package me.statuxia.shulkerapi.controller.api.card;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.dao.impl.BankCardHistoryDAO;
+import me.statuxia.shulkerapi.dto.search.impl.BankCardHistorySearchDTO;
+import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.BankCardHistory;
+import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.model.CardType;
 import me.statuxia.shulkerapi.request.CardCreateRequest;
 import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
@@ -14,15 +20,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource("classpath:test-application.properties")
 @Transactional
 @DirtiesContext
+@Rollback
 class CardManagementControllerTest extends BaseContainerTest {
 
     private static final String SESSION_TOKEN = "session-token-1";
@@ -44,9 +56,13 @@ class CardManagementControllerTest extends BaseContainerTest {
     protected BankCardDAO bankCardDAO;
 
     @Autowired
+    protected BankCardHistoryDAO bankCardHistoryDAO;
+
+    @Autowired
     protected MockMvc mockMvc;
 
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @Test
     void createFirstCardTest() throws Exception {
@@ -55,13 +71,23 @@ class CardManagementControllerTest extends BaseContainerTest {
         request.setType(CardType.DIRECT);
         request.setPin("1234");
 
-        mockMvc.perform(
+
+        final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardManagementController.CREATE)
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isOk())
-            .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")));
+            .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")))
+            .andReturn();
+
+        final JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
+        final BankCard card = bankCardDAO.findByNumber(node.get("number").asText()).get();
+
+        assertEquals(
+            BankCardHistoryType.CREATE_CARD,
+            bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast().getType()
+        );
     }
 
     @Test
@@ -87,6 +113,7 @@ class CardManagementControllerTest extends BaseContainerTest {
         request.setType(CardType.DIRECT);
         request.setPin("1234");
         request.setPaymentCardNumber("1234 5678");
+        request.setPaymentCardPin("1234");
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardManagementController.CREATE)
@@ -98,7 +125,7 @@ class CardManagementControllerTest extends BaseContainerTest {
     }
 
     @Test
-    void createDisabledCardTest() throws Exception {
+    void createDisabledPaymentCardTest() throws Exception {
         final CardCreateRequest request = new CardCreateRequest();
         request.setGameAccount("test-name");
         request.setType(CardType.DIRECT);
@@ -159,19 +186,30 @@ class CardManagementControllerTest extends BaseContainerTest {
         request.setType(CardType.DIRECT);
         request.setPin("1234");
         request.setPaymentCardNumber("1234 5678");
+        request.setPaymentCardPin("1234");
 
         bankCardDAO.findByNumber("1234 5678").ifPresent(card -> {
             card.setCurrency(1000L);
             bankCardDAO.save(card);
         });
 
-        mockMvc.perform(
+        final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + CardManagementController.CREATE)
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isOk())
-            .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")));
+            .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")))
+            .andReturn();
+
+
+        final JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
+        final BankCard card = bankCardDAO.findByNumber(node.get("number").asText()).get();
+        final BankCard card2 = bankCardDAO.findByNumber("1234 5678").get();
+
+        final List<BankCardHistory> histories = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCards(List.of(card, card2)));
+        assertEquals(BankCardHistoryType.WITHDRAW, histories.get(histories.size() - 2).getType());
+        assertEquals(BankCardHistoryType.CREATE_CARD, histories.get(histories.size() - 1).getType());
     }
 
     @Test
@@ -182,12 +220,18 @@ class CardManagementControllerTest extends BaseContainerTest {
         request.setCardNumber("1234 5678");
         request.setPin("1234");
 
+        final BankCard card = bankCardDAO.findByNumber("1234 5678").get();
+
         mockMvc.perform(
             MockMvcRequestBuilders.put(CardController.PREFIX + CardManagementController.UPDATE_PIN)
                 .header(X_TOKEN_HEADER, SESSION_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
         ).andExpect(status().isOk());
+        assertEquals(
+            BankCardHistoryType.UPDATE_PIN,
+            bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast().getType()
+        );
     }
 
     @Test

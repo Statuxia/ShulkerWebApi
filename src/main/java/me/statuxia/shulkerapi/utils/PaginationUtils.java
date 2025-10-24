@@ -3,6 +3,7 @@ package me.statuxia.shulkerapi.utils;
 import me.statuxia.shulkerapi.request.PaginationRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.StringUtils;
 
 public class PaginationUtils {
 
@@ -14,7 +15,7 @@ public class PaginationUtils {
             request.getPage(),
             request.getSize(),
             request.getDirection(),
-            "id"
+            StringUtils.hasText(request.getSortProperty()) ? request.getSortProperty() : "id"
         );
     }
 }

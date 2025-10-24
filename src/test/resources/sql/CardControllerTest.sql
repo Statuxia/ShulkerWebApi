@@ -19,6 +19,16 @@ values
 ('session-token-3', 120, 1),
 ('session-token-2', 120, 1);
 
+insert into token_authority
+(token, authority)
+values
+('session-token-1', 'DEPOSIT_FUNDS_TO_CARD'),
+('session-token-1', 'WITHDRAW_FUNDS_FROM_CARD'),
+('session-token-2', 'DEPOSIT_FUNDS_TO_CARD'),
+('session-token-2', 'WITHDRAW_FUNDS_FROM_CARD'),
+('session-token-3', 'DEPOSIT_FUNDS_TO_CARD'),
+('session-token-3', 'WITHDRAW_FUNDS_FROM_CARD');
+
 insert into session_token
 (id, token, account_id, create_time)
 values

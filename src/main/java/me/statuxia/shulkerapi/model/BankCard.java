@@ -5,10 +5,11 @@ import jakarta.validation.constraints.Pattern;
 import org.joda.time.DateTime;
 
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Entity(name = "BankCard")
 @Table(name = "bank_card")
-public class BankCard {
+public class BankCard implements Identifiable<Long> {
 
     public static final String ID_SEQ_GENERATOR = "bank_card_id_seq_generator";
     public static final String ID_SEQ = "bank_card_id_seq";
@@ -37,15 +38,27 @@ public class BankCard {
     @Enumerated(EnumType.STRING)
     private CardType type;
 
+    @Column(name = "create_time", nullable = false)
+    private DateTime createTime;
+
     private boolean disabled;
 
     @Column(name = "disabled_time")
     private DateTime disabledTime;
 
+    @Column(name = "card_style", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CardStyleType cardStyle = CardStyleType.DEFAULT;
+
+    @Column(name = "pattern_seed", nullable = false)
+    private Long patternSeed = 0L;
+
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -106,6 +119,34 @@ public class BankCard {
         this.disabledTime = disabledTime;
     }
 
+    public DateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(DateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public CardStyleType getCardStyle() {
+        return cardStyle;
+    }
+
+    public void setCardStyle(CardStyleType cardStyle) {
+        this.cardStyle = cardStyle;
+    }
+
+    public Long getPatternSeed() {
+        return patternSeed;
+    }
+
+    public void setPatternSeed(Long patternSeed) {
+        this.patternSeed = patternSeed;
+    }
+
+    public void updatePatternSeed() {
+        this.patternSeed = ThreadLocalRandom.current().nextLong(0, 1001);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -129,8 +170,11 @@ public class BankCard {
         sb.append(", pin=").append(pin);
         sb.append(", currency=").append(currency);
         sb.append(", type=").append(type);
+        sb.append(", createTime=").append(createTime);
         sb.append(", disabled=").append(disabled);
         sb.append(", disabledTime=").append(disabledTime);
+        sb.append(", cardStyle=").append(cardStyle);
+        sb.append(", patternSeed=").append(patternSeed);
         sb.append('}');
         return sb.toString();
     }

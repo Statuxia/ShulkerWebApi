@@ -26,10 +26,12 @@ public class TokenAuthority implements Identifiable<String> {
         this.authority = authority.authority;
     }
 
+    @Override
     public String getId() {
         return token;
     }
 
+    @Override
     public void setId(String id) {
         this.token = id;
     }

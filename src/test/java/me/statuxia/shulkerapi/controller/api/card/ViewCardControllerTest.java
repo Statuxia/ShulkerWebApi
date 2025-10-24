@@ -2,10 +2,15 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
-import me.statuxia.shulkerapi.dao.BankCardDAO;
-import me.statuxia.shulkerapi.request.CardRequest;
+import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
+import me.statuxia.shulkerapi.model.BankCard;
+import me.statuxia.shulkerapi.model.CardStyleType;
+import me.statuxia.shulkerapi.request.BaseCardRequest;
+import me.statuxia.shulkerapi.request.CardGetRequest;
 import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
+import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +34,7 @@ import java.util.List;
 import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Sql({
@@ -50,20 +56,29 @@ class ViewCardControllerTest extends BaseContainerTest {
     @Autowired
     protected MockMvc mockMvc;
 
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    protected ObjectMapper objectMapper;
 
     @Test
     void getTest() throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardGetRequest request = new CardGetRequest();
         request.setCardNumber("1234 5678");
         request.setGameAccount("test-name");
+
+        final BankCard card = bankCardDAO.findById(1L).get();
+        final DateTime createTime = card.getCreateTime();
+        final DateTime disabledTime = card.getDisabledTime();
 
         final BankCardItem response = new BankCardItem()
             .setId(1L)
             .setCardNumber("1234 5678")
             .setCurrency(0L)
+            .setCreateTime(createTime.getMillis())
             .setDisabled(false)
-            .setGameAccount("test-name");
+            .setDisabledTime(disabledTime == null ? null : disabledTime.getMillis())
+            .setGameAccount("test-name")
+            .setStyle(CardStyleType.DEFAULT)
+            .setPatternSeed(0L);
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
 
@@ -81,14 +96,16 @@ class ViewCardControllerTest extends BaseContainerTest {
     @ParameterizedTest
     @CsvSource({"test-name-2", "test-name-1"})
     void getNotOwnedTest(String name) throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardGetRequest request = new CardGetRequest();
         request.setCardNumber("1234 5678");
         request.setGameAccount(name);
 
         final BankCardItem response = new BankCardItem()
             .setId(1L)
             .setCardNumber("1234 5678")
-            .setGameAccount("test-name");
+            .setGameAccount("test-name")
+            .setStyle(CardStyleType.DEFAULT)
+            .setPatternSeed(0L);
 
         assertTrue(bankCardDAO.findByNumber("1234 5678").isPresent());
 
@@ -106,7 +123,7 @@ class ViewCardControllerTest extends BaseContainerTest {
     @ParameterizedTest
     @CsvSource({"badFormat", "0000 0000"})
     void getBadCardsTest(String card) throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardGetRequest request = new CardGetRequest();
         request.setCardNumber(card);
 
         mockMvc.perform(
@@ -119,17 +136,27 @@ class ViewCardControllerTest extends BaseContainerTest {
 
     @Test
     void listTest() throws Exception {
-        final CardRequest request = new CardRequest();
+        final CardRequest request = new BaseCardRequest();
         request.setGameAccount("test-name");
 
-        final List<BankCardItem> response = List.of(
+        final BankCard card = bankCardDAO.findById(1L).get();
+        final DateTime createTime = card.getCreateTime();
+        final DateTime disabledTime = card.getDisabledTime();
+
+        final BankCardPaginationResponse response = new BankCardPaginationResponse();
+        response.setTotal(1);
+        response.setItems(List.of(
             new BankCardItem()
                 .setId(1L)
                 .setCardNumber("1234 5678")
                 .setCurrency(0L)
+                .setCreateTime(createTime.getMillis())
                 .setDisabled(false)
+                .setDisabledTime(disabledTime == null ? null : disabledTime.getMillis())
                 .setGameAccount("test-name")
-        );
+                .setStyle(CardStyleType.DEFAULT)
+                .setPatternSeed(0L)
+        ));
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.LIST)
@@ -140,5 +167,19 @@ class ViewCardControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(objectMapper.writeValueAsString(response), result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void listWrongAccountTest() throws Exception {
+        final CardRequest request = new BaseCardRequest();
+        request.setGameAccount("test-name-2");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post(CardController.PREFIX + ViewCardController.LIST)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1201"));
     }
 }

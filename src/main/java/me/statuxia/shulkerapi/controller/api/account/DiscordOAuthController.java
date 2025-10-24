@@ -2,22 +2,26 @@ package me.statuxia.shulkerapi.controller.api.account;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import me.statuxia.shulkerapi.handler.HttpHandler;
 import me.statuxia.shulkerapi.model.DiscordAccount;
 import me.statuxia.shulkerapi.provider.DiscordOAuthRedirectProvider;
 import me.statuxia.shulkerapi.response.DiscordAccessTokenResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
+import me.statuxia.shulkerapi.service.CodeTokenService;
 import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import me.statuxia.shulkerapi.service.TokenService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(DiscordOAuthController.PREFIX)
@@ -28,16 +32,18 @@ public class DiscordOAuthController extends BaseDiscordApiController {
     public static final String REDIRECT = "/redirect";
     public static final String AUTH = "/auth";
 
+    private final CodeTokenService codeTokenService;
     private final DiscordOAuthRedirectProvider provider;
     private final DiscordAccountService discordAccountService;
     private final TokenService tokenService;
 
     public DiscordOAuthController(
-        DiscordIntegrationService discordIntegrationService,
+        DiscordIntegrationService discordIntegrationService, CodeTokenService codeTokenService,
         DiscordOAuthRedirectProvider provider,
         DiscordAccountService discordAccountService, TokenService tokenService
     ) {
         super(discordIntegrationService);
+        this.codeTokenService = codeTokenService;
         this.provider = provider;
         this.discordAccountService = discordAccountService;
         this.tokenService = tokenService;
@@ -54,18 +60,26 @@ public class DiscordOAuthController extends BaseDiscordApiController {
     @Operation(description = """
         Эндпоинт для авторизации полученного от Discord OAuth кода с последующим редиректом в лк
         """)
-    public void auth(HttpServletResponse response, @RequestParam("code") String code) throws IOException {
+    public void auth(
+        HttpServletRequest request, HttpServletResponse response,
+        @RequestParam(value = "code", required = false) String code
+    ) throws IOException {
+        if (!StringUtils.hasText(code)) {
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
+            return;
+        }
+
         final HttpHandler.HttpResponse<DiscordAccessTokenResponse> accessToken
             = getDiscordIntegrationService().getAccessToken(code);
         if (accessToken.getException() != null) {
             logger.error("error occured", accessToken.getException());
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
         final DiscordAccessTokenResponse tokenResponse = accessToken.getBody();
         if (tokenResponse == null) {
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
@@ -73,13 +87,13 @@ public class DiscordOAuthController extends BaseDiscordApiController {
             = getDiscordIntegrationService().getUserInfo(tokenResponse.getAccessToken());
         if (userInfo.getException() != null) {
             logger.error("error occured", userInfo.getException());
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
         final DiscordIdentityResponse userIdentify = userInfo.getBody();
         if (userIdentify == null) {
-            response.sendRedirect(getProvider().getAuthFailureRedirectUrl());
+            response.sendRedirect(getProvider().getAuthFailureRedirectUrl(request));
             return;
         }
 
@@ -89,7 +103,10 @@ public class DiscordOAuthController extends BaseDiscordApiController {
         );
 
         final String sessionToken = getTokenService().createSessionToken(discordAccount.getAccount());
-        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl() + "?token=" + sessionToken);
+        final String tokenCode = UUID.randomUUID().toString().toLowerCase();
+        codeTokenService.addCodeToken(sessionToken, tokenCode);
+
+        response.sendRedirect(getProvider().getAuthSuccessRedirectUrl(request) + "?code=" + tokenCode);
     }
 
     public DiscordOAuthRedirectProvider getProvider() {
