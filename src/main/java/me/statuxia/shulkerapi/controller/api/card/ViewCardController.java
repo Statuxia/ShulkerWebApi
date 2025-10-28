@@ -93,15 +93,14 @@ public class ViewCardController extends CardController {
 
         final BankCardItem item = buildItem(card);
 
+        if (getTokenService().hasAuthority(token.token(), TokenAuthorityEnum.GET_CARD_WITHOUT_REMOVE_DATA)) {
+            return ResponseEntity.ok(item);
+        }
+
         if (getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())
             && getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
         ) {
             return ResponseEntity.ok(item);
-        }
-
-        if (getTokenService().hasAuthority(token.token(), TokenAuthorityEnum.GET_CARD_WITHOUT_REMOVE_DATA)) {
-            return ResponseEntity.ok(item);
-
         }
 
         item.setCurrency(null);
