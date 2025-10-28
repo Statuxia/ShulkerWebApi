@@ -25,6 +25,7 @@ import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.CardActionControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.*;
 import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperation;
+import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import me.statuxia.shulkerapi.utils.AdminCardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -141,6 +142,7 @@ public class CardActionController extends CardController {
     @CardActionControllerOperation.Transfer
     @UnknownAccountOperation
     @AmountGreaterZeroOperation
+    @NotEnoughFundsOperation
     @UnsupportedForAdminCardOperation
     @SameCardReceiverOperation
     public ResponseEntity<Void> transfer(
