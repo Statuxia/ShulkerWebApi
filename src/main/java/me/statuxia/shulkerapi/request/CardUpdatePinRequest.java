@@ -17,7 +17,6 @@ public class CardUpdatePinRequest implements CardRequest, ActionByAware {
     protected String gameAccount;
 
     @Pattern(regexp = "\\d{4}")
-    @NotNull
     protected String pin;
 
     @Pattern(regexp = "\\d{4}")
