@@ -21,12 +21,24 @@ values
 insert into game_account
 (id, name, discord_id)
 values
-(1, 'test-name', 1);
+(1, 'test-name', 1),
+(2, 'test-name-paid', 1);
 
 insert into token_authority
 (token, authority)
 values
-('session-token-1', 'ADD_GAME_ACCOUNTS');
+('session-token-1', 'ADD_GAME_ACCOUNTS'),
+('session-token-1', 'CAN_CREATE_TWINK')
+;
+
+insert into paid_account
+(id, name)
+values
+(1, 'test-paid-account'),
+(2, 'test-name-paid'),
+(3, 'test-name-paid-2')
+;
 
 SELECT setval('account_id_seq', (SELECT MAX(id) FROM account));
 SELECT setval('game_account_id_seq', (SELECT MAX(id) FROM game_account));
+SELECT setval('paid_account_id_seq', (SELECT MAX(id) FROM paid_account));

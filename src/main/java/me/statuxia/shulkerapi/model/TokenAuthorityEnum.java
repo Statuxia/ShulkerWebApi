@@ -8,6 +8,7 @@ import static me.statuxia.shulkerapi.model.TokenAuthorityGroup.*;
 public enum TokenAuthorityEnum {
 
     ADD_GAME_ACCOUNTS(ADMIN, PLUGIN),
+    CAN_CREATE_TWINK(ADMIN, PLUGIN),
     RENAME_GAME_ACCOUNTS(ADMIN, PLUGIN),
 
     DEPOSIT_FUNDS_TO_CARD(PLUGIN),
