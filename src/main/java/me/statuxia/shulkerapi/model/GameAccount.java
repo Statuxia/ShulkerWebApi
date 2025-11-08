@@ -23,6 +23,8 @@ public class GameAccount implements Identifiable<Long> {
     @JoinColumn(name = "discord_id")
     private DiscordAccount discordAccount;
 
+    private boolean paid;
+
     @Override
     public Long getId() {
         return id;
@@ -49,6 +51,14 @@ public class GameAccount implements Identifiable<Long> {
         this.discordAccount = discordAccount;
     }
 
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -69,6 +79,7 @@ public class GameAccount implements Identifiable<Long> {
         sb.append("id=").append(id);
         sb.append(", name='").append(name).append('\'');
         sb.append(", discordAccount=").append(discordAccount);
+        sb.append(", paid=").append(paid);
         sb.append('}');
         return sb.toString();
     }

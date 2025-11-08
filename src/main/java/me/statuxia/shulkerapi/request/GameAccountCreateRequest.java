@@ -7,6 +7,7 @@ public class GameAccountCreateRequest {
 
     private String name;
     private Long discordId;
+    private boolean twink;
 
     public String getName() {
         return name;
@@ -22,5 +23,13 @@ public class GameAccountCreateRequest {
 
     public void setDiscordId(Long discordId) {
         this.discordId = discordId;
+    }
+
+    public boolean isTwink() {
+        return twink;
+    }
+
+    public void setTwink(boolean twink) {
+        this.twink = twink;
     }
 }
