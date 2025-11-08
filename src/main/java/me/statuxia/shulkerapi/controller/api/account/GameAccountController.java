@@ -3,7 +3,7 @@ package me.statuxia.shulkerapi.controller.api.account;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.annotations.RequiredAuthority;
-import me.statuxia.shulkerapi.controller.api.AuthController;
+import me.statuxia.shulkerapi.controller.api.Controller;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.GameAccountDAO;
 import me.statuxia.shulkerapi.dao.PaidAccountDAO;
@@ -42,7 +42,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = GameAccountController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 @Tag(name = "Game Profile", description = "Контроллер для создания и получения игровых профилей")
-public class GameAccountController implements AuthController {
+public class GameAccountController implements Controller {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 

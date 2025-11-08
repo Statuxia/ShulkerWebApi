@@ -2,7 +2,7 @@ package me.statuxia.shulkerapi.controller.api.fine;
 
 import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
-import me.statuxia.shulkerapi.controller.api.AuthController;
+import me.statuxia.shulkerapi.controller.api.Controller;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.converter.JsonNodeConverter;
 import me.statuxia.shulkerapi.dao.impl.FineDAO;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = ViewFineController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
-public class ViewFineController implements AuthController {
+public class ViewFineController implements Controller {
 
     public static final String PREFIX = "/api/v1/fine";
     public static final String LIST = "/list";

@@ -32,7 +32,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = MeController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 @Tag(name = "Me", description = "Основная информация о профиле по сессионному токену")
-public class MeController implements AuthController {
+public class MeController implements Controller {
 
     public static final String PREFIX = "/api/v1/me";
 
