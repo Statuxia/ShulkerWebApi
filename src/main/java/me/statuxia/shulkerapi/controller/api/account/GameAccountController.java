@@ -15,6 +15,7 @@ import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.PaidAccount;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.GameAccountCreateRequest;
+import me.statuxia.shulkerapi.request.GameAccountRenameRequest;
 import me.statuxia.shulkerapi.response.CanCreateTwinkResponse;
 import me.statuxia.shulkerapi.response.GameAccountResponse;
 import me.statuxia.shulkerapi.service.DiscordAccountService;
@@ -24,6 +25,7 @@ import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.GameAccountControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.account.AlreadyLinkedAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.account.NotPaidAccountOperation;
+import me.statuxia.shulkerapi.swagger.controller.account.NicknameAlreadyTakenOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,7 @@ public class GameAccountController implements AuthController {
     public static final String PREFIX = "/api/v1/game-account";
     public static final String CREATE = "/create";
     public static final String CAN_CREATE_TWINK = "/can-create-twink";
+    public static final String RENAME = "/rename";
 
     private final PaidAccountDAO paidAccountDAO;
     private final GameAccountDAO gameAccountDAO;
@@ -113,6 +116,35 @@ public class GameAccountController implements AuthController {
         );
 
         return ResponseEntity.ok(dto);
+    }
+
+    @RequiredAuthority(requireAll = TokenAuthorityEnum.RENAME_GAME_ACCOUNTS)
+    @PostMapping(value = RENAME, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @GameAccountControllerOperation.Rename
+    @AuthorityOperation
+    @UnknownAccountOperation
+    @NicknameAlreadyTakenOperation
+    public ResponseEntity<Void> rename(
+        @RequestBody GameAccountRenameRequest request, @AuthData TokenData token
+    ) {
+        final List<GameAccount> gameAccounts = gameAccountDAO.findByNameIgnoreCase(request.getOldName());
+        if (CollectionUtils.isEmpty(gameAccounts)) {
+            throw AccountException.UNKNOWN_ACCOUNT;
+        }
+
+        if (gameAccounts.size() > 1) {
+            logger.warn("{} accounts by name {}", gameAccounts.size(), request.getOldName());
+        }
+
+        if (!CollectionUtils.isEmpty(gameAccountDAO.findByNameIgnoreCase(request.getNewName()))) {
+            throw AccountException.NICKNAME_ALREADY_TAKEN;
+        }
+
+        gameAccounts.forEach(gameAccount -> gameAccount.setName(request.getNewName()));
+        gameAccountDAO.saveAll(gameAccounts);
+
+        return ResponseEntity.ok().build();
     }
 
     @RequiredAuthority(requireAll = TokenAuthorityEnum.CAN_CREATE_TWINK)
