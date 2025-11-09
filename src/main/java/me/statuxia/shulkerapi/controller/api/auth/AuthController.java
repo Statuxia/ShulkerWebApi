@@ -26,6 +26,7 @@ import me.statuxia.shulkerapi.response.AuthValidateResponse;
 import me.statuxia.shulkerapi.response.GameSessionIpItem;
 import me.statuxia.shulkerapi.response.GameSessionIpResponse;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
+import me.statuxia.shulkerapi.swagger.controller.AuthControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.auth.UnknownGameSessionOperation;
 import me.statuxia.shulkerapi.swagger.controller.auth.UnsupportedRequestStateOperation;
 import me.statuxia.shulkerapi.swagger.controller.auth.UnsupportedToChangeStateOperation;
@@ -95,6 +96,7 @@ public class AuthController implements Controller {
     @PostMapping(value = VALIDATE, produces = MediaType.APPLICATION_JSON_VALUE)
     @UnknownAccountOperation
     @Transactional
+    @AuthControllerOperation.Validate
     public ResponseEntity<AuthValidateResponse> validate(
         @RequestBody @Valid AuthValidateRequest request,
         @AuthData TokenData token
@@ -145,6 +147,7 @@ public class AuthController implements Controller {
     @RequiredAuthority(requireAll = TokenAuthorityEnum.AUTH_QUEUE)
     @PostMapping(value = QUEUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @AuthControllerOperation.Queue
     public ResponseEntity<GameSessionIpResponse> queue(
         @RequestBody PaginationRequest request,
         @AuthData TokenData token
@@ -173,6 +176,7 @@ public class AuthController implements Controller {
     @UnknownGameSessionOperation
     @UnsupportedRequestStateOperation
     @UnsupportedToChangeStateOperation
+    @AuthControllerOperation.ChangeState
     public ResponseEntity<Void> changeState(
         @RequestBody @Valid AuthChangeStateRequest request,
         @AuthData TokenData token
@@ -204,11 +208,12 @@ public class AuthController implements Controller {
         return ResponseEntity.ok().build();
     }
 
-    @RequiredAuthority(requireAll = TokenAuthorityEnum.AUTH_CHANGE_STATE)
+    @RequiredAuthority(requireAll = TokenAuthorityEnum.AUTH_REFRESH)
     @PostMapping(value = REFRESH, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @UnknownAccountOperation
     @UnknownGameSessionOperation
+    @AuthControllerOperation.Refresh
     public ResponseEntity<Void> refresh(
         @RequestBody @Valid AuthRefreshRequest request
     ) {
