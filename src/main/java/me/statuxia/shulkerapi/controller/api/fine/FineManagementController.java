@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.controller.api.fine;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.annotations.RequiredAuthority;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = FineManagementController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
+@Tag(name = "Fine", description = "Контроллер штрафов")
 public class FineManagementController implements Controller {
 
     public static final String PREFIX = "/api/v1/fine";
