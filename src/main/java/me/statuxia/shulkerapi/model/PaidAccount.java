@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity(name = "PaidAccount")
 @Table(name = "paid_account")
-public class PaidAccount {
+public class PaidAccount implements Identifiable<Long> {
 
 
     public static final String ID_SEQ_GENERATOR = "paid_account_id_seq_generator";
