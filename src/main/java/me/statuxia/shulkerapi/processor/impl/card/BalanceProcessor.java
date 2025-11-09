@@ -23,6 +23,7 @@ public class BalanceProcessor extends BaseProcessor {
     public static final String OPERATION = "operation";
     public static final String VALUE = "value";
     public static final String CARD = "card";
+    public static final String WITH_ADMIN_INCREASE = "with_admin_increase";
 
     private final HashMap<String, Function<Object, Boolean>> map = new HashMap<>();
 
@@ -51,10 +52,11 @@ public class BalanceProcessor extends BaseProcessor {
         final CardOperationType operation = (CardOperationType) data.getData().get(OPERATION);
         final Long value = (Long) data.getData().get(VALUE);
         final BankCard card = (BankCard) data.getData().get(CARD);
+        final boolean withAdminIncrease = data.getData().containsKey(WITH_ADMIN_INCREASE);
 
         switch (operation) {
             case DEPOSIT -> bankCardService.depositFunds(card, value);
-            case WITHDRAW -> bankCardService.withdrawFunds(card, value);
+            case WITHDRAW -> bankCardService.withdrawFunds(card, value, withAdminIncrease);
             default -> throw new IllegalArgumentException();
         }
     }

@@ -24,4 +24,14 @@ public class GameAccountControllerOperation {
     )
     public @interface Create {
     }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Изменение никнйма<br>Авторити: RENAME_GAME_ACCOUNTS",
+        responses = @ApiResponse(responseCode = "200", description = "OK")
+    )
+    public @interface Rename {
+
+    }
 }

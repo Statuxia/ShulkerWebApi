@@ -32,12 +32,12 @@ class BankCardServiceTest {
     @MethodSource("withdrawFundsDataSource")
     void withdrawFundsTest(BankCard card, Long amount, Object expectedResult) {
         if (expectedResult instanceof Exception exception) {
-            assertThrows(exception.getClass(), () -> cardService.withdrawFunds(card, amount), exception.getMessage());
+            assertThrows(exception.getClass(), () -> cardService.withdrawFunds(card, amount, false), exception.getMessage());
             return;
         }
 
         if (expectedResult instanceof BankCard result) {
-            cardService.withdrawFunds(card, amount);
+            cardService.withdrawFunds(card, amount, false);
             assertEquals(result.getCurrency(), card.getCurrency());
             return;
         }

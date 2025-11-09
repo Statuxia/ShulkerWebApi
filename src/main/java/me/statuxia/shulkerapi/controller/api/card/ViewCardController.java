@@ -2,6 +2,7 @@ package me.statuxia.shulkerapi.controller.api.card;
 
 import jakarta.validation.Valid;
 import me.statuxia.shulkerapi.annotations.AuthData;
+import me.statuxia.shulkerapi.annotations.RequiredAuthority;
 import me.statuxia.shulkerapi.configuration.properties.CardProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.impl.BankCardDAO;
@@ -16,7 +17,7 @@ import me.statuxia.shulkerapi.request.CardGetRequest;
 import me.statuxia.shulkerapi.request.CardListRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
-import me.statuxia.shulkerapi.response.NamedItem;
+import me.statuxia.shulkerapi.response.CardTypeItem;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
@@ -35,11 +36,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static me.statuxia.shulkerapi.utils.AdminCardHelper.buildSearchDTO;
+
 @RestController
 @RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 public class ViewCardController extends CardController {
 
     public static final String GET = "/get";
+    public static final String GET_ADMIN_CARD = "/get-admin-card";
     public static final String LIST = "/list";
     public static final String TYPES = "/types";
 
@@ -89,15 +93,14 @@ public class ViewCardController extends CardController {
 
         final BankCardItem item = buildItem(card);
 
+        if (getTokenService().hasAuthority(token.token(), TokenAuthorityEnum.GET_CARD_WITHOUT_REMOVE_DATA)) {
+            return ResponseEntity.ok(item);
+        }
+
         if (getGameAccountService().validateOwnedWithResult(token, card.getGameAccount())
             && getGameAccountService().getGameAccount(request.getGameAccount()).equals(card.getGameAccount())
         ) {
             return ResponseEntity.ok(item);
-        }
-
-        if (getTokenService().hasAuthority(token.token(), TokenAuthorityEnum.GET_CARD_WITHOUT_REMOVE_DATA)) {
-            return ResponseEntity.ok(item);
-
         }
 
         item.setCurrency(null);
@@ -106,7 +109,23 @@ public class ViewCardController extends CardController {
         item.setCreateTime(null);
 
         return ResponseEntity.ok(item);
+    }
 
+    @RequiredAuthority(requireAll = TokenAuthorityEnum.ADMIN_CARD_GET)
+    @PostMapping(value = GET_ADMIN_CARD, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @UnknownCardOperation
+    @UnknownAccountOperation
+    @ViewCardControllerOperation.Get
+    public ResponseEntity<BankCardItem> getAdminCard(
+        @AuthData TokenData token
+    ) {
+        final Optional<BankCard> optCard = getBankCardDAO().find(buildSearchDTO());
+        if (optCard.isEmpty()) {
+            throw CardException.UNKNOWN_CARD;
+        }
+
+        return ResponseEntity.ok(buildItem(optCard.get()));
     }
 
     @GetMapping(value = TYPES, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -114,10 +133,16 @@ public class ViewCardController extends CardController {
     @UnknownAccountOperation
     @UnknownCardOperation
     @ViewCardControllerOperation.Types
-    public ResponseEntity<List<NamedItem>> types() {
-        return ResponseEntity.ok(Arrays.stream(CardType.values()).map(type -> new NamedItem(
-            getMessageService().message(type), type.name()
-        )).toList());
+    public ResponseEntity<List<CardTypeItem>> types() {
+        return ResponseEntity.ok(Arrays.stream(CardType.values()).map(type -> {
+            final Long price = switch (type) {
+                case DIRECT -> getCardProperties().getNewDirectCardPayment();
+                default -> null;
+            };
+            return new CardTypeItem(
+                getMessageService().message(type), type.name(), price
+            );
+        }).toList());
     }
 
     private BankCardPaginationResponse getBankCards(CardListRequest request, TokenData token) {

@@ -22,6 +22,8 @@ import me.statuxia.shulkerapi.swagger.controller.card.UnknownPaymentCardOperatio
 import me.statuxia.shulkerapi.utils.CardHistoryUtils;
 import me.statuxia.shulkerapi.utils.CardLogDataBuilder;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +33,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static me.statuxia.shulkerapi.utils.AdminCardHelper.buildSearchDTO;
+
 @Service
 @Transactional
 public class BankCardServiceImpl implements BankCardService {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final CardStyleDAO cardStyleDAO;
     private final BankCardDAO bankCardDAO;
@@ -41,6 +46,7 @@ public class BankCardServiceImpl implements BankCardService {
     private final CardHistoryService cardHistoryService;
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
     private final FineDAO fineDAO;
+    private final BankCardService service;
 
     @Autowired
     public BankCardServiceImpl(
@@ -53,6 +59,7 @@ public class BankCardServiceImpl implements BankCardService {
         this.cardHistoryService = cardHistoryService;
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
         this.fineDAO = fineDAO;
+        this.service = this;
     }
 
     @Override
@@ -86,7 +93,7 @@ public class BankCardServiceImpl implements BankCardService {
      * Списание средств
      */
     @Override
-    public void withdrawFunds(BankCard card, Long amount) {
+    public void withdrawFunds(BankCard card, Long amount, boolean withAdminIncrease) {
         if (amount <= 0) {
             throw FundsException.AMOUNT_GREATER_ZERO;
         }
@@ -98,12 +105,17 @@ public class BankCardServiceImpl implements BankCardService {
 
         card.setCurrency(oldCurrency - amount);
         final Long newCurrency = card.getCurrency();
+        final UUID historyUuid = UUID.randomUUID();
 
         bankCardDAO.save(card);
         cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
             card, BankCardHistoryType.WITHDRAW,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        ));
+        ).setHistoryUuid(historyUuid));
+
+        if (withAdminIncrease) {
+            service.increaseAdminCard(historyUuid, BankCardHistoryType.WITHDRAW, amount, card);
+        }
     }
 
     /**
@@ -128,6 +140,7 @@ public class BankCardServiceImpl implements BankCardService {
             throw FundsException.NOT_ENOUGH_FUNDS;
         }
 
+        final UUID historyUuid = UUID.randomUUID();
         card.setCurrency(oldCurrency - amount);
         card.setCardStyle(cardStyle.getType());
         card.updatePatternSeed();
@@ -137,7 +150,9 @@ public class BankCardServiceImpl implements BankCardService {
         cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
             card, BankCardHistoryType.CHANGE_STYLE,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        ));
+        ).setHistoryUuid(historyUuid));
+
+        service.increaseAdminCard(historyUuid, BankCardHistoryType.CHANGE_STYLE, amount, card);
     }
 
     /**
@@ -280,17 +295,47 @@ public class BankCardServiceImpl implements BankCardService {
             throw FundsException.NOT_ENOUGH_FUNDS;
         }
 
+        final UUID historyUuid = UUID.randomUUID();
         card.setCurrency(oldCurrency - amount);
         final Long newCurrency = card.getCurrency();
         bankCardDAO.save(card);
         final ChangeCurrencyDTO senderDTO = new ChangeCurrencyDTO(
             card, BankCardHistoryType.PAY_FINE,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        );
+        ).setHistoryUuid(historyUuid);
         cardHistoryService.writeChangeCurrency(senderDTO);
 
         fine.setStatus(FineStatus.PAYED);
         fine.setStatusDate(DateTime.now());
         fineDAO.save(fine);
+
+        service.increaseAdminCard(historyUuid, BankCardHistoryType.PAY_FINE, amount, card);
+    }
+
+    /**
+     * Пополнение админского счета
+     */
+    @Override
+    public void increaseAdminCard(UUID historyUuid, BankCardHistoryType type, Long amount, BankCard from) {
+        final Optional<BankCard> card = bankCardDAO.find(buildSearchDTO());
+        logger.debug("card: {}", card);
+        if (card.isEmpty()) {
+            return;
+        }
+
+        final BankCard bankCard = card.get();
+        final Long oldCurrency = bankCard.getCurrency();
+        bankCard.setCurrency(oldCurrency + amount);
+
+
+        final ChangeCurrencyDTO receiverDTO = new ChangeCurrencyDTO(
+            bankCard, BankCardHistoryType.ADMIN_TRANSFER,
+            oldCurrency, bankCard.getCurrency(), bankCard.getCurrency() - oldCurrency
+        )
+            .addAdditionalData(new CardHistoryAdditionalData("sender", from.getNumber()))
+            .addAdditionalData(new CardHistoryAdditionalData("historyType", type.name()))
+            .setHistoryUuid(historyUuid);
+        cardHistoryService.writeChangeCurrency(receiverDTO);
+        bankCardDAO.save(bankCard);
     }
 }

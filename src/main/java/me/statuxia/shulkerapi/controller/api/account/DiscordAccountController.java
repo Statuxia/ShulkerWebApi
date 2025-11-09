@@ -2,7 +2,7 @@ package me.statuxia.shulkerapi.controller.api.account;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.annotations.AuthData;
-import me.statuxia.shulkerapi.controller.api.AuthController;
+import me.statuxia.shulkerapi.controller.api.Controller;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
@@ -32,7 +32,7 @@ import static me.statuxia.shulkerapi.exception.BaseApiException.NO_DATA;
 @RestController
 @RequestMapping(value = DiscordAccountController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 @Tag(name = "Discord Profile", description = "Контроллер для получения авторизованных Discord профилей")
-public class DiscordAccountController extends BaseDiscordApiController implements AuthController {
+public class DiscordAccountController extends BaseDiscordApiController implements Controller {
 
     public static final String PREFIX = "/api/v1/discord";
     public static final String GET = "/get";

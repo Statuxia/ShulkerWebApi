@@ -27,6 +27,18 @@ public class CardManagementControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
+        description = "Проверка PIN",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema(implementation = Boolean.class))
+        )
+    )
+    public @interface Validate {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
         description = "Обновление PIN кода",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
