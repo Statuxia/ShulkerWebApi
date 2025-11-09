@@ -49,7 +49,7 @@ import static me.statuxia.shulkerapi.model.GameSessionIpState.*;
 @RequestMapping(value = AuthController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 @Tag(name = "Auth", description = "Авторизационные эндпоинты")
 public class AuthController implements Controller {
-    
+
     public static final String PREFIX = "/api/v1/auth";
     public static final String VALIDATE = "/validate";
     public static final String QUEUE = "/queue";
@@ -110,7 +110,7 @@ public class AuthController implements Controller {
             .setGameAccount(gameAccount.get())
             .setIp(request.getIp())
             .setLastJoinDateFrom(DateTime.now())
-            .setPageable(PageRequest.of(0, 1, Sort.Direction.DESC,"id"));
+            .setPageable(PageRequest.of(0, 1, Sort.Direction.DESC, "id"));
 
         final Optional<GameSessionIp> optSessionIp = gameSessionIpDAO.find(searchDTO);
 
@@ -123,21 +123,23 @@ public class AuthController implements Controller {
 
         final GameSessionIp gameSessionIp = optSessionIp.get();
 
-        return ResponseEntity.ok(new AuthValidateResponse().setState(switch (gameSessionIp.getState()) {
-            case OUTDATED -> {
-                final GameSessionIp newGameSessionIp = createGameSession(request.getIp(), gameAccount.get());
-                gameSessionIpDAO.save(newGameSessionIp);
+        return ResponseEntity.ok(new AuthValidateResponse().setState(
+            switch (gameSessionIp.getState()) {
+                case OUTDATED -> {
+                    final GameSessionIp newGameSessionIp = createGameSession(request.getIp(), gameAccount.get());
+                    gameSessionIpDAO.save(newGameSessionIp);
 
-                yield newGameSessionIp.getState();
-            }
-            case NOT_NOTIFIED -> {
-                final GameSessionIp newGameSessionIp = createGameSession(request.getIp(), gameAccount.get());
-                gameSessionIpDAO.save(newGameSessionIp);
+                    yield newGameSessionIp.getState();
+                }
+                case NOT_NOTIFIED -> {
+                    final GameSessionIp newGameSessionIp = createGameSession(request.getIp(), gameAccount.get());
+                    gameSessionIpDAO.save(newGameSessionIp);
 
-                yield NOT_NOTIFIED;
+                    yield NOT_NOTIFIED;
+                }
+                default -> gameSessionIp.getState();
             }
-            default -> gameSessionIp.getState();
-        }));
+        ));
     }
 
     @RequiredAuthority(requireAll = TokenAuthorityEnum.AUTH_QUEUE)
