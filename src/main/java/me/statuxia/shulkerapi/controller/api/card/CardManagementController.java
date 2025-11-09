@@ -15,6 +15,7 @@ import me.statuxia.shulkerapi.processor.impl.card.BalanceProcessor;
 import me.statuxia.shulkerapi.request.CardCreateRequest;
 import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
 import me.statuxia.shulkerapi.request.ChangeCardStateRequest;
+import me.statuxia.shulkerapi.request.ValidatePinRequest;
 import me.statuxia.shulkerapi.response.CardResponse;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
@@ -46,6 +47,7 @@ import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.*;
 public class CardManagementController extends CardController {
 
     public static final String CREATE = "/create";
+    public static final String VALIDATE_PIN = "/validate-pin";
     public static final String UPDATE_PIN = "/update-pin";
     public static final String DISABLE_CARD = "/disable";
     public static final String ENABLE_CARD = "/enable";
@@ -151,6 +153,24 @@ public class CardManagementController extends CardController {
         response.setNumber(bankCard.getNumber());
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = VALIDATE_PIN, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @UnknownAccountOperation
+    @CardDisabledOperation
+    @CardManagementControllerOperation.Validate
+    public ResponseEntity<Boolean> validatePin(
+        @RequestBody @Valid ValidatePinRequest request,
+        @AuthData TokenData token
+    ) {
+        final BankCard card = getController().getBankCard(request, token, VALIDATE_PIN_CODE);
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        return ResponseEntity.ok(card.getPin().equals(request.getPin()));
     }
 
     @PutMapping(value = UPDATE_PIN, produces = MediaType.APPLICATION_JSON_VALUE)
