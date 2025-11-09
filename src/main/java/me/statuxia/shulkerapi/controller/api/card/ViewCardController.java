@@ -17,7 +17,7 @@ import me.statuxia.shulkerapi.request.CardGetRequest;
 import me.statuxia.shulkerapi.request.CardListRequest;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
-import me.statuxia.shulkerapi.response.NamedItem;
+import me.statuxia.shulkerapi.response.CardTypeItem;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
@@ -133,10 +133,16 @@ public class ViewCardController extends CardController {
     @UnknownAccountOperation
     @UnknownCardOperation
     @ViewCardControllerOperation.Types
-    public ResponseEntity<List<NamedItem>> types() {
-        return ResponseEntity.ok(Arrays.stream(CardType.values()).map(type -> new NamedItem(
-            getMessageService().message(type), type.name()
-        )).toList());
+    public ResponseEntity<List<CardTypeItem>> types() {
+        return ResponseEntity.ok(Arrays.stream(CardType.values()).map(type -> {
+            final Long price = switch (type) {
+                case DIRECT -> getCardProperties().getNewDirectCardPayment();
+                default -> null;
+            };
+            return new CardTypeItem(
+                getMessageService().message(type), type.name(), price
+            );
+        }).toList());
     }
 
     private BankCardPaginationResponse getBankCards(CardListRequest request, TokenData token) {
