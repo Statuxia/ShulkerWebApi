@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ConfigurationPropertiesScan("me.statuxia.shulkerapi.configuration.properties")
 @PropertySources({
     @PropertySource("classpath:application.properties"),
-    @PropertySource(value = "file:/etc/shulkerapiweb/application.properties", ignoreResourceNotFound = true)
+    @PropertySource(value = "file:./application.properties", ignoreResourceNotFound = true)
 })
 public class ShulkerApiApplication {
 

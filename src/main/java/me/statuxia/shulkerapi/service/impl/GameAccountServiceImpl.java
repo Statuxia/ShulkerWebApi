@@ -65,7 +65,7 @@ public class GameAccountServiceImpl implements GameAccountService {
      */
     @Transactional
     public GameAccount getActionGameAccount(String name) {
-        final Optional<GameAccount> optAccount = gameAccountDAO.findByName(name);
+        final Optional<GameAccount> optAccount = gameAccountDAO.findByNameIgnoreCase(name).stream().findFirst();
         if (optAccount.isEmpty()) {
             throw AccountException.UNKNOWN_ACTION_ACCOUNT;
         }

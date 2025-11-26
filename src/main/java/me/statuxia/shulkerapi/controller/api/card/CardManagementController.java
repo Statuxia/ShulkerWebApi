@@ -16,7 +16,7 @@ import me.statuxia.shulkerapi.request.CardCreateRequest;
 import me.statuxia.shulkerapi.request.CardUpdatePinRequest;
 import me.statuxia.shulkerapi.request.ChangeCardStateRequest;
 import me.statuxia.shulkerapi.request.ValidatePinRequest;
-import me.statuxia.shulkerapi.response.CardResponse;
+import me.statuxia.shulkerapi.response.CardCreateResponse;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
@@ -82,7 +82,7 @@ public class CardManagementController extends CardController {
     @InvalidPaymentPinOperation
     @CardManagementControllerOperation.Create
     @WrongCardCreationOperation
-    public ResponseEntity<CardResponse> createCard(
+    public ResponseEntity<CardCreateResponse> createCard(
         @RequestBody @Valid CardCreateRequest request,
         @AuthData TokenData token
     ) {
@@ -149,8 +149,8 @@ public class CardManagementController extends CardController {
         getBankCardDAO().save(bankCard);
         getCardHistoryService().writeCreateCard(bankCard);
 
-        final CardResponse response = new CardResponse();
-        response.setNumber(bankCard.getNumber());
+        final CardCreateResponse response = new CardCreateResponse();
+        response.setCardNumber(bankCard.getNumber());
 
         return ResponseEntity.ok(response);
     }
