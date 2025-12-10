@@ -41,6 +41,10 @@ public class GameSessionIpDAO extends BaseDAO<GameSessionIp, Long, GameSessionIp
             predicates.add(root.get("state").in(searchDTO.getStates()));
         }
 
+        if (searchDTO.isNotified() != null) {
+            predicates.add(cb.equal(root.get("notified"), searchDTO.isNotified()));
+        }
+
         return cb.and(predicates.toArray(new Predicate[0]));
     }
 

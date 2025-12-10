@@ -37,11 +37,11 @@ public class GameSessionIpDTO implements ISearchDTO {
         return this;
     }
 
-    public boolean isNotified() {
+    public Boolean isNotified() {
         return notified;
     }
 
-    public GameSessionIpDTO setNotified(boolean notified) {
+    public GameSessionIpDTO setNotified(Boolean notified) {
         this.notified = notified;
         return this;
     }

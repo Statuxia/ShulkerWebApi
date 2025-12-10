@@ -10,12 +10,15 @@ import me.statuxia.shulkerapi.model.GameSessionIpState;
 import me.statuxia.shulkerapi.request.AuthChangeStateRequest;
 import me.statuxia.shulkerapi.request.AuthRefreshRequest;
 import me.statuxia.shulkerapi.request.AuthValidateRequest;
+import me.statuxia.shulkerapi.request.PaginationRequest;
 import me.statuxia.shulkerapi.response.AuthValidateResponse;
+import me.statuxia.shulkerapi.response.GameSessionIpResponse;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,6 +186,37 @@ class AuthControllerTest extends BaseContainerTest {
         assertTrue(gameSessionIpDAO.findById(2L).isPresent());
         assertEquals(GameSessionIpState.NOT_NOTIFIED, gameSessionIpDAO.findById(1L).get().getState());
         assertEquals(GameSessionIpState.STARTED, gameSessionIpDAO.findById(2L).get().getState());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true,0", "false,1"})
+    void queueNotNotifiedTest(boolean notified, int total) throws Exception {
+        assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
+
+        final Optional<GameAccount> optGameAccount = gameAccountDAO.findByName("test-name");
+        final GameSessionIp sessionIp = new GameSessionIp();
+        sessionIp.setGameAccount(optGameAccount.get());
+        sessionIp.setNotified(notified);
+        sessionIp.setLastJoinDate(DateTime.now().plusDays(10));
+        sessionIp.setState(GameSessionIpState.STARTED);
+        sessionIp.setIp("0.0.0.0");
+        gameSessionIpDAO.save(sessionIp);
+
+        assertTrue(gameSessionIpDAO.findById(1L).isPresent());
+        assertEquals(sessionIp.getId(), gameSessionIpDAO.findById(1L).get().getId());
+
+        final MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.QUEUE)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(new PaginationRequest()))
+            ).andExpect(status().isOk())
+            .andReturn();
+
+        assertEquals(
+            total,
+            objectMapper.readValue(result.getResponse().getContentAsString(), GameSessionIpResponse.class).getTotal()
+        );
     }
 
     @Test
