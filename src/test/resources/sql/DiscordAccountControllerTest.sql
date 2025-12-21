@@ -18,4 +18,15 @@ insert into session_token
 values
 (1, 'session-token-1', 1, NOW());
 
+insert into token_authority
+(token, authority)
+values
+('session-token-1', 'UNLINK_ACCOUNT'),
+('session-token-1', 'LINK_ACCOUNT');
+
 SELECT setval('account_id_seq', (SELECT MAX(id) FROM account));
+
+INSERT INTO game_account
+(id, name, discord_id, paid)
+VALUES
+(1000000, 'TestAccount', 1, false);
