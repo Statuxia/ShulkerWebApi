@@ -59,7 +59,7 @@ class GameAccountControllerTest extends BaseContainerTest {
         request.setName("new-name");
         request.setDiscordId(1L);
 
-        final GameAccountResponse response = new GameAccountResponse(3L, "new-name", 1L);
+        final GameAccountResponse response = new GameAccountResponse(100000002L, "new-name", 1L);
 
         assertTrue(gameAccountDAO.findByName("new-name").isEmpty());
 
@@ -110,7 +110,7 @@ class GameAccountControllerTest extends BaseContainerTest {
         request.setDiscordId(1L);
         request.setTwink(true);
 
-        final GameAccountResponse response = new GameAccountResponse(3L, "test-paid-account", 1L);
+        final GameAccountResponse response = new GameAccountResponse(100000002L, "test-paid-account", 1L);
 
         assertTrue(gameAccountDAO.findByName("test-paid-account").isEmpty());
         assertFalse(paidAccountDAO.findByNameIgnoreCase("test-paid-account").isEmpty());

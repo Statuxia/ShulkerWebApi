@@ -121,7 +121,7 @@ class ViewCardControllerTest extends BaseContainerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"badFormat", "0000 0000"})
+    @CsvSource({"badFormat", "0200 0000"})
     void getBadCardsTest(String card) throws Exception {
         final CardGetRequest request = new CardGetRequest();
         request.setCardNumber(card);
