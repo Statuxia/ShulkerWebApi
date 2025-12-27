@@ -16,6 +16,10 @@ public class AccountException extends ApiException {
         = new AccountException("exception.AccountException.NOT_PAID_ACCOUNT", 1205);
     public static final AccountException UNKNOWN_LINK_ACCOUNT_STORAGE
         = new AccountException("exception.AccountException.UNKNOWN_LINK_ACCOUNT_STORAGE", 1206);
+    public static final AccountException LINK_NO_MAIN_ACCOUNT
+        = new AccountException("exception.AccountException.LINK_NO_MAIN_ACCOUNT", 1207);
+    public static final AccountException LINK_MAIN_ACCOUNT
+        = new AccountException("exception.AccountException.LINK_MAIN_ACCOUNT", 1208);
 
     public AccountException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

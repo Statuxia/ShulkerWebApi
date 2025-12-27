@@ -17,6 +17,7 @@ import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.DiscordAccountLinkRequest;
 import me.statuxia.shulkerapi.response.DiscordAccountUnlinkResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
+import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.service.DiscordIntegrationService;
 import me.statuxia.shulkerapi.swagger.IncorrectDataOperation;
 import me.statuxia.shulkerapi.swagger.NoDataOperation;
@@ -49,15 +50,17 @@ public class DiscordAccountController extends BaseDiscordApiController implement
 
     private final DiscordAccountDAO discordAccountDAO;
     private final GameAccountDAO gameAccountDAO;
+    private final DiscordAccountService discordAccountService;
 
     @Autowired
     public DiscordAccountController(
         DiscordIntegrationService discordIntegrationService,
-        DiscordAccountDAO discordAccountDAO, GameAccountDAO gameAccountDAO
+        DiscordAccountDAO discordAccountDAO, GameAccountDAO gameAccountDAO, DiscordAccountService discordAccountService
     ) {
         super(discordIntegrationService);
         this.discordAccountDAO = discordAccountDAO;
         this.gameAccountDAO = gameAccountDAO;
+        this.discordAccountService = discordAccountService;
     }
 
     @GetMapping(value = {GET + ID_PATH, GET}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -122,12 +125,7 @@ public class DiscordAccountController extends BaseDiscordApiController implement
         @RequestBody DiscordAccountLinkRequest request,
         @AuthData TokenData token
     ) {
-        final Optional<DiscordAccount> optDiscordAccount = getDiscordAccountDAO().findById(request.getDiscordId());
-        if (optDiscordAccount.isEmpty()) {
-            throw AccountException.UNKNOWN_ACCOUNT;
-        }
-
-        final DiscordAccount discordAccount = optDiscordAccount.get();
+        final DiscordAccount discordAccount = discordAccountService.createOrGet(request.getDiscordId());
         final DiscordAccount linkAccountStorage = getLinkAccountStorage();
 
         if (Objects.equals(discordAccount.getId(), linkAccountStorage.getId())) {
@@ -137,6 +135,18 @@ public class DiscordAccountController extends BaseDiscordApiController implement
         final List<GameAccount> list = gameAccountDAO.findByDiscordAccount(linkAccountStorage).stream()
             .filter(gameAccount -> gameAccount.getName().equalsIgnoreCase(request.getUsername()))
             .toList();
+
+        final List<GameAccount> ownedAccounts = gameAccountDAO.findByDiscordAccount(discordAccount);
+        final boolean hasMainAccount = ownedAccounts.stream().anyMatch(gameAccount -> !gameAccount.isPaid());
+
+        for (GameAccount gameAccount : list) {
+            if (gameAccount.isPaid() && !hasMainAccount) {
+                throw AccountException.LINK_NO_MAIN_ACCOUNT;
+            }
+            if (!gameAccount.isPaid() && hasMainAccount) {
+                throw AccountException.LINK_MAIN_ACCOUNT;
+            }
+        }
 
         list.forEach(item -> item.setDiscordAccount(discordAccount));
         gameAccountDAO.saveAll(list);
