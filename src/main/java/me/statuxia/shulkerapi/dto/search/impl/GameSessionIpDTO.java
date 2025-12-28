@@ -12,7 +12,7 @@ public class GameSessionIpDTO implements ISearchDTO {
 
     protected GameAccount gameAccount;
     protected String ip;
-    protected boolean notified;
+    protected Boolean notified;
     protected List<GameSessionIpState> states;
     protected DateTime lastJoinDateFrom;
     protected DateTime lastJoinDateTo;
