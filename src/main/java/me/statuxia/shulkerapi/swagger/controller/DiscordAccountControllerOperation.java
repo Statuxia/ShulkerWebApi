@@ -29,7 +29,7 @@ public class DiscordAccountControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-        description = "Отвязка игрового аккаунта от Discord аккаунта",
+        description = "Отвязка игрового аккаунта от Discord аккаунта\nАвторити: UNLINK_ACCOUNT",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
             content = @Content(schema = @Schema(implementation = DiscordAccountUnlinkResponse.class))
@@ -41,7 +41,7 @@ public class DiscordAccountControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-        description = "Привязка игрового аккаунта к Discord аккаунту",
+        description = "Привязка игрового аккаунта к Discord аккаунту\nАвторити: LINK_ACCOUNT",
         responses = @ApiResponse(
             responseCode = "200", description = "OK"
         )

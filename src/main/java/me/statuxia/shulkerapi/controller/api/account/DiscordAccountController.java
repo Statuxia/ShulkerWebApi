@@ -120,7 +120,7 @@ public class DiscordAccountController extends BaseDiscordApiController implement
     @PostMapping(value = LINK, produces = MediaType.APPLICATION_JSON_VALUE)
     @UnknownAccountOperation
     @UnknownLinkAccountOperation
-    @DiscordAccountControllerOperation.Unlink
+    @DiscordAccountControllerOperation.Link
     public ResponseEntity<DiscordAccountUnlinkResponse> link(
         @RequestBody DiscordAccountLinkRequest request,
         @AuthData TokenData token
