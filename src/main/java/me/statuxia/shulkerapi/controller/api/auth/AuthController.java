@@ -12,16 +12,15 @@ import me.statuxia.shulkerapi.dao.GameAccountDAO;
 import me.statuxia.shulkerapi.dao.impl.GameSessionIpDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.search.impl.GameSessionIpDTO;
+import me.statuxia.shulkerapi.exception.AccountException;
 import me.statuxia.shulkerapi.exception.GameSessionIpException;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.GameSessionIp;
 import me.statuxia.shulkerapi.model.GameSessionIpState;
 import me.statuxia.shulkerapi.model.TokenAuthorityEnum;
 import me.statuxia.shulkerapi.request.*;
-import me.statuxia.shulkerapi.response.AuthValidateResponse;
-import me.statuxia.shulkerapi.response.AuthValidateResponseItem;
-import me.statuxia.shulkerapi.response.GameSessionIpItem;
-import me.statuxia.shulkerapi.response.GameSessionIpResponse;
+import me.statuxia.shulkerapi.response.*;
+import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.AuthControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.auth.UnknownGameSessionOperation;
@@ -66,6 +65,7 @@ public class AuthController implements Controller {
     private final GameAccountDAO gameAccountDAO;
     private final GameSessionIpDAO gameSessionIpDAO;
     private final AuthProperties authProperties;
+    private final MessageService messageService;
 
     private final Map<GameSessionIpState, Long> stateLifetimes = new EnumMap<>(GameSessionIpState.class);
 
@@ -82,11 +82,12 @@ public class AuthController implements Controller {
     public AuthController(
         GameAccountDAO gameAccountDAO,
         GameSessionIpDAO gameSessionIpDAO,
-        AuthProperties authProperties
+        AuthProperties authProperties, MessageService messageService
     ) {
         this.gameAccountDAO = gameAccountDAO;
         this.gameSessionIpDAO = gameSessionIpDAO;
         this.authProperties = authProperties;
+        this.messageService = messageService;
     }
 
     @RequiredAuthority(requireAll = TokenAuthorityEnum.AUTH_VALIDATE)
@@ -109,7 +110,12 @@ public class AuthController implements Controller {
                 = gameAccountDAO.findByNameIgnoreCase(item.getName()).stream().findFirst();
 
             if (gameAccount.isEmpty()) {
-                items.add(new AuthValidateResponseItem().setUsername(item.getName()));
+                items.add(
+                    new AuthValidateResponseItem().setUsername(item.getName())
+                        .setErrorMessage(messageService.message(AccountException.UNKNOWN_ACCOUNT.getMessage()))
+                        .setErrorCode(AccountException.UNKNOWN_ACCOUNT.getCode())
+                        .setSuccess(false)
+                );
                 continue;
             }
 
@@ -127,7 +133,8 @@ public class AuthController implements Controller {
 
                 items.add(new AuthValidateResponseItem()
                     .setState(gameSessionIp.getState())
-                    .setUsername(item.getName()));
+                    .setUsername(item.getName())
+                    .setSuccess(true));
                 continue;
             }
 
@@ -137,7 +144,7 @@ public class AuthController implements Controller {
                 switch (gameSessionIp.getState()) {
                     case OUTDATED -> {
                         final GameSessionIp newGameSessionIp = createGameSession(item.getIp(), gameAccount.get());
-                        updateSessionIp.add(gameSessionIp);
+                        updateSessionIp.add(newGameSessionIp);
 
                         yield newGameSessionIp.getState();
                     }
@@ -227,9 +234,12 @@ public class AuthController implements Controller {
     @UnknownAccountOperation
     @UnknownGameSessionOperation
     @AuthControllerOperation.Refresh
-    public ResponseEntity<Void> refresh(
+    public ResponseEntity<AuthRefreshResponse> refresh(
         @RequestBody @Valid AuthRefreshRequest request
     ) {
+        final AuthRefreshResponse response = new AuthRefreshResponse();
+        final List<AuthRefreshResponseItem> items = new ArrayList<>();
+        response.setItems(items);
         final List<GameSessionIp> updatedSessionIp = new ArrayList<>();
 
         for (AuthRefreshRequestItem item : request.getItems()) {
@@ -237,6 +247,12 @@ public class AuthController implements Controller {
                 = gameAccountDAO.findByNameIgnoreCase(item.getName()).stream().findFirst();
 
             if (gameAccount.isEmpty()) {
+                items.add(
+                    new AuthRefreshResponseItem().setUsername(item.getName())
+                        .setErrorMessage(messageService.message(AccountException.UNKNOWN_ACCOUNT.getMessage()))
+                        .setErrorCode(AccountException.UNKNOWN_ACCOUNT.getCode())
+                        .setSuccess(false)
+                );
                 continue;
             }
 
@@ -250,7 +266,13 @@ public class AuthController implements Controller {
             final Optional<GameSessionIp> optSessionIp = gameSessionIpDAO.find(searchDTO);
 
             if (optSessionIp.isEmpty()) {
-                throw GameSessionIpException.UNKNOWN_GAME_SESSION;
+                items.add(
+                    new AuthRefreshResponseItem().setUsername(item.getName())
+                        .setErrorMessage(messageService.message(GameSessionIpException.UNKNOWN_GAME_SESSION.getMessage()))
+                        .setErrorCode(GameSessionIpException.UNKNOWN_GAME_SESSION.getCode())
+                        .setSuccess(false)
+                );
+                continue;
             }
 
             final GameSessionIp gameSessionIp = optSessionIp.get();
@@ -258,12 +280,13 @@ public class AuthController implements Controller {
                 DateTime.now().plusSeconds(stateLifetimes.getOrDefault(ACCEPTED, 1L).intValue())
             );
 
+            items.add(new AuthRefreshResponseItem().setUsername(item.getName()).setSuccess(true));
             updatedSessionIp.add(gameSessionIp);
         }
 
         gameSessionIpDAO.saveAll(updatedSessionIp);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(response);
     }
 
     private GameSessionIp createGameSession(String ip, GameAccount gameAccount) {

@@ -2,35 +2,33 @@ package me.statuxia.shulkerapi.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import me.statuxia.shulkerapi.model.GameSessionIpState;
 
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthValidateResponseItem {
+public class AuthRefreshResponseItem {
 
     protected String username;
     protected boolean success;
-    protected GameSessionIpState state;
     protected String errorMessage;
     protected Integer errorCode;
-
-    public GameSessionIpState getState() {
-        return state;
-    }
-
-    public AuthValidateResponseItem setState(GameSessionIpState state) {
-        this.state = state;
-        return this;
-    }
 
     public String getUsername() {
         return username;
     }
 
-    public AuthValidateResponseItem setUsername(String username) {
+    public AuthRefreshResponseItem setUsername(String username) {
         this.username = username;
+        return this;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public AuthRefreshResponseItem setSuccess(boolean success) {
+        this.success = success;
         return this;
     }
 
@@ -38,7 +36,7 @@ public class AuthValidateResponseItem {
         return errorMessage;
     }
 
-    public AuthValidateResponseItem setErrorMessage(String errorMessage) {
+    public AuthRefreshResponseItem setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
         return this;
     }
@@ -47,17 +45,8 @@ public class AuthValidateResponseItem {
         return errorCode;
     }
 
-    public AuthValidateResponseItem setErrorCode(Integer errorCode) {
+    public AuthRefreshResponseItem setErrorCode(Integer errorCode) {
         this.errorCode = errorCode;
-        return this;
-    }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public AuthValidateResponseItem setSuccess(boolean success) {
-        this.success = success;
         return this;
     }
 
@@ -66,25 +55,23 @@ public class AuthValidateResponseItem {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final AuthValidateResponseItem that = (AuthValidateResponseItem) o;
+        final AuthRefreshResponseItem that = (AuthRefreshResponseItem) o;
         return success == that.success
             && Objects.equals(username, that.username)
-            && state == that.state
             && Objects.equals(errorMessage, that.errorMessage)
             && Objects.equals(errorCode, that.errorCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, success, state, errorMessage, errorCode);
+        return Objects.hash(username, success, errorMessage, errorCode);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AuthValidateResponseItem{");
+        final StringBuilder sb = new StringBuilder("AuthRefreshResponseItem{");
         sb.append("username='").append(username).append('\'');
         sb.append(", success=").append(success);
-        sb.append(", state=").append(state);
         sb.append(", errorMessage='").append(errorMessage).append('\'');
         sb.append(", errorCode=").append(errorCode);
         sb.append('}');

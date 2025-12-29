@@ -8,9 +8,7 @@ import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.GameSessionIp;
 import me.statuxia.shulkerapi.model.GameSessionIpState;
 import me.statuxia.shulkerapi.request.*;
-import me.statuxia.shulkerapi.response.AuthValidateResponse;
-import me.statuxia.shulkerapi.response.AuthValidateResponseItem;
-import me.statuxia.shulkerapi.response.GameSessionIpResponse;
+import me.statuxia.shulkerapi.response.*;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,14 +29,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Optional;
 
 import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -89,7 +85,7 @@ class AuthControllerTest extends BaseContainerTest {
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isBadRequest())
+            ).andExpect(status().isOk())
             .andReturn();
 
         final AuthValidateResponse response = objectMapper.readValue(
@@ -97,7 +93,12 @@ class AuthControllerTest extends BaseContainerTest {
             AuthValidateResponse.class
         );
 
-        assertTrue(CollectionUtils.isEmpty(response.getItems()));
+        final AuthValidateResponseItem item = response.getItems().getFirst();
+        assertEquals("test-name-x", item.getUsername());
+        assertFalse(item.isSuccess());
+        assertNull(item.getState());
+        assertEquals("Неизвестный аккаунт", item.getErrorMessage());
+        assertEquals(1201, item.getErrorCode());
     }
 
     @Test
@@ -116,7 +117,8 @@ class AuthControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(
-            new AuthValidateResponseItem().setState(GameSessionIpState.STARTED),
+            new AuthValidateResponseItem().setState(GameSessionIpState.STARTED).setUsername("test-name")
+                .setSuccess(true),
             objectMapper.readValue(result.getResponse().getContentAsString(), AuthValidateResponse.class)
                 .getItems().getFirst()
         );
@@ -392,13 +394,24 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name-x");
         final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
-        mockMvc.perform(
-                MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
-                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("1201"));
+        final MvcResult result = mockMvc.perform(
+            MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
+                .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isOk()).andReturn();
+
+
+        final AuthRefreshResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            AuthRefreshResponse.class
+        );
+
+        final AuthRefreshResponseItem item = response.getItems().getFirst();
+        assertEquals("test-name-x", item.getUsername());
+        assertFalse(item.isSuccess());
+        assertEquals("Неизвестный аккаунт", item.getErrorMessage());
+        assertEquals(1201, item.getErrorCode());
     }
 
     @Test
@@ -415,13 +428,23 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
         final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
-        mockMvc.perform(
-                MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
-                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("2001"));
+        final MvcResult result = mockMvc.perform(
+            MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
+                .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isOk()).andReturn();
+
+        final AuthRefreshResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            AuthRefreshResponse.class
+        );
+
+        final AuthRefreshResponseItem item = response.getItems().getFirst();
+        assertEquals("test-name", item.getUsername());
+        assertFalse(item.isSuccess());
+        assertEquals("Неизвестная игровая сессия", item.getErrorMessage());
+        assertEquals(2001, item.getErrorCode());
     }
 
 
@@ -439,13 +462,23 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
         final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
-        mockMvc.perform(
-                MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
-                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("2001"));
+        final MvcResult result = mockMvc.perform(
+            MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
+                .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isOk()).andReturn();
+
+        final AuthRefreshResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            AuthRefreshResponse.class
+        );
+
+        final AuthRefreshResponseItem item = response.getItems().getFirst();
+        assertEquals("test-name", item.getUsername());
+        assertFalse(item.isSuccess());
+        assertEquals("Неизвестная игровая сессия", item.getErrorMessage());
+        assertEquals(2001, item.getErrorCode());
     }
 
     @Test
@@ -462,13 +495,24 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
         final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
-        mockMvc.perform(
+        final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("2001"));
+            ).andExpect(status().isOk())
+            .andReturn();
+
+        final AuthRefreshResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            AuthRefreshResponse.class
+        );
+
+        final AuthRefreshResponseItem item = response.getItems().getFirst();
+        assertEquals("test-name", item.getUsername());
+        assertFalse(item.isSuccess());
+        assertEquals("Неизвестная игровая сессия", item.getErrorMessage());
+        assertEquals(2001, item.getErrorCode());
     }
 
     @Test
@@ -485,11 +529,22 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
         final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
-        mockMvc.perform(
+        final MvcResult result = mockMvc.perform(
             MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
                 .header(X_TOKEN_HEADER, SESSION_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
-        ).andExpect(status().isOk());
+        ).andExpect(status().isOk()).andReturn();
+
+        final AuthRefreshResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            AuthRefreshResponse.class
+        );
+
+        final AuthRefreshResponseItem item = response.getItems().getFirst();
+        assertEquals("test-name", item.getUsername());
+        assertTrue(item.isSuccess());
+        assertNull(item.getErrorMessage());
+        assertNull(item.getErrorCode());
     }
 }
