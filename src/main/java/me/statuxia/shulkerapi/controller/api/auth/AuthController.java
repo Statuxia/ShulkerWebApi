@@ -13,7 +13,6 @@ import me.statuxia.shulkerapi.dao.impl.GameSessionIpDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.search.impl.GameSessionIpDTO;
 import me.statuxia.shulkerapi.exception.AccountException;
-import me.statuxia.shulkerapi.exception.GameSessionIpException;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.GameSessionIp;
 import me.statuxia.shulkerapi.model.GameSessionIpState;
@@ -40,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
+import static me.statuxia.shulkerapi.exception.GameSessionIpException.*;
 import static me.statuxia.shulkerapi.model.GameSessionIpState.*;
 
 @RestController
@@ -202,7 +202,7 @@ public class AuthController implements Controller {
         @AuthData TokenData token
     ) {
         final GameSessionIp session = gameSessionIpDAO.findById(request.getId())
-            .orElseThrow(() -> GameSessionIpException.UNKNOWN_GAME_SESSION);
+            .orElseThrow(() -> UNKNOWN_GAME_SESSION);
 
         if (request.getState() == null) {
             session.setNotified(true);
@@ -211,11 +211,11 @@ public class AuthController implements Controller {
         }
 
         if (!CHANGE_STATE_REQUEST_AVAILABLE_TYPES.contains(request.getState())) {
-            throw GameSessionIpException.UNSUPPORTED_REQUEST_STATE;
+            throw UNSUPPORTED_REQUEST_STATE;
         }
 
         if (!AVAILABLE_TO_CHANGE_STATES.contains(session.getState())) {
-            throw GameSessionIpException.UNSUPPORTED_TO_CHANGE_STATE;
+            throw UNSUPPORTED_TO_CHANGE_STATE;
         }
 
         session.setNotified(true);
@@ -268,8 +268,8 @@ public class AuthController implements Controller {
             if (optSessionIp.isEmpty()) {
                 items.add(
                     new AuthRefreshResponseItem().setUsername(item.getName())
-                        .setErrorMessage(messageService.message(GameSessionIpException.UNKNOWN_GAME_SESSION.getMessage()))
-                        .setErrorCode(GameSessionIpException.UNKNOWN_GAME_SESSION.getCode())
+                        .setErrorMessage(messageService.message(UNKNOWN_GAME_SESSION.getMessage()))
+                        .setErrorCode(UNKNOWN_GAME_SESSION.getCode())
                         .setSuccess(false)
                 );
                 continue;
