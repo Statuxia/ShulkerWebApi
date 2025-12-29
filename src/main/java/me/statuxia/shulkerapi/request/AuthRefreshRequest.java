@@ -2,37 +2,24 @@ package me.statuxia.shulkerapi.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.NotEmpty;
 import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthRefreshRequest {
 
     @NonNull
-    @NotEmpty
-    protected String name;
-    @NonNull
-    @NotEmpty
-    protected String ip;
+    protected List<AuthRefreshRequestItem> items;
 
     @NonNull
-    public String getName() {
-        return name;
+    public List<AuthRefreshRequestItem> getItems() {
+        return items;
     }
 
-    public AuthRefreshRequest setName(@NonNull String name) {
-        this.name = name;
-        return this;
-    }
-
-    @NonNull
-    public String getIp() {
-        return ip;
-    }
-
-    public AuthRefreshRequest setIp(@NonNull String ip) {
-        this.ip = ip;
+    public AuthRefreshRequest setItems(@NonNull List<AuthRefreshRequestItem> items) {
+        this.items = items;
         return this;
     }
 }

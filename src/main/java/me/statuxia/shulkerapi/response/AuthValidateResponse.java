@@ -2,23 +2,22 @@ package me.statuxia.shulkerapi.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import me.statuxia.shulkerapi.model.GameSessionIpState;
 
+import java.util.List;
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthValidateResponse {
 
-    protected GameSessionIpState state;
+    protected List<AuthValidateResponseItem> items;
 
-    public GameSessionIpState getState() {
-        return state;
+    public List<AuthValidateResponseItem> getItems() {
+        return items;
     }
 
-    public AuthValidateResponse setState(GameSessionIpState state) {
-        this.state = state;
-        return this;
+    public void setItems(List<AuthValidateResponseItem> items) {
+        this.items = items;
     }
 
     @Override
@@ -27,18 +26,18 @@ public class AuthValidateResponse {
             return false;
         }
         final AuthValidateResponse that = (AuthValidateResponse) o;
-        return state == that.state;
+        return Objects.equals(items, that.items);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(state);
+        return Objects.hashCode(items);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AuthValidateResponse{");
-        sb.append("state=").append(state);
+        sb.append("items=").append(items);
         sb.append('}');
         return sb.toString();
     }

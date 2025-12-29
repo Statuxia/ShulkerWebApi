@@ -7,11 +7,9 @@ import me.statuxia.shulkerapi.dao.impl.GameSessionIpDAO;
 import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.model.GameSessionIp;
 import me.statuxia.shulkerapi.model.GameSessionIpState;
-import me.statuxia.shulkerapi.request.AuthChangeStateRequest;
-import me.statuxia.shulkerapi.request.AuthRefreshRequest;
-import me.statuxia.shulkerapi.request.AuthValidateRequest;
-import me.statuxia.shulkerapi.request.PaginationRequest;
+import me.statuxia.shulkerapi.request.*;
 import me.statuxia.shulkerapi.response.AuthValidateResponse;
+import me.statuxia.shulkerapi.response.AuthValidateResponseItem;
 import me.statuxia.shulkerapi.response.GameSessionIpResponse;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +31,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static me.statuxia.shulkerapi.controller.resolver.AuthDataResolver.X_TOKEN_HEADER;
@@ -80,22 +80,30 @@ class AuthControllerTest extends BaseContainerTest {
 
     @Test
     void validateNotGameAccountTest() throws Exception {
-        final AuthValidateRequest request = new AuthValidateRequest().setName("test-name-x").setIp("0.0.0.0");
+        final AuthValidateRequestItem requestItem = new AuthValidateRequestItem()
+            .setName("test-name-x").setIp("0.0.0.0");
+        final AuthValidateRequest request = new AuthValidateRequest().setItems(List.of(requestItem));
 
-        mockMvc.perform(
+        final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.VALIDATE)
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("1201"));
+            .andReturn();
 
-        assertEquals(0, gameSessionIpDAO.countAll());
+        final AuthValidateResponse response = objectMapper.readValue(
+            result.getResponse().getContentAsString(),
+            AuthValidateResponse.class
+        );
+
+        assertTrue(CollectionUtils.isEmpty(response.getItems()));
     }
 
     @Test
     void validateNewStartedTest() throws Exception {
-        final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequestItem requestItem = new AuthValidateRequestItem().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequest request = new AuthValidateRequest().setItems(List.of(requestItem));
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
 
@@ -108,8 +116,9 @@ class AuthControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(
-            new AuthValidateResponse().setState(GameSessionIpState.STARTED),
+            new AuthValidateResponseItem().setState(GameSessionIpState.STARTED),
             objectMapper.readValue(result.getResponse().getContentAsString(), AuthValidateResponse.class)
+                .getItems().getFirst()
         );
         assertEquals(1, gameSessionIpDAO.countAll());
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
@@ -118,7 +127,8 @@ class AuthControllerTest extends BaseContainerTest {
 
     @Test
     void validateAlreadyStartedTest() throws Exception {
-        final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequestItem requestItem = new AuthValidateRequestItem().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequest request = new AuthValidateRequest().setItems(List.of(requestItem));
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
 
@@ -143,8 +153,9 @@ class AuthControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(
-            new AuthValidateResponse().setState(GameSessionIpState.STARTED),
+            new AuthValidateResponseItem().setState(GameSessionIpState.STARTED),
             objectMapper.readValue(result.getResponse().getContentAsString(), AuthValidateResponse.class)
+                .getItems().getFirst()
         );
         assertEquals(1, gameSessionIpDAO.countAll());
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
@@ -153,7 +164,8 @@ class AuthControllerTest extends BaseContainerTest {
 
     @Test
     void validateNotNotifiedTest() throws Exception {
-        final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequestItem requestItem = new AuthValidateRequestItem().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequest request = new AuthValidateRequest().setItems(List.of(requestItem));
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
 
@@ -178,8 +190,9 @@ class AuthControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(
-            new AuthValidateResponse().setState(GameSessionIpState.NOT_NOTIFIED),
+            new AuthValidateResponseItem().setState(GameSessionIpState.NOT_NOTIFIED),
             objectMapper.readValue(result.getResponse().getContentAsString(), AuthValidateResponse.class)
+                .getItems().getFirst()
         );
         assertEquals(2, gameSessionIpDAO.countAll());
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
@@ -221,7 +234,8 @@ class AuthControllerTest extends BaseContainerTest {
 
     @Test
     void validateOutdatedTest() throws Exception {
-        final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequestItem requestItem = new AuthValidateRequestItem().setName("test-name").setIp("0.0.0.0");
+        final AuthValidateRequest request = new AuthValidateRequest().setItems(List.of(requestItem));
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
 
@@ -246,8 +260,9 @@ class AuthControllerTest extends BaseContainerTest {
             .andReturn();
 
         assertEquals(
-            new AuthValidateResponse().setState(GameSessionIpState.STARTED),
+            new AuthValidateResponseItem().setState(GameSessionIpState.STARTED),
             objectMapper.readValue(result.getResponse().getContentAsString(), AuthValidateResponse.class)
+                .getItems().getFirst()
         );
         assertEquals(2, gameSessionIpDAO.countAll());
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
@@ -374,7 +389,8 @@ class AuthControllerTest extends BaseContainerTest {
 
     @Test
     void refreshNoAccountTest() throws Exception {
-        final AuthRefreshRequest request = new AuthRefreshRequest().setIp("0.0.0.0").setName("test-name-x");
+        final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name-x");
+        final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
@@ -396,7 +412,8 @@ class AuthControllerTest extends BaseContainerTest {
         sessionIp.setIp("0.0.0.1");
         gameSessionIpDAO.save(sessionIp);
 
-        final AuthRefreshRequest request = new AuthRefreshRequest().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
@@ -419,7 +436,8 @@ class AuthControllerTest extends BaseContainerTest {
         sessionIp.setIp("0.0.0.0");
         gameSessionIpDAO.save(sessionIp);
 
-        final AuthRefreshRequest request = new AuthRefreshRequest().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
@@ -441,7 +459,8 @@ class AuthControllerTest extends BaseContainerTest {
         sessionIp.setIp("0.0.0.0");
         gameSessionIpDAO.save(sessionIp);
 
-        final AuthRefreshRequest request = new AuthRefreshRequest().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
@@ -463,7 +482,8 @@ class AuthControllerTest extends BaseContainerTest {
         sessionIp.setIp("0.0.0.0");
         gameSessionIpDAO.save(sessionIp);
 
-        final AuthRefreshRequest request = new AuthRefreshRequest().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name");
+        final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));
 
         mockMvc.perform(
             MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.REFRESH)
