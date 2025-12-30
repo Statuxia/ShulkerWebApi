@@ -40,7 +40,9 @@ public enum TokenAuthorityEnum {
     CREATE_CUSTOM_TOKENS(ADMIN),
 
     UNLINK_ACCOUNT(ADMIN, PLUGIN),
-    LINK_ACCOUNT(ADMIN, PLUGIN);
+    LINK_ACCOUNT(ADMIN, PLUGIN),
+
+    GAME_ACCOUNT_BALANCE_CHANGE(ADMIN, PLUGIN);
 
     private final List<TokenAuthorityGroup> groups;
 
