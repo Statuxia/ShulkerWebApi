@@ -79,12 +79,13 @@ class AuthControllerTest extends BaseContainerTest {
         gameSessionIpDAO.getEntityManager()
             .createNativeQuery("ALTER SEQUENCE game_session_ip_id_seq RESTART WITH 1")
             .executeUpdate();
-        cacheManager.getCache("auth_validate").clear();
     }
 
     @Test
     void validateNotGameAccountTest() throws Exception {
         final AuthValidateRequest request = new AuthValidateRequest().setName("test-name-x").setIp("0.0.0.0");
+
+        assertNull(cacheManager.getCache("auth_validate").get("test-name-x_0.0.0.0"));
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.VALIDATE)
@@ -95,6 +96,8 @@ class AuthControllerTest extends BaseContainerTest {
             .andExpect(jsonPath("$.code").value("1201"));
 
         assertEquals(0, gameSessionIpDAO.countAll());
+
+        assertNull(cacheManager.getCache("auth_validate").get("test-name-x_0.0.0.0"));
     }
 
     @Test
@@ -102,6 +105,7 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.VALIDATE)
@@ -118,6 +122,10 @@ class AuthControllerTest extends BaseContainerTest {
         assertEquals(1, gameSessionIpDAO.countAll());
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
         assertEquals(GameSessionIpState.STARTED, gameSessionIpDAO.findById(1L).get().getState());
+
+        assertNotNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
+        cacheManager.getCache("auth_validate").evict("test-name_0.0.0.0");
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
     }
 
     @Test
@@ -125,6 +133,7 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
 
         final Optional<GameAccount> optGameAccount = gameAccountDAO.findByName("test-name");
         final GameSessionIp sessionIp = new GameSessionIp();
@@ -153,6 +162,10 @@ class AuthControllerTest extends BaseContainerTest {
         assertEquals(1, gameSessionIpDAO.countAll());
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
         assertEquals(GameSessionIpState.STARTED, gameSessionIpDAO.findById(1L).get().getState());
+
+        assertNotNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
+        cacheManager.getCache("auth_validate").evict("test-name_0.0.0.0");
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
     }
 
     @Test
@@ -160,6 +173,7 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
 
         final Optional<GameAccount> optGameAccount = gameAccountDAO.findByName("test-name");
         final GameSessionIp sessionIp = new GameSessionIp();
@@ -190,6 +204,10 @@ class AuthControllerTest extends BaseContainerTest {
         assertTrue(gameSessionIpDAO.findById(2L).isPresent());
         assertEquals(GameSessionIpState.NOT_NOTIFIED, gameSessionIpDAO.findById(1L).get().getState());
         assertEquals(GameSessionIpState.STARTED, gameSessionIpDAO.findById(2L).get().getState());
+
+        assertNotNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
+        cacheManager.getCache("auth_validate").evict("test-name_0.0.0.0");
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
     }
 
     @ParameterizedTest
@@ -228,6 +246,7 @@ class AuthControllerTest extends BaseContainerTest {
         final AuthValidateRequest request = new AuthValidateRequest().setName("test-name").setIp("0.0.0.0");
 
         assertTrue(gameSessionIpDAO.findById(1L).isEmpty());
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
 
         final Optional<GameAccount> optGameAccount = gameAccountDAO.findByName("test-name");
         final GameSessionIp sessionIp = new GameSessionIp();
@@ -257,7 +276,12 @@ class AuthControllerTest extends BaseContainerTest {
         assertTrue(gameSessionIpDAO.findById(1L).isPresent());
         assertTrue(gameSessionIpDAO.findById(2L).isPresent());
         assertEquals(GameSessionIpState.OUTDATED, gameSessionIpDAO.findById(1L).get().getState());
-        assertEquals(GameSessionIpState.STARTED, gameSessionIpDAO.findById(2L).get().getState());    }
+        assertEquals(GameSessionIpState.STARTED, gameSessionIpDAO.findById(2L).get().getState());
+
+        assertNotNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
+        cacheManager.getCache("auth_validate").evict("test-name_0.0.0.0");
+        assertNull(cacheManager.getCache("auth_validate").get("test-name_0.0.0.0"));
+    }
 
     @Test
     void changeUnknownStateTest() throws Exception {
