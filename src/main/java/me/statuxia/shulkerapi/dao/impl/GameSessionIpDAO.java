@@ -5,6 +5,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import me.statuxia.shulkerapi.dto.search.impl.GameSessionIpDTO;
 import me.statuxia.shulkerapi.model.GameSessionIp;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -16,6 +17,12 @@ import java.util.List;
 @Transactional
 @Repository
 public class GameSessionIpDAO extends BaseDAO<GameSessionIp, Long, GameSessionIpDTO> {
+
+    private final GameSessionIpDAO dao;
+
+    public GameSessionIpDAO() {
+        this.dao = this;
+    }
 
     @Override
     public Predicate buildPredicate(CriteriaBuilder cb, Root<GameSessionIp> root, GameSessionIpDTO searchDTO) {
@@ -51,5 +58,15 @@ public class GameSessionIpDAO extends BaseDAO<GameSessionIp, Long, GameSessionIp
     @Override
     public Class<GameSessionIp> getEntityClass() {
         return GameSessionIp.class;
+    }
+
+    @Override
+    public void save(GameSessionIp entity) {
+        super.save(entity);
+        dao.evictCache(entity.getGameAccount().getName(), entity.getIp());
+    }
+
+    @CacheEvict(value = "auth_validate", key = "#name.toLowerCase() + '_' + #ip")
+    public void evictCache(String name, String ip) {
     }
 }

@@ -27,6 +27,7 @@ import me.statuxia.shulkerapi.swagger.controller.auth.UnsupportedRequestStateOpe
 import me.statuxia.shulkerapi.swagger.controller.auth.UnsupportedToChangeStateOperation;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
@@ -95,73 +96,52 @@ public class AuthController implements Controller {
     @UnknownAccountOperation
     @Transactional
     @AuthControllerOperation.Validate
+    @Cacheable(value = "auth_validate", key = "#request.name.toLowerCase() + '_' + #request.ip")
     public ResponseEntity<AuthValidateResponse> validate(
         @RequestBody @Valid AuthValidateRequest request,
         @AuthData TokenData token
     ) {
-        final AuthValidateResponse response = new AuthValidateResponse();
-        final List<AuthValidateResponseItem> items = new ArrayList<>();
-        response.setItems(items);
+        final Optional<GameAccount> gameAccount
+            = gameAccountDAO.findByNameIgnoreCase(request.getName()).stream().findFirst();
 
-        final List<GameSessionIp> updateSessionIp = new ArrayList<>();
-
-        for (AuthValidateRequestItem item : request.getItems()) {
-            final Optional<GameAccount> gameAccount
-                = gameAccountDAO.findByNameIgnoreCase(item.getName()).stream().findFirst();
-
-            if (gameAccount.isEmpty()) {
-                items.add(
-                    new AuthValidateResponseItem().setUsername(item.getName())
-                        .setErrorMessage(messageService.message(AccountException.UNKNOWN_ACCOUNT.getMessage()))
-                        .setErrorCode(AccountException.UNKNOWN_ACCOUNT.getCode())
-                        .setSuccess(false)
-                );
-                continue;
-            }
-
-            final GameSessionIpDTO searchDTO = new GameSessionIpDTO()
-                .setGameAccount(gameAccount.get())
-                .setIp(item.getIp())
-                .setLastJoinDateFrom(DateTime.now())
-                .setPageable(PageRequest.of(0, 1, Sort.Direction.DESC, "id"));
-
-            final Optional<GameSessionIp> optSessionIp = gameSessionIpDAO.find(searchDTO);
-
-            if (optSessionIp.isEmpty()) {
-                final GameSessionIp gameSessionIp = createGameSession(item.getIp(), gameAccount.get());
-                updateSessionIp.add(gameSessionIp);
-
-                items.add(new AuthValidateResponseItem()
-                    .setState(gameSessionIp.getState())
-                    .setUsername(item.getName())
-                    .setSuccess(true));
-                continue;
-            }
-
-            final GameSessionIp gameSessionIp = optSessionIp.get();
-
-            items.add(new AuthValidateResponseItem().setState(
-                switch (gameSessionIp.getState()) {
-                    case OUTDATED -> {
-                        final GameSessionIp newGameSessionIp = createGameSession(item.getIp(), gameAccount.get());
-                        updateSessionIp.add(newGameSessionIp);
-
-                        yield newGameSessionIp.getState();
-                    }
-                    case NOT_NOTIFIED -> {
-                        final GameSessionIp newGameSessionIp = createGameSession(item.getIp(), gameAccount.get());
-                        updateSessionIp.add(newGameSessionIp);
-
-                        yield NOT_NOTIFIED;
-                    }
-                    default -> gameSessionIp.getState();
-                }
-            ));
+        if (gameAccount.isEmpty()) {
+            throw AccountException.UNKNOWN_ACCOUNT;
         }
 
-        gameSessionIpDAO.saveAll(updateSessionIp);
+        final GameSessionIpDTO searchDTO = new GameSessionIpDTO()
+            .setGameAccount(gameAccount.get())
+            .setIp(request.getIp())
+            .setLastJoinDateFrom(DateTime.now())
+            .setPageable(PageRequest.of(0, 1, Sort.Direction.DESC, "id"));
 
-        return ResponseEntity.ok(response);
+        final Optional<GameSessionIp> optSessionIp = gameSessionIpDAO.find(searchDTO);
+
+        if (optSessionIp.isEmpty()) {
+            final GameSessionIp gameSessionIp = createGameSession(request.getIp(), gameAccount.get());
+            gameSessionIpDAO.save(gameSessionIp);
+
+            return ResponseEntity.ok(new AuthValidateResponse().setState(gameSessionIp.getState()));
+        }
+
+        final GameSessionIp gameSessionIp = optSessionIp.get();
+
+        return ResponseEntity.ok(new AuthValidateResponse().setState(
+            switch (gameSessionIp.getState()) {
+                case OUTDATED -> {
+                    final GameSessionIp newGameSessionIp = createGameSession(request.getIp(), gameAccount.get());
+                    gameSessionIpDAO.save(newGameSessionIp);
+
+                    yield newGameSessionIp.getState();
+                }
+                case NOT_NOTIFIED -> {
+                    final GameSessionIp newGameSessionIp = createGameSession(request.getIp(), gameAccount.get());
+                    gameSessionIpDAO.save(newGameSessionIp);
+
+                    yield NOT_NOTIFIED;
+                }
+                default -> gameSessionIp.getState();
+            }
+        ));
     }
 
     @RequiredAuthority(requireAll = TokenAuthorityEnum.AUTH_QUEUE)
