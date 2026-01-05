@@ -15,7 +15,10 @@ public class CacheConfiguration {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("auth_validate");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(
+            "auth_validate",
+            "discord_identity"
+        );
         cacheManager.setCaffeine(Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .maximumSize(150));
