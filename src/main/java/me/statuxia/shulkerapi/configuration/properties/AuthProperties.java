@@ -7,7 +7,7 @@ public class AuthProperties {
 
     protected Long startedLifetimeSeconds = 60 * 5L; // 5 minutes
     protected Long notNotifiedLifetimeSeconds = 5L; // 5 seconds (need return state)
-    protected Long acceptedLifetimeSeconds = 60 * 5L; // 5 minutes
+    protected Long acceptedLifetimeSeconds = 60L; // 1 minute
     protected Long rejectedLifetimeSeconds = 60 * 60 * 24 * 31L; // 31 days
     protected Long outdatedLifetimeSeconds = 5L; // 5 seconds (need return state)
 

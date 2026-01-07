@@ -82,4 +82,18 @@ public class GameSessionIpDTO implements ISearchDTO {
         this.states = states;
         return this;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GameSessionIpDTO{");
+        sb.append("gameAccount=").append(gameAccount);
+        sb.append(", ip='").append(ip).append('\'');
+        sb.append(", notified=").append(notified);
+        sb.append(", states=").append(states);
+        sb.append(", lastJoinDateFrom=").append(lastJoinDateFrom);
+        sb.append(", lastJoinDateTo=").append(lastJoinDateTo);
+        sb.append(", pageable=").append(pageable);
+        sb.append('}');
+        return sb.toString();
+    }
 }
