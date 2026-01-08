@@ -6,10 +6,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.statuxia.shulkerapi.annotations.AuthData;
 import me.statuxia.shulkerapi.annotations.RequiredAuthority;
-import me.statuxia.shulkerapi.configuration.properties.RootProperties;
 import me.statuxia.shulkerapi.configuration.properties.SessionLimitationProperties;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
-import me.statuxia.shulkerapi.dao.*;
+import me.statuxia.shulkerapi.dao.AccountDAO;
+import me.statuxia.shulkerapi.dao.CustomTokenDAO;
+import me.statuxia.shulkerapi.dao.TokenAuthorityDAO;
+import me.statuxia.shulkerapi.dao.TokenLimitationDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.exception.AccountException;
 import me.statuxia.shulkerapi.exception.BaseApiException;
@@ -25,14 +27,11 @@ import me.statuxia.shulkerapi.swagger.IncorrectDataOperation;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.TokenControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.account.AlreadyLinkedAccountOperation;
-import me.statuxia.shulkerapi.swagger.controller.account.NotPaidAccountOperation;
 import me.statuxia.shulkerapi.utils.TokenGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,9 +50,6 @@ public class TokenController {
     public static final String CREATE = "/create";
     public static final String GET_BY_CODE = "/get-by-code";
 
-    private final GameAccountDAO gameAccountDAO;
-    private final PaidAccountDAO paidAccountDAO;
-    private final RootProperties rootProperties;
     private final SessionLimitationProperties sessionLimitationProperties;
     private final CodeTokenService codeTokenService;
     private final CustomTokenDAO customTokenDAO;
@@ -63,9 +59,6 @@ public class TokenController {
 
     @Autowired
     public TokenController(
-        GameAccountDAO gameAccountDAO,
-        PaidAccountDAO paidAccountDAO,
-        RootProperties rootProperties,
         SessionLimitationProperties sessionLimitationProperties,
         CodeTokenService codeTokenService,
         TokenLimitationDAO tokenLimitationDAO,
@@ -73,9 +66,6 @@ public class TokenController {
         AccountDAO accountDAO,
         CustomTokenDAO customTokenDAO
     ) {
-        this.gameAccountDAO = gameAccountDAO;
-        this.paidAccountDAO = paidAccountDAO;
-        this.rootProperties = rootProperties;
         this.sessionLimitationProperties = sessionLimitationProperties;
         this.codeTokenService = codeTokenService;
         this.tokenLimitationDAO = tokenLimitationDAO;
@@ -120,24 +110,12 @@ public class TokenController {
     )
     @TokenControllerOperation.Get
     @AlreadyLinkedAccountOperation
-    @NotPaidAccountOperation
     public ResponseEntity<TokenResponse> getByCode(
-        @PathVariable("code") String code,
-        @RequestParam(value = "name", required = false) String name
+        @PathVariable("code") String code
     ) {
-        validateName(name);
-
         final SessionToken token = codeTokenService.getByCode(code).orElseThrow(() -> UNKNOWN_TOKEN);
 
         final Account account = token.getAccount();
-
-        if (StringUtils.hasText(name) && rootProperties.isLinkPaidAccount()) {
-            final GameAccount gameAccount = new GameAccount();
-            gameAccount.setName(name);
-            gameAccount.setDiscordAccount(account.getDiscordAccount());
-            gameAccountDAO.save(gameAccount);
-            paidAccountDAO.deleteById(paidAccountDAO.findByNameIgnoreCase(name).getFirst().getId());
-        }
 
         final String stringToken = token.getToken();
         final Optional<TokenLimitationResponse> limitationResponse = tokenLimitationDAO.findById(stringToken)
@@ -199,21 +177,6 @@ public class TokenController {
                 .setLimitation(limitationResponse)
                 .setAuthorities(request.getAuthorities())
         );
-    }
-
-    private void validateName(String name) {
-        if (StringUtils.hasText(name) && rootProperties.isLinkPaidAccount()) {
-            final boolean alreadyLinked = !CollectionUtils.isEmpty(gameAccountDAO.findByNameIgnoreCase(name));
-            final boolean notPaidAccount = CollectionUtils.isEmpty(paidAccountDAO.findByNameIgnoreCase(name));
-
-            if (alreadyLinked) {
-                throw AccountException.ALREADY_LINKED_ACCOUNT;
-            }
-
-            if (notPaidAccount) {
-                throw AccountException.NOT_PAID_ACCOUNT;
-            }
-        }
     }
 
     private CustomToken buildToken(Account account) {

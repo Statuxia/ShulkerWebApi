@@ -3,9 +3,7 @@ package me.statuxia.shulkerapi.controller.api.account;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.GameAccountDAO;
-import me.statuxia.shulkerapi.dao.PaidAccountDAO;
 import me.statuxia.shulkerapi.request.GameAccountCreateRequest;
-import me.statuxia.shulkerapi.response.CanCreateTwinkResponse;
 import me.statuxia.shulkerapi.response.GameAccountResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,9 +41,6 @@ class GameAccountControllerTest extends BaseContainerTest {
 
     @Autowired
     protected GameAccountDAO gameAccountDAO;
-
-    @Autowired
-    protected PaidAccountDAO paidAccountDAO;
 
     @Autowired
     protected MockMvc mockMvc;
@@ -113,7 +108,6 @@ class GameAccountControllerTest extends BaseContainerTest {
         final GameAccountResponse response = new GameAccountResponse(100000002L, "test-paid-account", 1L);
 
         assertTrue(gameAccountDAO.findByName("test-paid-account").isEmpty());
-        assertFalse(paidAccountDAO.findByNameIgnoreCase("test-paid-account").isEmpty());
 
         final MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.post(GameAccountController.PREFIX + GameAccountController.CREATE)
@@ -165,65 +159,5 @@ class GameAccountControllerTest extends BaseContainerTest {
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("1204"));
-    }
-
-    @Test
-    void canCreateTwinkTest() throws Exception {
-        final String name = "test-name-paid";
-        final CanCreateTwinkResponse response = new CanCreateTwinkResponse();
-        response.setCanCreate(true);
-        response.setDiscordId(1L);
-
-        assertFalse(gameAccountDAO.findByName(name).isEmpty());
-        assertFalse(paidAccountDAO.findByNameIgnoreCase(name).isEmpty());
-
-        final MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.get(
-                        GameAccountController.PREFIX
-                            + GameAccountController.CAN_CREATE_TWINK
-                            + "?paidAccount=%s".formatted(name)
-                    )
-                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isOk())
-            .andReturn();
-
-        assertEquals(objectMapper.writeValueAsString(response), result.getResponse().getContentAsString());
-    }
-
-    @Test
-    void canCreateTwinkTest_noGameAccount() throws Exception {
-        final String name = "test-name-paid-2";
-        assertTrue(gameAccountDAO.findByName(name).isEmpty());
-        assertFalse(paidAccountDAO.findByNameIgnoreCase(name).isEmpty());
-
-        mockMvc.perform(
-                MockMvcRequestBuilders.get(
-                        GameAccountController.PREFIX
-                            + GameAccountController.CAN_CREATE_TWINK
-                            + "?paidAccount=%s".formatted(name)
-                    )
-                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("1201"));
-    }
-
-    @Test
-    void canCreateTwinkTest_notPaidAccount() throws Exception {
-        final String name = "test-name-paid-3";
-        assertTrue(gameAccountDAO.findByName(name).isEmpty());
-        assertTrue(paidAccountDAO.findByNameIgnoreCase(name).isEmpty());
-
-        mockMvc.perform(
-                MockMvcRequestBuilders.get(
-                        GameAccountController.PREFIX
-                            + GameAccountController.CAN_CREATE_TWINK
-                            + "?paidAccount=%s".formatted(name)
-                    )
-                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-            ).andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("1205"));
     }
 }

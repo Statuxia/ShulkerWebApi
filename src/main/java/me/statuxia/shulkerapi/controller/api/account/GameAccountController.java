@@ -10,7 +10,6 @@ import me.statuxia.shulkerapi.controller.api.Controller;
 import me.statuxia.shulkerapi.controller.resolver.AuthDataResolver;
 import me.statuxia.shulkerapi.dao.GameAccountBalanceHistoryDAO;
 import me.statuxia.shulkerapi.dao.GameAccountDAO;
-import me.statuxia.shulkerapi.dao.PaidAccountDAO;
 import me.statuxia.shulkerapi.dao.impl.GameAccountBalanceDAO;
 import me.statuxia.shulkerapi.dto.TokenData;
 import me.statuxia.shulkerapi.dto.search.impl.GameAccountBalanceSearchDTO;
@@ -21,7 +20,6 @@ import me.statuxia.shulkerapi.request.GameAccountBalanceChangeRequest;
 import me.statuxia.shulkerapi.request.GameAccountBalanceRequest;
 import me.statuxia.shulkerapi.request.GameAccountCreateRequest;
 import me.statuxia.shulkerapi.request.GameAccountRenameRequest;
-import me.statuxia.shulkerapi.response.CanCreateTwinkResponse;
 import me.statuxia.shulkerapi.response.GameAccountBalanceResponse;
 import me.statuxia.shulkerapi.response.GameAccountResponse;
 import me.statuxia.shulkerapi.response.NamedItem;
@@ -34,7 +32,6 @@ import me.statuxia.shulkerapi.swagger.controller.GameAccountControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.account.AccessDeniedOperation;
 import me.statuxia.shulkerapi.swagger.controller.account.AlreadyLinkedAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.account.NicknameAlreadyTakenOperation;
-import me.statuxia.shulkerapi.swagger.controller.account.NotPaidAccountOperation;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,13 +55,11 @@ public class GameAccountController implements Controller {
 
     public static final String PREFIX = "/api/v1/game-account";
     public static final String CREATE = "/create";
-    public static final String CAN_CREATE_TWINK = "/can-create-twink";
     public static final String RENAME = "/rename";
     public static final String BALANCE_GET = "/balance/get";
     public static final String BALANCE_TYPES = "/balance/types";
     public static final String BALANCE_CHANGE = "/balance/change";
 
-    private final PaidAccountDAO paidAccountDAO;
     private final GameAccountDAO gameAccountDAO;
     private final GameAccountBalanceDAO gameAccountBalanceDAO;
     private final DiscordAccountService discordAccountService;
@@ -73,14 +68,12 @@ public class GameAccountController implements Controller {
 
     @Autowired
     public GameAccountController(
-        PaidAccountDAO paidAccountDAO,
         GameAccountDAO gameAccountDAO,
         GameAccountBalanceDAO gameAccountBalanceDAO,
         DiscordAccountService discordAccountService,
         GameAccountBalanceHistoryDAO gameAccountBalanceHistoryDAO,
         MessageService messageService
     ) {
-        this.paidAccountDAO = paidAccountDAO;
         this.gameAccountDAO = gameAccountDAO;
         this.gameAccountBalanceDAO = gameAccountBalanceDAO;
         this.discordAccountService = discordAccountService;
@@ -175,31 +168,6 @@ public class GameAccountController implements Controller {
         gameAccountDAO.saveAll(gameAccounts);
 
         return ResponseEntity.ok().build();
-    }
-
-    @RequiredAuthority(requireAll = TokenAuthorityEnum.CAN_CREATE_TWINK)
-    @GetMapping(value = CAN_CREATE_TWINK, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    @UnknownAccountOperation
-    @NotPaidAccountOperation
-    @GameAccountControllerOperation.CanCreateTwink
-    public ResponseEntity<CanCreateTwinkResponse> canCreateTwink(
-        @RequestParam("paidAccount") String name, @AuthData TokenData token
-    ) {
-        if (CollectionUtils.isEmpty(paidAccountDAO.findByNameIgnoreCase(name))) {
-            throw AccountException.NOT_PAID_ACCOUNT;
-        }
-
-        final List<GameAccount> gameAccounts = gameAccountDAO.findByNameIgnoreCase(name);
-        if (CollectionUtils.isEmpty(gameAccounts)) {
-            throw AccountException.UNKNOWN_ACCOUNT;
-        }
-
-        return ResponseEntity.ok(
-            new CanCreateTwinkResponse()
-                .setCanCreate(true)
-                .setDiscordId(gameAccounts.getFirst().getDiscordAccount().getId())
-        );
     }
 
     @GetMapping(value = BALANCE_GET, produces = MediaType.APPLICATION_JSON_VALUE)
