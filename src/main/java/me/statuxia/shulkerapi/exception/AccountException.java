@@ -22,6 +22,8 @@ public class AccountException extends ApiException {
         = new AccountException("exception.AccountException.LINK_MAIN_ACCOUNT", 1208);
     public static final AccountException ACCESS_DENIED
         = new AccountException("exception.AccountException.ACCESS_DENIED", 1209);
+    public static final AccountException NO_LINKED_ACCOUNTS
+        = new AccountException("exception.AccountException.NO_LINKED_ACCOUNTS", 1210);
 
     public AccountException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

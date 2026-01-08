@@ -127,11 +127,36 @@ class GameAccountControllerTest extends BaseContainerTest {
     }
 
     @Test
-    void newTwinkTest_alreadyLinked() throws Exception {
+    void newTwinkTest_noLinkedAccounts() throws Exception {
+        final GameAccountCreateRequest request = new GameAccountCreateRequest();
+        request.setName("Test-Name");
+        request.setDiscordId(2L);
+        request.setTwink(true);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post(GameAccountController.PREFIX + GameAccountController.CREATE)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1210"));
+    }
+
+    @Test
+    void newTwinkTest_alreadyLinkedAccount() throws Exception {
         final GameAccountCreateRequest request = new GameAccountCreateRequest();
         request.setName("Test-Name");
         request.setDiscordId(1L);
-        request.setTwink(true);
+        request.setTwink(false);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post(GameAccountController.PREFIX + GameAccountController.CREATE)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isOk());
+
+        request.setDiscordId(2L);
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post(GameAccountController.PREFIX + GameAccountController.CREATE)

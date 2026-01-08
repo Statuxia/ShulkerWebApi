@@ -99,32 +99,40 @@ public class GameAccountController implements Controller {
         @RequestBody GameAccountCreateRequest request, @AuthData TokenData token
     ) {
         final String name = request.getName();
-        if (!StringUtils.hasText(name) || request.getDiscordId() == null) {
+        final Long discordId = request.getDiscordId();
+        if (!StringUtils.hasText(name) || discordId == null) {
             throw BaseApiException.INCORRECT_DATA;
         }
 
-        final List<GameAccount> gameAccounts = new ArrayList<>(gameAccountDAO.findByNameIgnoreCase(name));
-        if (gameAccounts.size() > 1) {
-            logger.warn("{} accounts by name {}", gameAccounts.size(), name);
+        final DiscordAccount discordAccount = discordAccountService.createOrGet(discordId);
+        final List<GameAccount> gameAccountsByDiscord = gameAccountDAO.findByDiscordAccount(discordAccount);
+        final List<GameAccount> gameAccounts = gameAccountDAO.findByNameIgnoreCase(name);
+
+        final boolean hasAccounts = !CollectionUtils.isEmpty(gameAccountsByDiscord);
+        boolean twink = request.isTwink() || hasAccounts;
+
+        /**
+         * аккаунтов нет, но пытаемся создать твинк
+         */
+        if (CollectionUtils.isEmpty(gameAccountsByDiscord) && request.isTwink()) {
+            logger.debug("[discord #{}] no accounts. return exception", discordId);
+            throw AccountException.NO_LINKED_ACCOUNTS;
         }
 
-        if (!gameAccounts.isEmpty() && request.isTwink()) {
+        /**
+         * Аккаунт уже привязан, но к другому discord
+         */
+        if (!gameAccounts.isEmpty() && !gameAccounts.getFirst().getDiscordAccount().getId().equals(discordId)) {
+            logger.debug("[discord #{}] can't create account with name {}. already linked", discordId, name);
             throw AccountException.ALREADY_LINKED_ACCOUNT;
         }
 
         if (gameAccounts.isEmpty()) {
-            final DiscordAccount discordAccount = discordAccountService.createOrGet(request.getDiscordId());
-
             final GameAccount account = new GameAccount();
             account.setName(name);
             account.setDiscordAccount(discordAccount);
             gameAccounts.add(account);
-
-            final List<PaidAccount> paidAccounts = paidAccountDAO.findByNameIgnoreCase(name);
-            if (!CollectionUtils.isEmpty(paidAccounts)) {
-                paidAccountDAO.deleteById(paidAccounts.getFirst().getId());
-                account.setPaid(true);
-            }
+            account.setPaid(twink);
         }
 
         gameAccounts.forEach(account -> account.setName(name));
