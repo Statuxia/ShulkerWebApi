@@ -26,6 +26,8 @@ import me.statuxia.shulkerapi.swagger.controller.auth.UnknownGameSessionOperatio
 import me.statuxia.shulkerapi.swagger.controller.auth.UnsupportedRequestStateOperation;
 import me.statuxia.shulkerapi.swagger.controller.auth.UnsupportedToChangeStateOperation;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +49,7 @@ import static me.statuxia.shulkerapi.model.GameSessionIpState.*;
 @RequestMapping(value = AuthController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
 @Tag(name = "Auth", description = "Авторизационные эндпоинты")
 public class AuthController implements Controller {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String PREFIX = "/api/v1/auth";
     public static final String VALIDATE = "/validate";
@@ -157,7 +160,21 @@ public class AuthController implements Controller {
                 .setPageable(request.getPageable())
                 .setLastJoinDateFrom(DateTime.now())
                 .setNotified(false)
-        ).stream().map(item -> new GameSessionIpItem()
+        ).stream()
+            .peek(item -> {
+                if (item.getGameAccount() != null
+                    && item.getGameAccount().getDiscordAccount() != null
+                    && item.getGameAccount().getDiscordAccount().getId() != null) {
+                    return;
+                }
+
+                logger.debug("bad item: {}", item);
+            })
+            .filter(item -> item.getGameAccount() != null
+                && item.getGameAccount().getDiscordAccount() != null
+                && item.getGameAccount().getDiscordAccount().getId() != null
+            )
+            .map(item -> new GameSessionIpItem()
             .setId(item.getId())
             .setName(item.getGameAccount().getName())
             .setDiscordId(item.getGameAccount().getDiscordAccount().getId())

@@ -79,4 +79,17 @@ public class GameSessionIp implements Identifiable<Long> {
     public void setNotified(boolean notified) {
         this.notified = notified;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GameSessionIp{");
+        sb.append("id=").append(id);
+        sb.append(", gameAccount=").append(gameAccount);
+        sb.append(", ip='").append(ip).append('\'');
+        sb.append(", lastJoinDate=").append(lastJoinDate);
+        sb.append(", state=").append(state);
+        sb.append(", notified=").append(notified);
+        sb.append('}');
+        return sb.toString();
+    }
 }
