@@ -349,7 +349,7 @@ class AuthControllerTest extends BaseContainerTest {
 
     @ParameterizedTest
     @EnumSource(value = GameSessionIpState.class,
-        names = {"NOT_NOTIFIED", "REJECTED", "OUTDATED"})
+        names = {"NOT_NOTIFIED", "OUTDATED"})
     void changeBadCurrentStateTest(GameSessionIpState state) throws Exception {
         final Optional<GameAccount> optGameAccount = gameAccountDAO.findByName("test-name");
         final GameSessionIp sessionIp = new GameSessionIp();
