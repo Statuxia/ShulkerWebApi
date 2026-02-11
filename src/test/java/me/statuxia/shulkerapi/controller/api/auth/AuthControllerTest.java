@@ -400,6 +400,31 @@ class AuthControllerTest extends BaseContainerTest {
     }
 
     @Test
+    void changeStateRejectedTest() throws Exception {
+        final Optional<GameAccount> optGameAccount = gameAccountDAO.findByName("test-name");
+        final GameSessionIp sessionIp = new GameSessionIp();
+        sessionIp.setGameAccount(optGameAccount.get());
+        sessionIp.setNotified(false);
+        sessionIp.setLastJoinDate(DateTime.now().plusDays(10));
+        sessionIp.setState(GameSessionIpState.REJECTED);
+        sessionIp.setIp("0.0.0.0");
+        gameSessionIpDAO.save(sessionIp);
+
+        final AuthChangeStateRequest request = new AuthChangeStateRequest().setId(sessionIp.getId())
+            .setState(GameSessionIpState.ACCEPTED);
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.CHANGE_STATE)
+                .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isOk());
+
+        assertEquals(GameSessionIpState.ACCEPTED, sessionIp.getState());
+        assertTrue(sessionIp.isNotified());
+    }
+
+    @Test
     void refreshNoAccountTest() throws Exception {
         final AuthRefreshRequestItem requestItem = new AuthRefreshRequestItem().setIp("0.0.0.0").setName("test-name-x");
         final AuthRefreshRequest request = new AuthRefreshRequest().setItems(List.of(requestItem));

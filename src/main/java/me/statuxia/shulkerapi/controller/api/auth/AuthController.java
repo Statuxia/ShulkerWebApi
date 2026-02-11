@@ -63,7 +63,8 @@ public class AuthController implements Controller {
     );
     public static final Set<GameSessionIpState> AVAILABLE_TO_CHANGE_STATES = Set.of(
         STARTED,
-        ACCEPTED
+        ACCEPTED,
+        REJECTED
     );
 
     private final GameAccountDAO gameAccountDAO;
