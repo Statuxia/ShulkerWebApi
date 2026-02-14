@@ -82,6 +82,27 @@ class AuthControllerTest extends BaseContainerTest {
     }
 
     @Test
+    void validateCaseSensitiveTest() throws Exception {
+        final AuthValidateRequest request = new AuthValidateRequest()
+            .setName("TesT-Name")
+            .setIp("0.0.0.0");
+
+        assertNull(cacheManager.getCache("auth_validate").get("Test-Name_0.0.0.0"));
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post(AuthController.PREFIX + AuthController.VALIDATE)
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1201")); // UNKNOWN_ACCOUNT
+
+        assertEquals(0, gameSessionIpDAO.countAll());
+
+        assertNull(cacheManager.getCache("auth_validate").get("Test-Name_0.0.0.0"));
+    }
+
+    @Test
     void validateNotGameAccountTest() throws Exception {
         final AuthValidateRequest request = new AuthValidateRequest().setName("test-name-x").setIp("0.0.0.0");
 

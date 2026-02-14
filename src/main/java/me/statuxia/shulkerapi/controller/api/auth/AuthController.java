@@ -100,13 +100,12 @@ public class AuthController implements Controller {
     @UnknownAccountOperation
     @Transactional
     @AuthControllerOperation.Validate
-    @Cacheable(value = "auth_validate", key = "#request.name.toLowerCase() + '_' + #request.ip")
+    @Cacheable(value = "auth_validate", key = "#request.name + '_' + #request.ip")
     public ResponseEntity<AuthValidateResponse> validate(
         @RequestBody @Valid AuthValidateRequest request,
         @AuthData TokenData token
     ) {
-        final Optional<GameAccount> gameAccount
-            = gameAccountDAO.findByNameIgnoreCase(request.getName()).stream().findFirst();
+        final Optional<GameAccount> gameAccount = gameAccountDAO.findByName(request.getName());
 
         if (gameAccount.isEmpty()) {
             throw AccountException.UNKNOWN_ACCOUNT;
@@ -157,11 +156,11 @@ public class AuthController implements Controller {
         @AuthData TokenData token
     ) {
         final List<GameSessionIpItem> items = gameSessionIpDAO.findList(
-            new GameSessionIpDTO()
-                .setPageable(request.getPageable())
-                .setLastJoinDateFrom(DateTime.now())
-                .setNotified(false)
-        ).stream()
+                new GameSessionIpDTO()
+                    .setPageable(request.getPageable())
+                    .setLastJoinDateFrom(DateTime.now())
+                    .setNotified(false)
+            ).stream()
             .peek(item -> {
                 if (item.getGameAccount() != null
                     && item.getGameAccount().getDiscordAccount() != null
@@ -176,11 +175,13 @@ public class AuthController implements Controller {
                 && item.getGameAccount().getDiscordAccount().getId() != null
             )
             .map(item -> new GameSessionIpItem()
-            .setId(item.getId())
-            .setName(item.getGameAccount().getName())
-            .setDiscordId(item.getGameAccount().getDiscordAccount().getId())
-            .setState(item.getState())
-            .setIp(item.getIp())).toList();
+                .setId(item.getId())
+                .setName(item.getGameAccount().getName())
+                .setDiscordId(item.getGameAccount().getDiscordAccount().getId())
+                .setState(item.getState())
+                .setIp(item.getIp())
+            )
+            .toList();
 
         final GameSessionIpResponse response = new GameSessionIpResponse();
         response.setTotal(items.size());
@@ -241,8 +242,7 @@ public class AuthController implements Controller {
         final List<GameSessionIp> updatedSessionIp = new ArrayList<>();
 
         for (AuthRefreshRequestItem item : request.getItems()) {
-            final Optional<GameAccount> gameAccount
-                = gameAccountDAO.findByNameIgnoreCase(item.getName()).stream().findFirst();
+            final Optional<GameAccount> gameAccount = gameAccountDAO.findByName(item.getName());
 
             if (gameAccount.isEmpty()) {
                 items.add(
