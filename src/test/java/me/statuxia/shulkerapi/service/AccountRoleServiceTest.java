@@ -35,7 +35,7 @@ class AccountRoleServiceTest {
     private DiscordAccountDAO discordAccountDAO;
 
     @Test
-    public void getRolesTest() {
+    void getRolesTest() {
         AccountRoleRequest request = new AccountRoleRequest();
         request.setDiscordIds(List.of(10L));
 
@@ -63,10 +63,31 @@ class AccountRoleServiceTest {
         assertEquals(1, result.size());
 
         AccountRoleResponseItem item = result.getFirst();
-        assertEquals(10L, (long) item.getId());
+        assertEquals(10L, item.getId());
         assertEquals(List.of(100L, 200L), item.getRoles());
 
         verify(discordAccountDAO).findAllById(List.of(10L));
+        verify(accountRoleDAO).findList(any());
+    }
+
+    @Test
+    void getRoleIdsTest() {
+        Account account = new Account();
+        account.setId(1L);
+
+        DiscordAccount discordAccount = new DiscordAccount();
+        discordAccount.setAccount(account);
+
+        AccountRole role = new AccountRole();
+        role.setId(500L);
+
+        when(accountRoleDAO.findList(any(AccountRoleSearchDTO.class)))
+            .thenReturn(List.of(role));
+
+        List<Long> result = service.getRoleIds(discordAccount);
+
+        assertEquals(List.of(500L), result);
+
         verify(accountRoleDAO).findList(any(AccountRoleSearchDTO.class));
     }
 }

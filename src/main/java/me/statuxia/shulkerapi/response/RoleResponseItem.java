@@ -3,6 +3,8 @@ package me.statuxia.shulkerapi.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RoleResponseItem {
@@ -85,8 +87,29 @@ public class RoleResponseItem {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final RoleResponseItem that = (RoleResponseItem) o;
+        return Objects.equals(id, that.id)
+            && Objects.equals(roleId, that.roleId)
+            && Objects.equals(name, that.name)
+            && Objects.equals(color, that.color)
+            && Objects.equals(discordId, that.discordId)
+            && Objects.equals(luckpermsPermission, that.luckpermsPermission)
+            && Objects.equals(availableForTwink, that.availableForTwink);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, roleId, name, color, discordId, luckpermsPermission, availableForTwink);
+    }
+
+    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("RoleItem{");
+        final StringBuilder sb = new StringBuilder("RoleResponseItem{");
         sb.append("id=").append(id);
         sb.append(", roleId='").append(roleId).append('\'');
         sb.append(", name='").append(name).append('\'');
