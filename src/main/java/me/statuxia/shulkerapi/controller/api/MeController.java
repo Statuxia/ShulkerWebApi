@@ -12,6 +12,7 @@ import me.statuxia.shulkerapi.model.GameAccount;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 import me.statuxia.shulkerapi.response.MeGameAccountResponse;
 import me.statuxia.shulkerapi.response.MeResponse;
+import me.statuxia.shulkerapi.service.AccountRoleService;
 import me.statuxia.shulkerapi.service.DiscordAccountService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.MeControllerOperation;
@@ -38,11 +39,17 @@ public class MeController implements Controller {
 
     private final DiscordAccountService discordAccountService;
     private final GameAccountDAO gameAccountDAO;
+    private final AccountRoleService accountRoleService;
 
     @Autowired
-    public MeController(DiscordAccountService discordAccountService, GameAccountDAO gameAccountDAO) {
+    public MeController(
+        DiscordAccountService discordAccountService,
+        GameAccountDAO gameAccountDAO,
+        AccountRoleService accountRoleService
+    ) {
         this.discordAccountService = discordAccountService;
         this.gameAccountDAO = gameAccountDAO;
+        this.accountRoleService = accountRoleService;
     }
 
     @GetMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -92,6 +99,7 @@ public class MeController implements Controller {
             new MeResponse()
                 .setDiscord(identityResponse)
                 .setGameAccounts(gameAccounts)
+                .setRoles(accountRoleService.getRoleIds(discordAccount))
         );
     }
 
