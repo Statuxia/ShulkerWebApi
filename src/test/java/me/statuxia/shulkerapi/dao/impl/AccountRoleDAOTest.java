@@ -33,12 +33,6 @@ class AccountRoleDAOTest extends BaseContainerTest {
     @Autowired
     private AccountRoleDAO accountRoleDAO;
 
-    private Account account(Long id) {
-        Account a = new Account();
-        a.setId(id);
-        return a;
-    }
-
     @Test
     void search_nullAccount_returnsEmpty() {
         AccountRoleSearchDTO dto = new AccountRoleSearchDTO();
@@ -103,5 +97,11 @@ class AccountRoleDAOTest extends BaseContainerTest {
         List<AccountRole> result = accountRoleDAO.findList(dto);
 
         assertEquals(4, result.size());
+    }
+
+    private Account account(Long id) {
+        Account a = new Account();
+        a.setId(id);
+        return a;
     }
 }
