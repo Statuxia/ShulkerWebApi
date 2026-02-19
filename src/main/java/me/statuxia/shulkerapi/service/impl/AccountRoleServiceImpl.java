@@ -32,10 +32,10 @@ public class AccountRoleServiceImpl implements AccountRoleService {
     }
 
     public List<AccountRoleResponseItem> getRoles(AccountRoleRequest request) {
-        List<DiscordAccount> allById = discordAccountDAO.findAllById(request.getDiscordIds());
+        final List<DiscordAccount> allById = discordAccountDAO.findAllById(request.getDiscordIds());
 
         return allById.stream().map(discordAccount -> {
-            AccountRoleResponseItem item = new AccountRoleResponseItem();
+            final AccountRoleResponseItem item = new AccountRoleResponseItem();
             return item
                 .setRoles(getRoleIds(discordAccount))
                 .setId(discordAccount.getId());
@@ -43,10 +43,10 @@ public class AccountRoleServiceImpl implements AccountRoleService {
     }
 
     public List<Long> getRoleIds(DiscordAccount discordAccount) {
-        AccountRoleSearchDTO dto = new AccountRoleSearchDTO();
+        final AccountRoleSearchDTO dto = new AccountRoleSearchDTO();
         dto.setAccount(discordAccount.getAccount());
         dto.setActive(true);
-        List<AccountRole> list = accountRoleDAO.findList(dto);
+        final List<AccountRole> list = accountRoleDAO.findList(dto);
         return list.stream().map(Identifiable::getId).toList();
     }
 }
