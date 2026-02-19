@@ -102,7 +102,7 @@ public class GameAccountController implements Controller {
         final List<GameAccount> gameAccounts = gameAccountDAO.findByNameIgnoreCase(name);
 
         final boolean hasAccounts = !CollectionUtils.isEmpty(gameAccountsByDiscord);
-        boolean twink = request.isTwink() || hasAccounts;
+        final boolean twink = request.isTwink() || hasAccounts;
 
         /**
          * аккаунтов нет, но пытаемся создать твинк
