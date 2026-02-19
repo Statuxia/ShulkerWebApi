@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("checkstyle")
     id("jacoco")
+    pmd
 }
 
 group = "me.statuxia"
@@ -33,8 +34,8 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.0")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
-
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    implementation("net.sourceforge.pmd:pmd-java:7.21.0")
 }
 
 tasks.withType<Test> {
@@ -58,5 +59,25 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test)
     reports {
         html.required.set(true)
+    }
+}
+
+pmd {
+    toolVersion = "7.21.0"
+    isConsoleOutput = true
+    maxFailures = 0
+
+    ruleSets = listOf(projectDir.resolve("pmd/bestpractices.xml").absolutePath)
+}
+
+tasks.withType<Pmd> {
+    description = "Runs PMD checks on the source code."
+    group = "verification"
+
+    source = fileTree("src/main/java")
+
+    reports {
+        xml.required = false
+        html.required = true
     }
 }

@@ -74,7 +74,7 @@ public class MeController implements Controller {
             throw MeException.NO_ARGS;
         }
 
-        Optional<DiscordAccount> optional;
+        final Optional<DiscordAccount> optional;
         if (discordId != null) {
             optional = discordAccountService.get(discordId);
         } else {

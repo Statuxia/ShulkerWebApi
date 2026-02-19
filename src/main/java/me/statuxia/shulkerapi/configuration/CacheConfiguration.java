@@ -15,7 +15,7 @@ public class CacheConfiguration {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager(
+        final CaffeineCacheManager cacheManager = new CaffeineCacheManager(
             "auth_validate",
             "discord_identity"
         );
