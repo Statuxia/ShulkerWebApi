@@ -78,12 +78,23 @@ class AccountRoleControllerTest extends BaseContainerTest {
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isOk())
+            )
+            .andExpect(status().isOk())
             .andReturn();
 
         List<AccountRoleResponseItem> response =
-            objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
-        assertFalse(response.isEmpty());
+            objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() { }
+            );
+
+        assertEquals(1, response.size());
+
+        AccountRoleResponseItem item1 = response.getFirst();
+        assertEquals(1L, item1.getId());
+        assertFalse(item1.getRoles().isEmpty());
+
+        assertTrue(response.stream().noneMatch(i -> i.getId().equals(999L)));
     }
 
     @Test
@@ -117,7 +128,7 @@ class AccountRoleControllerTest extends BaseContainerTest {
     }
 
     @Test
-    void getForBatch_duplicateDiscordIds_noDuplicateRoles() throws Exception {
+    void getForBatch_duplicateDiscordIds_returnsSingleRoleForId() throws Exception {
         AccountRoleRequest request = new AccountRoleRequest();
         request.setDiscordIds(List.of(1L, 1L));
 
@@ -126,13 +137,15 @@ class AccountRoleControllerTest extends BaseContainerTest {
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
-            ).andExpect(status().isOk())
+            )
+            .andExpect(status().isOk())
             .andReturn();
 
         List<AccountRoleResponseItem> response =
             objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
 
-        long uniqueCount = response.stream().map(AccountRoleResponseItem::getId).distinct().count();
-        assertEquals(uniqueCount, response.size());
+        assertEquals(1, response.size());
+
+        assertEquals(1L, response.get(0).getId());
     }
 }
