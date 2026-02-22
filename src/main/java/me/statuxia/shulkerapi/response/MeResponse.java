@@ -6,6 +6,7 @@ public class MeResponse {
 
     private DiscordIdentityResponse discord;
     private List<MeGameAccountResponse> gameAccounts;
+    private List<Long> roles;
 
     public DiscordIdentityResponse getDiscord() {
         return discord;
@@ -22,6 +23,15 @@ public class MeResponse {
 
     public MeResponse setGameAccounts(List<MeGameAccountResponse> gameAccounts) {
         this.gameAccounts = gameAccounts;
+        return this;
+    }
+
+    public List<Long> getRoles() {
+        return roles;
+    }
+
+    public MeResponse setRoles(List<Long> roles) {
+        this.roles = roles;
         return this;
     }
 }
