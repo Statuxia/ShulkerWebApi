@@ -65,7 +65,11 @@ class AccountRoleControllerTest extends BaseContainerTest {
                 new TypeReference<>() {}
             );
 
-        assertFalse(response.isEmpty());
+        assertEquals(1, response.size());
+
+        AccountRoleResponseItem item = response.getFirst();
+        assertEquals(1L, item.getId());
+        assertFalse(item.getRoles().isEmpty());
     }
 
     @Test
@@ -85,16 +89,17 @@ class AccountRoleControllerTest extends BaseContainerTest {
         List<AccountRoleResponseItem> response =
             objectMapper.readValue(
                 result.getResponse().getContentAsString(),
-                new TypeReference<>() { }
+                new TypeReference<>() {}
             );
 
         assertEquals(1, response.size());
 
-        AccountRoleResponseItem item1 = response.getFirst();
-        assertEquals(1L, item1.getId());
-        assertFalse(item1.getRoles().isEmpty());
+        AccountRoleResponseItem item1 = response.stream()
+            .filter(i -> i.getId().equals(1L))
+            .findFirst()
+            .orElseThrow();
 
-        assertTrue(response.stream().noneMatch(i -> i.getId().equals(999L)));
+        assertFalse(item1.getRoles().isEmpty());
     }
 
     @Test
@@ -112,6 +117,7 @@ class AccountRoleControllerTest extends BaseContainerTest {
 
         List<AccountRoleResponseItem> response =
             objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+
         assertTrue(response.isEmpty());
     }
 
@@ -146,6 +152,6 @@ class AccountRoleControllerTest extends BaseContainerTest {
 
         assertEquals(1, response.size());
 
-        assertEquals(1L, response.get(0).getId());
+        assertEquals(1L, response.getFirst().getId());
     }
 }
