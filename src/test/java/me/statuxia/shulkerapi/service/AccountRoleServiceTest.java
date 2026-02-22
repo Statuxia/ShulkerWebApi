@@ -37,7 +37,7 @@ class AccountRoleServiceTest {
     @Test
     void getRolesTest() {
         AccountRoleRequest request = new AccountRoleRequest();
-        request.setDiscordIds(List.of(10L));
+        request.setDiscordIds(List.of(10L, 999L));
 
         Account account = new Account();
         account.setId(1L);
@@ -46,7 +46,7 @@ class AccountRoleServiceTest {
         discordAccount.setId(10L);
         discordAccount.setAccount(account);
 
-        when(discordAccountDAO.findAllById(List.of(10L)))
+        when(discordAccountDAO.findAllById(List.of(10L, 999L)))
             .thenReturn(List.of(discordAccount));
 
         AccountRole role1 = new AccountRole();
@@ -60,13 +60,21 @@ class AccountRoleServiceTest {
 
         List<AccountRoleResponseItem> result = service.getRoles(request);
 
-        assertEquals(1, result.size());
+        assertEquals(2, result.size());
 
-        AccountRoleResponseItem item = result.getFirst();
-        assertEquals(10L, item.getId());
-        assertEquals(List.of(100L, 200L), item.getRoles());
+        AccountRoleResponseItem item10 = result.stream()
+            .filter(i -> i.getId().equals(10L))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(List.of(100L, 200L), item10.getRoles());
 
-        verify(discordAccountDAO).findAllById(List.of(10L));
+        AccountRoleResponseItem item999 = result.stream()
+            .filter(i -> i.getId().equals(999L))
+            .findFirst()
+            .orElseThrow();
+        assertEquals(List.of(), item999.getRoles());
+
+        verify(discordAccountDAO).findAllById(List.of(10L, 999L));
         verify(accountRoleDAO).findList(any());
     }
 

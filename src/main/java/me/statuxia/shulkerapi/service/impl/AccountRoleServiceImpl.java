@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,14 +34,34 @@ public class AccountRoleServiceImpl implements AccountRoleService {
     }
 
     public List<AccountRoleResponseItem> getRoles(AccountRoleRequest request) {
-        final List<DiscordAccount> allById = discordAccountDAO.findAllById(request.getDiscordIds());
+        if (request.getDiscordIds() == null || request.getDiscordIds().isEmpty()) {
+            return List.of();
+        }
 
-        return allById.stream().map(discordAccount -> {
-            final AccountRoleResponseItem item = new AccountRoleResponseItem();
-            return item
-                .setRoles(getRoleIds(discordAccount))
-                .setId(discordAccount.getId());
-        }).toList();
+        final List<Long> uniqueIds = request.getDiscordIds().stream()
+            .distinct()
+            .toList();
+
+        final List<DiscordAccount> accounts = discordAccountDAO.findAllById(uniqueIds);
+
+        final Map<Long, DiscordAccount> accountMap = accounts.stream()
+            .collect(Collectors.toMap(DiscordAccount::getId, a -> a));
+
+        return uniqueIds.stream()
+            .map(id -> {
+                final AccountRoleResponseItem item = new AccountRoleResponseItem();
+                item.setId(id);
+
+                final DiscordAccount account = accountMap.get(id);
+                if (account != null) {
+                    item.setRoles(getRoleIds(account));
+                } else {
+                    item.setRoles(List.of());
+                }
+
+                return item;
+            })
+            .toList();
     }
 
     public List<Long> getRoleIds(DiscordAccount discordAccount) {

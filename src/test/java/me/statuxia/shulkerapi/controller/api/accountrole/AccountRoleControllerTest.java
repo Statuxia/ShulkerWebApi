@@ -92,14 +92,19 @@ class AccountRoleControllerTest extends BaseContainerTest {
                 new TypeReference<>() {}
             );
 
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
 
         AccountRoleResponseItem item1 = response.stream()
             .filter(i -> i.getId().equals(1L))
             .findFirst()
             .orElseThrow();
-
         assertFalse(item1.getRoles().isEmpty());
+
+        AccountRoleResponseItem item999 = response.stream()
+            .filter(i -> i.getId().equals(999L))
+            .findFirst()
+            .orElseThrow();
+        assertTrue(item999.getRoles().isEmpty());
     }
 
     @Test
