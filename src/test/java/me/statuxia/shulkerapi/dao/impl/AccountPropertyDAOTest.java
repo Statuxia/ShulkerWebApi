@@ -6,7 +6,6 @@ import me.statuxia.shulkerapi.dao.AccountDAO;
 import me.statuxia.shulkerapi.dto.search.impl.AccountPropertyDTO;
 import me.statuxia.shulkerapi.model.Account;
 import me.statuxia.shulkerapi.model.AccountProperty;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -33,16 +32,6 @@ class AccountPropertyDAOTest extends BaseContainerTest {
     private AccountPropertyDAO accountPropertyDAO;
     @Autowired
     private AccountDAO accountDAO;
-
-    @BeforeEach
-    void setUp() {
-        accountPropertyDAO.getEntityManager()
-            .createNativeQuery("TRUNCATE TABLE account_property CASCADE")
-            .executeUpdate();
-        accountPropertyDAO.getEntityManager()
-            .createNativeQuery("ALTER SEQUENCE account_property_id_seq RESTART WITH 1")
-            .executeUpdate();
-    }
 
     @Test
     void findListByAccountTest() {

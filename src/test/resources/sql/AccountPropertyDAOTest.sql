@@ -1,13 +1,14 @@
 insert into discord_account
 (id, session_token, access_token, refresh_token, update_time, disabled, disabled_time)
 values
-(1, '', 'access-token-1', 'refresh-token-1', NOW(), false, null);
+(1, '', 'access-token-1', 'refresh-token-1', NOW(), false, null),
+(2, '', 'access-token-2', 'refresh-token-2', NOW(), false, null);
 
 insert into account
 (id, discord_account)
 values
 (1, 1),
-(2, null);
+(2, 2);
 
 insert into account_property
 (id, account_id, name, value)
