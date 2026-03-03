@@ -1,6 +1,5 @@
 package me.statuxia.shulkerapi.configuration;
 
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -8,7 +7,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Locale;
 
 @Configuration
-@EnableCaching
 public class RootConfiguration {
 
     @Bean("defaultLocale")

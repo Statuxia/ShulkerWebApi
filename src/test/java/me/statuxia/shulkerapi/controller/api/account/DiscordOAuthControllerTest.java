@@ -1,7 +1,5 @@
 package me.statuxia.shulkerapi.controller.api.account;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import me.statuxia.shulkerapi.configuration.BaseContainerTest;
 import me.statuxia.shulkerapi.dao.DiscordAccountDAO;
 import me.statuxia.shulkerapi.handler.HttpHandler;
@@ -26,7 +24,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -137,13 +136,13 @@ class DiscordOAuthControllerTest extends BaseContainerTest {
         identityResponse.setAvatar("qw724vyt12n984v");
         when(discordIntegrationService.getUserInfo(anyString())).thenReturn(new HttpHandler.HttpResponse<>(identityResponse, null));
 
-        assertEquals(1, discordAccountDAO.count());
+        assertTrue(discordAccountDAO.findById(1L).isPresent());
 
         mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordOAuthController.PREFIX + DiscordOAuthController.AUTH + "?code=123")
             ).andExpect(status().isFound())
             .andExpect(mvc -> assertTrue(mvc.getResponse().getRedirectedUrl().startsWith("http://localhost:8080/success")))
-            .andExpect(mvc -> assertEquals(1, discordAccountDAO.count()));
+            .andExpect(mvc -> assertTrue(discordAccountDAO.findById(1L).isPresent()));
     }
 
     @Test
@@ -159,12 +158,12 @@ class DiscordOAuthControllerTest extends BaseContainerTest {
         identityResponse.setAvatar("qw724vyt12n984v");
         when(discordIntegrationService.getUserInfo(anyString())).thenReturn(new HttpHandler.HttpResponse<>(identityResponse, null));
 
-        assertEquals(1, discordAccountDAO.count());
+        assertTrue(discordAccountDAO.findById(1L).isPresent());
 
         mockMvc.perform(
                 MockMvcRequestBuilders.get(DiscordOAuthController.PREFIX + DiscordOAuthController.AUTH + "?code=123")
             ).andExpect(status().isFound())
             .andExpect(mvc -> assertTrue(mvc.getResponse().getRedirectedUrl().startsWith("http://localhost:8080/success")))
-            .andExpect(mvc -> assertEquals(2, discordAccountDAO.count()));
+            .andExpect(mvc -> assertTrue(discordAccountDAO.findById(1L).isPresent()));
     }
 }

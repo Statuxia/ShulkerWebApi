@@ -12,7 +12,7 @@ public class GameSessionIpDTO implements ISearchDTO {
 
     protected GameAccount gameAccount;
     protected String ip;
-    protected boolean notified;
+    protected Boolean notified;
     protected List<GameSessionIpState> states;
     protected DateTime lastJoinDateFrom;
     protected DateTime lastJoinDateTo;
@@ -37,11 +37,11 @@ public class GameSessionIpDTO implements ISearchDTO {
         return this;
     }
 
-    public boolean isNotified() {
+    public Boolean isNotified() {
         return notified;
     }
 
-    public GameSessionIpDTO setNotified(boolean notified) {
+    public GameSessionIpDTO setNotified(Boolean notified) {
         this.notified = notified;
         return this;
     }
@@ -81,5 +81,19 @@ public class GameSessionIpDTO implements ISearchDTO {
     public GameSessionIpDTO setStates(List<GameSessionIpState> states) {
         this.states = states;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GameSessionIpDTO{");
+        sb.append("gameAccount=").append(gameAccount);
+        sb.append(", ip='").append(ip).append('\'');
+        sb.append(", notified=").append(notified);
+        sb.append(", states=").append(states);
+        sb.append(", lastJoinDateFrom=").append(lastJoinDateFrom);
+        sb.append(", lastJoinDateTo=").append(lastJoinDateTo);
+        sb.append(", pageable=").append(pageable);
+        sb.append('}');
+        return sb.toString();
     }
 }

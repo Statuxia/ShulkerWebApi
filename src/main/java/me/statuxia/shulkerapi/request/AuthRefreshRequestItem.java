@@ -7,12 +7,11 @@ import org.springframework.lang.NonNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthValidateRequest {
+public class AuthRefreshRequestItem {
 
     @NonNull
     @NotEmpty
     protected String name;
-
     @NonNull
     @NotEmpty
     protected String ip;
@@ -22,7 +21,7 @@ public class AuthValidateRequest {
         return name;
     }
 
-    public AuthValidateRequest setName(@NonNull String name) {
+    public AuthRefreshRequestItem setName(@NonNull String name) {
         this.name = name;
         return this;
     }
@@ -32,7 +31,7 @@ public class AuthValidateRequest {
         return ip;
     }
 
-    public AuthValidateRequest setIp(@NonNull String ip) {
+    public AuthRefreshRequestItem setIp(@NonNull String ip) {
         this.ip = ip;
         return this;
     }

@@ -2,23 +2,22 @@ package me.statuxia.shulkerapi.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import me.statuxia.shulkerapi.model.GameSessionIpState;
 
+import java.util.List;
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthValidateResponse {
+public class AuthRefreshResponse {
 
-    protected GameSessionIpState state;
+    protected List<AuthRefreshResponseItem> items;
 
-    public GameSessionIpState getState() {
-        return state;
+    public List<AuthRefreshResponseItem> getItems() {
+        return items;
     }
 
-    public AuthValidateResponse setState(GameSessionIpState state) {
-        this.state = state;
-        return this;
+    public void setItems(List<AuthRefreshResponseItem> items) {
+        this.items = items;
     }
 
     @Override
@@ -26,19 +25,19 @@ public class AuthValidateResponse {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final AuthValidateResponse response = (AuthValidateResponse) o;
-        return state == response.state;
+        final AuthRefreshResponse that = (AuthRefreshResponse) o;
+        return Objects.equals(items, that.items);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(state);
+        return Objects.hashCode(items);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AuthValidateResponse{");
-        sb.append("state=").append(state);
+        final StringBuilder sb = new StringBuilder("AuthRefreshResponse{");
+        sb.append("items=").append(items);
         sb.append('}');
         return sb.toString();
     }

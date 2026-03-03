@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<ruleset name="Best Practices"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Правила лучших решений
+    </description>
+
+    <rule ref="category/java/codestyle.xml/ControlStatementBraces"
+          message="Для statement'ов по типу if-else блока ожидаем использование скобок"
+    >
+        <description>Для statement'ов по типу if-else блока ожидаем использование скобок</description>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml/UseExplicitTypes" message="Использование var недопустимо">
+        <description>Использование var недопустимо</description>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" message="Неизменяемые локальные переменные должны быть final">
+        <description>Неизменяемые локальные переменные должны быть final</description>
+        <properties>
+            <property name="ignoreForEachDecl" value="true" />
+        </properties>
+    </rule>
+
+</ruleset>

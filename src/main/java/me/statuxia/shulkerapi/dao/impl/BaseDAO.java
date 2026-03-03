@@ -75,7 +75,7 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<E> query = cb.createQuery(getEntityClass());
 
-        Root<E> root = query.from(getEntityClass());
+        final Root<E> root = query.from(getEntityClass());
         query.select(root);
 
         return getEntityManager().createQuery(query).getResultList();

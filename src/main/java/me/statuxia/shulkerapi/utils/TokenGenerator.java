@@ -23,7 +23,7 @@ public class TokenGenerator {
 
         final StringBuilder token = new StringBuilder(tokenLength);
         for (int i = 0; i < tokenLength; i++) {
-            int index = RANDOM.nextInt(CHARACTERS.length());
+            final int index = RANDOM.nextInt(CHARACTERS.length());
             token.append(CHARACTERS.charAt(index));
         }
         return token.toString();

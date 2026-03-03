@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import me.statuxia.shulkerapi.response.AuthRefreshResponse;
 import me.statuxia.shulkerapi.response.AuthValidateResponse;
 import me.statuxia.shulkerapi.response.GameSessionIpResponse;
 
@@ -56,7 +57,7 @@ public class AuthControllerOperation {
         description = "Обновление сессии после входа<br>Авторити: AUTH_REFRESH",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
-            content = @Content(schema = @Schema())
+            content = @Content(schema = @Schema(implementation = AuthRefreshResponse.class))
         )
     )
     public @interface Refresh {

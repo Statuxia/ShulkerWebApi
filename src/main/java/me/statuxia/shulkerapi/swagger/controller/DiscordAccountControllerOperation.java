@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import me.statuxia.shulkerapi.response.DiscordAccountUnlinkResponse;
 import me.statuxia.shulkerapi.response.DiscordIdentityResponse;
 
 import java.lang.annotation.ElementType;
@@ -23,5 +24,28 @@ public class DiscordAccountControllerOperation {
         )
     )
     public @interface Get {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Отвязка игрового аккаунта от Discord аккаунта\nАвторити: UNLINK_ACCOUNT",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema(implementation = DiscordAccountUnlinkResponse.class))
+        )
+    )
+    public @interface Unlink {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Привязка игрового аккаунта к Discord аккаунту\nАвторити: LINK_ACCOUNT",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK"
+        )
+    )
+    public @interface Link {
     }
 }
