@@ -112,6 +112,11 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
     }
 
     @Override
+    public void forceDelete(E entity) {
+        getEntityManager().remove(entity);
+    }
+
+    @Override
     public void order(CriteriaQuery<E> query, CriteriaBuilder cb, Root<E> root, Pageable pageable) {
         if (pageable == null) {
             return;
