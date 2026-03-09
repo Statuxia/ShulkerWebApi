@@ -5,12 +5,12 @@ import org.joda.time.DateTime;
 
 import java.util.Objects;
 
-@Entity(name = "GameAccountMinigamesSessions")
-@Table(name = "game_account_minigames_sessions")
-public class GameAccountMinigamesSessions implements Identifiable<Long> {
+@Entity(name = "MinigamesAccountSessions")
+@Table(name = "minigames_account_sessions")
+public class MinigamesAccountSessions implements Identifiable<Long> {
 
-    public static final String ID_SEQ_GENERATOR = "game_account_minigames_sessions_id_seq_generator";
-    public static final String ID_SEQ = "game_account_minigames_sessions_id_seq";
+    public static final String ID_SEQ_GENERATOR = "minigames_account_sessions_id_seq_generator";
+    public static final String ID_SEQ = "minigames_account_sessions_id_seq";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = ID_SEQ_GENERATOR)
@@ -53,7 +53,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return gameAccount;
     }
 
-    public GameAccountMinigamesSessions setGameAccount(GameAccount gameAccount) {
+    public MinigamesAccountSessions setGameAccount(GameAccount gameAccount) {
         this.gameAccount = gameAccount;
         return this;
     }
@@ -62,7 +62,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return playtime;
     }
 
-    public GameAccountMinigamesSessions setPlaytime(Long playtime) {
+    public MinigamesAccountSessions setPlaytime(Long playtime) {
         this.playtime = playtime;
         return this;
     }
@@ -71,7 +71,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return firstJoin;
     }
 
-    public GameAccountMinigamesSessions setFirstJoin(DateTime firstJoin) {
+    public MinigamesAccountSessions setFirstJoin(DateTime firstJoin) {
         this.firstJoin = firstJoin;
         return this;
     }
@@ -80,7 +80,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return lastJoin;
     }
 
-    public GameAccountMinigamesSessions setLastJoin(DateTime lastJoin) {
+    public MinigamesAccountSessions setLastJoin(DateTime lastJoin) {
         this.lastJoin = lastJoin;
         return this;
     }
@@ -89,7 +89,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return online;
     }
 
-    public GameAccountMinigamesSessions setOnline(Boolean online) {
+    public MinigamesAccountSessions setOnline(Boolean online) {
         this.online = online;
         return this;
     }
@@ -98,7 +98,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return updatedAt;
     }
 
-    public GameAccountMinigamesSessions setUpdatedAt(DateTime updatedAt) {
+    public MinigamesAccountSessions setUpdatedAt(DateTime updatedAt) {
         this.updatedAt = updatedAt;
         return this;
     }
@@ -107,7 +107,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         return lastOnline;
     }
 
-    public GameAccountMinigamesSessions setLastOnline(DateTime lastOnline) {
+    public MinigamesAccountSessions setLastOnline(DateTime lastOnline) {
         this.lastOnline = lastOnline;
         return this;
     }
@@ -117,7 +117,7 @@ public class GameAccountMinigamesSessions implements Identifiable<Long> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final GameAccountMinigamesSessions that = (GameAccountMinigamesSessions) o;
+        final MinigamesAccountSessions that = (MinigamesAccountSessions) o;
         return Objects.equals(id, that.id);
     }
 
