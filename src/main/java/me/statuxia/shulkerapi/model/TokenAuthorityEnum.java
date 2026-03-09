@@ -42,7 +42,9 @@ public enum TokenAuthorityEnum {
     UNLINK_ACCOUNT(ADMIN, PLUGIN),
     LINK_ACCOUNT(ADMIN, PLUGIN),
 
-    GAME_ACCOUNT_BALANCE_CHANGE(ADMIN, PLUGIN);
+    GAME_ACCOUNT_BALANCE_CHANGE(ADMIN, PLUGIN),
+
+    MINIGAMES_SESSION(MINIGAMES, ADMIN, PLUGIN);
 
     private final List<TokenAuthorityGroup> groups;
 
