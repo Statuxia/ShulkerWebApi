@@ -33,6 +33,18 @@ public class GameSessionIpTask {
         this.gameSessionIpDAO = gameSessionIpDAO;
     }
 
+    @Scheduled(initialDelay = 30L, fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
+    public void deleteUnknownProcess() {
+        final int deleted = gameSessionIpDAO.getEntityManager().createNativeQuery("""
+            with unknown_sessions as
+            (select gsi.id from game_session_ip gsi
+            left join game_account ga on ga.id = gsi.game_account_id
+            where ga.id is null)
+            delete from game_session_ip where id in (select * from unknown_sessions)
+            """).executeUpdate();
+        logger.debug("deleted {} sessions with unknown game account", deleted);
+    }
+
     @Scheduled(initialDelay = 36L, fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
     public void process() {
         final GameSessionIpDTO dto = new GameSessionIpDTO()

@@ -193,6 +193,7 @@ public class AuthController implements Controller {
     @PostMapping(value = CHANGE_STATE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @UnknownGameSessionOperation
+    @UnknownAccountOperation
     @UnsupportedRequestStateOperation
     @UnsupportedToChangeStateOperation
     @AuthControllerOperation.ChangeState
@@ -202,6 +203,10 @@ public class AuthController implements Controller {
     ) {
         final GameSessionIp session = gameSessionIpDAO.findById(request.getId())
             .orElseThrow(() -> UNKNOWN_GAME_SESSION);
+
+        if (session.getGameAccount() == null) {
+            throw AccountException.UNKNOWN_ACCOUNT;
+        }
 
         if (request.getState() == null) {
             session.setNotified(true);
@@ -274,6 +279,15 @@ public class AuthController implements Controller {
             }
 
             final GameSessionIp gameSessionIp = optSessionIp.get();
+            if (gameSessionIp.getGameAccount() == null) {
+                items.add(
+                    new AuthRefreshResponseItem().setUsername(item.getName())
+                        .setErrorMessage(messageService.message(AccountException.UNKNOWN_ACCOUNT.getMessage()))
+                        .setErrorCode(AccountException.UNKNOWN_ACCOUNT.getCode())
+                        .setSuccess(false)
+                );
+            }
+
             gameSessionIp.setLastJoinDate(
                 DateTime.now().plusSeconds(stateLifetimes.getOrDefault(ACCEPTED, 1L).intValue())
             );
