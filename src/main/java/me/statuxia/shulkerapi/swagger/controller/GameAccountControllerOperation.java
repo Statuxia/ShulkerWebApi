@@ -20,6 +20,18 @@ public class GameAccountControllerOperation {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
+        description = "Получение аккаунта",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema(implementation = GameAccountResponse.class))
+        )
+    )
+    public @interface Get {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
         description = "Создание аккаунта<br>Авторити: ADD_GAME_ACCOUNTS",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",

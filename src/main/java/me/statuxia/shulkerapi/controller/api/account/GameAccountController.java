@@ -16,10 +16,7 @@ import me.statuxia.shulkerapi.dto.search.impl.GameAccountBalanceSearchDTO;
 import me.statuxia.shulkerapi.exception.AccountException;
 import me.statuxia.shulkerapi.exception.BaseApiException;
 import me.statuxia.shulkerapi.model.*;
-import me.statuxia.shulkerapi.request.GameAccountBalanceChangeRequest;
-import me.statuxia.shulkerapi.request.GameAccountBalanceRequest;
-import me.statuxia.shulkerapi.request.GameAccountCreateRequest;
-import me.statuxia.shulkerapi.request.GameAccountRenameRequest;
+import me.statuxia.shulkerapi.request.*;
 import me.statuxia.shulkerapi.response.GameAccountBalanceResponse;
 import me.statuxia.shulkerapi.response.GameAccountResponse;
 import me.statuxia.shulkerapi.response.NamedItem;
@@ -54,6 +51,7 @@ public class GameAccountController implements Controller {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String PREFIX = "/api/v1/game-account";
+    public static final String GET = "/get";
     public static final String CREATE = "/create";
     public static final String RENAME = "/rename";
     public static final String BALANCE_GET = "/balance/get";
@@ -79,6 +77,26 @@ public class GameAccountController implements Controller {
         this.discordAccountService = discordAccountService;
         this.gameAccountBalanceHistoryDAO = gameAccountBalanceHistoryDAO;
         this.messageService = messageService;
+    }
+
+    @PostMapping(value = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @UnknownAccountOperation
+    @GameAccountControllerOperation.Get
+    public ResponseEntity<GameAccountResponse> get(
+        @RequestBody GameAccountGetRequest request, @AuthData TokenData tokenData
+    ) {
+        final List<GameAccountResponse> list = gameAccountDAO.findByNameIgnoreCase(request.getName()).stream()
+            .map(account -> new GameAccountResponse(
+                account.getId(), account.getName(),
+                account.getDiscordAccount() == null ? null : account.getDiscordAccount().getId()
+            )).toList();
+
+        if (list.isEmpty()) {
+            throw AccountException.UNKNOWN_ACCOUNT;
+        }
+
+        return ResponseEntity.ok(list.getFirst());
     }
 
     @RequiredAuthority(requireAll = TokenAuthorityEnum.ADD_GAME_ACCOUNTS)
