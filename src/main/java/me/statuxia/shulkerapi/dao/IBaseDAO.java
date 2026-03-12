@@ -34,6 +34,8 @@ public interface IBaseDAO<E extends Identifiable<I>, I extends Serializable, T e
 
     void forceDelete(E entity);
 
+    int forceDeleteByIds(Collection<I> ids);
+
     Predicate buildPredicate(CriteriaBuilder cb, Root<E> root, T searchDTO);
 
     void order(CriteriaQuery<E> query, CriteriaBuilder cb, Root<E> root, Pageable pageable);

@@ -4,6 +4,7 @@ import me.statuxia.shulkerapi.dao.impl.GameSessionIpDAO;
 import me.statuxia.shulkerapi.dto.search.impl.GameSessionIpDTO;
 import me.statuxia.shulkerapi.model.GameSessionIp;
 import me.statuxia.shulkerapi.model.GameSessionIpState;
+import me.statuxia.shulkerapi.model.Identifiable;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -33,18 +36,6 @@ public class GameSessionIpTask {
         this.gameSessionIpDAO = gameSessionIpDAO;
     }
 
-    @Scheduled(initialDelay = 30L, fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
-    public void deleteUnknownProcess() {
-        final int deleted = gameSessionIpDAO.getEntityManager().createNativeQuery("""
-            with unknown_sessions as
-            (select gsi.id from game_session_ip gsi
-            left join game_account ga on ga.id = gsi.game_account_id
-            where ga.id is null)
-            delete from game_session_ip where id in (select * from unknown_sessions)
-            """).executeUpdate();
-        logger.debug("deleted {} sessions with unknown game account", deleted);
-    }
-
     @Scheduled(initialDelay = 36L, fixedDelay = 60, timeUnit = TimeUnit.SECONDS)
     public void process() {
         final GameSessionIpDTO dto = new GameSessionIpDTO()
@@ -54,13 +45,32 @@ public class GameSessionIpTask {
 
         logger.debug("dto: {}", dto);
         final List<GameSessionIp> list = gameSessionIpDAO.findList(dto);
+        final List<GameSessionIp> badSessions = new ArrayList<>();
 
-        logger.debug("list size: {}", list.size());
+        list.forEach(item -> {
+            if (item.getGameAccount() == null) {
+                badSessions.add(item);
+            }
+        });
+
+        list.removeAll(badSessions);
+        deleteBadSessions(badSessions);
+
+        logger.debug("sutable list size: {}; bad list size: {}", list.size(), badSessions.size());
+
         for (GameSessionIp gameSessionIp : list) {
             gameSessionIp.setNotified(true);
             gameSessionIp.setState(GameSessionIpState.OUTDATED);
         }
 
         gameSessionIpDAO.saveAll(list);
+    }
+
+    private void deleteBadSessions(List<GameSessionIp> sessions) {
+        final List<Long> ids = sessions.stream()
+            .filter(Objects::nonNull).map(Identifiable::getId)
+            .toList();
+        final int removed = gameSessionIpDAO.forceDeleteByIds(ids);
+        logger.debug("deleted {} sessions with unknown game account", removed);
     }
 }

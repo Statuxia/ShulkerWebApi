@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.dao.impl;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -117,6 +118,15 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
     }
 
     @Override
+    public int forceDeleteByIds(Collection<I> ids) {
+        if (ids == null || ids.isEmpty()) return 0;
+        String entityName = getEntityName();
+        return entityManager.createQuery("DELETE FROM " + entityName + " e WHERE e.id IN :ids")
+            .setParameter("ids", ids)
+            .executeUpdate();
+    }
+
+    @Override
     public void order(CriteriaQuery<E> query, CriteriaBuilder cb, Root<E> root, Pageable pageable) {
         if (pageable == null) {
             return;
@@ -142,5 +152,13 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
 
         return query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize())
             .setMaxResults(pageable.getPageSize());
+    }
+
+    private String getEntityName() {
+        final Entity entityAnno = getEntityClass().getAnnotation(Entity.class);
+        if (entityAnno != null && entityAnno.name() != null && !entityAnno.name().isEmpty()) {
+            return entityAnno.name();
+        }
+        return getEntityClass().getSimpleName();
     }
 }
