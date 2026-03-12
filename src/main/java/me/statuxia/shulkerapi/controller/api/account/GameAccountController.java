@@ -79,7 +79,7 @@ public class GameAccountController implements Controller {
         this.messageService = messageService;
     }
 
-    @PostMapping(value = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     @UnknownAccountOperation
     @GameAccountControllerOperation.Get
