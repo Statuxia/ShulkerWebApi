@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class SessionTokenTask {
-    public final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final int BATCH_SIZE = 200;
     private final SessionTokenDAO sessionTokenDAO;

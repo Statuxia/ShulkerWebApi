@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class MinigamesSessionServiceImpl implements MinigamesSessionService {
-    public final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final GameAccountDAO gameAccountDAO;
     private final MinigamesAccountSessionDAO sessionsDAO;

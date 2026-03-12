@@ -119,8 +119,10 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
 
     @Override
     public int forceDeleteByIds(Collection<I> ids) {
-        if (ids == null || ids.isEmpty()) return 0;
-        String entityName = getEntityName();
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        final String entityName = getEntityName();
         return entityManager.createQuery("DELETE FROM " + entityName + " e WHERE e.id IN :ids")
             .setParameter("ids", ids)
             .executeUpdate();
