@@ -55,12 +55,25 @@ public class GroupCardManagementControllerOperation {
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
         description = "Изменение PIN участника групповой карты<br>"
-            + "Авторити: MANAGE_GROUP_CARD_MEMBER",
+            + "Авторити: MANAGE_GROUP_CARD_MEMBERS",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
             content = @Content(schema = @Schema())
         )
     )
     public @interface UpdateMemberPin {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Изменение настройки участника групповой карты<br>"
+            + "Авторити: MANAGE_GROUP_CARD_MEMBERS",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema())
+        )
+    )
+    public @interface UpdateMemberSetting {
     }
 }

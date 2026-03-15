@@ -30,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.*;
@@ -43,6 +42,7 @@ public class GroupCardManagementController extends CardController {
     public static final String GROUP_MEMBER_ADD = "/group/member/add";
     public static final String GROUP_MEMBER_REMOVE = "/group/member/remove";
     public static final String GROUP_MEMBER_UPDATE_PIN = "/group/member/update-pin";
+    public static final String GROUP_MEMBER_SETTING_UPDATE = "/group/member/setting/update";
 
     private final BankCardSettingDAO bankCardSettingDAO;
     private final BankCardMemberDAO bankCardMemberDAO;
@@ -199,12 +199,9 @@ public class GroupCardManagementController extends CardController {
             throw CardException.UNKNOWN_MEMBER;
         }
 
-        final List<BankCardMemberSetting> settings = bankCardMemberSettingDAO.findList(
+        bankCardMemberSettingDAO.findList(
             new BankCardMemberSettingSearchDTO().setBankCardMember(member.get())
-        );
-        bankCardMemberSettingDAO.forceDeleteByIds(
-            settings.stream().map(BankCardMemberSetting::getId).toList()
-        );
+        ).forEach(bankCardMemberSettingDAO::forceDelete);
         bankCardMemberDAO.forceDelete(member.get());
         getCardHistoryService().writeRemoveGroupCardMember(card);
 
@@ -251,6 +248,64 @@ public class GroupCardManagementController extends CardController {
         member.get().setPin(request.getNewPin());
         bankCardMemberDAO.save(member.get());
         getCardHistoryService().writeUpdateGroupCardMemberPin(card);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value = GROUP_MEMBER_SETTING_UPDATE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @UnknownAccountOperation
+    @UnknownCardOperation
+    @NotGroupCardOperation
+    @UnknownMemberOperation
+    @CardDisabledOperation
+    @InvalidPinOperation
+    @GroupCardManagementControllerOperation.UpdateMemberSetting
+    public ResponseEntity<Void> updateMemberSetting(
+        @RequestBody @Valid GroupCardMemberSettingUpdateRequest request,
+        @AuthData TokenData token
+    ) {
+        final BankCard card = controller.getBankCard(request, token, MANAGE_GROUP_CARD_MEMBERS);
+
+        if (!CardType.GROUP.equals(card.getType())) {
+            throw CardException.NOT_GROUP_CARD;
+        }
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
+        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+            throw CardException.INVALID_PIN;
+        }
+
+        final GameAccount memberGameAccount = getGameAccountService().getGameAccount(request.getMemberGameAccount());
+
+        final Optional<BankCardMember> member = bankCardMemberDAO.find(
+            new BankCardMemberSearchDTO().setCard(card).setGameAccount(memberGameAccount)
+        );
+        if (member.isEmpty()) {
+            throw CardException.UNKNOWN_MEMBER;
+        }
+
+        final Optional<BankCardMemberSetting> existing = bankCardMemberSettingDAO.find(
+            new BankCardMemberSettingSearchDTO().setBankCardMember(member.get()).setType(request.getType())
+        );
+
+        if (existing.isPresent()) {
+            existing.get().setValue(request.getValue());
+            bankCardMemberSettingDAO.save(existing.get());
+        } else {
+            final BankCardMemberSetting setting = new BankCardMemberSetting();
+            setting.setCard(card);
+            setting.setBankCardMember(member.get());
+            setting.setType(request.getType());
+            setting.setValue(request.getValue());
+            bankCardMemberSettingDAO.save(setting);
+        }
+
+        getCardHistoryService().writeUpdateGroupCardMemberSetting(card);
 
         return ResponseEntity.ok().build();
     }

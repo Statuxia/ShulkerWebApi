@@ -160,6 +160,11 @@ public class CardHistoryServiceImpl implements CardHistoryService {
         bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_PIN));
     }
 
+    @Override
+    public void writeUpdateGroupCardMemberSetting(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_SETTING));
+    }
+
     private BankCardHistory write(BankCard card, BankCardHistoryType type) {
         final BankCardHistory history = build(card, type);
         history.setUuid(UUID.randomUUID());

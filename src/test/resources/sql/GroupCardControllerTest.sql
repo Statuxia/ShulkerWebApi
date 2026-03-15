@@ -40,7 +40,13 @@ insert into bank_card_member
 values
 (1, 1, 2, '0001', NOW(), 0, 0);
 
+insert into bank_card_member_setting
+(id, bank_card_id, bank_card_member_id, type, value)
+values
+(1, 1, 1, 'DEPOSIT_PERMISSION', 'ALL');
+
 SELECT setval('account_id_seq', (SELECT MAX(id) FROM account));
 SELECT setval('game_account_id_seq', (SELECT MAX(id) FROM game_account));
 SELECT setval('bank_card_id_seq', (SELECT MAX(id) FROM bank_card));
 SELECT setval('bank_card_member_id_seq', (SELECT MAX(id) FROM bank_card_member));
+SELECT setval('bank_card_member_setting_id_seq', (SELECT MAX(id) FROM bank_card_member_setting));

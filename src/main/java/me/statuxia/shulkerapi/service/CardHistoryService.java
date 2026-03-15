@@ -23,4 +23,6 @@ public interface CardHistoryService {
     void writeRemoveGroupCardMember(BankCard card);
 
     void writeUpdateGroupCardMemberPin(BankCard card);
+
+    void writeUpdateGroupCardMemberSetting(BankCard card);
 }

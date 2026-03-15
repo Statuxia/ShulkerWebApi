@@ -11,6 +11,7 @@ import me.statuxia.shulkerapi.model.BankCardHistoryType;
 import me.statuxia.shulkerapi.model.BankCardSettingType;
 import me.statuxia.shulkerapi.request.GroupCardMemberAddRequest;
 import me.statuxia.shulkerapi.request.GroupCardMemberRemoveRequest;
+import me.statuxia.shulkerapi.request.GroupCardMemberSettingUpdateRequest;
 import me.statuxia.shulkerapi.request.GroupCardMemberUpdatePinRequest;
 import me.statuxia.shulkerapi.request.GroupCardSettingUpdateRequest;
 import org.junit.jupiter.api.Test;
@@ -383,6 +384,102 @@ class GroupCardManagementControllerTest extends BaseContainerTest {
         mockMvc.perform(
                 MockMvcRequestBuilders.put(
                         CardController.PREFIX + GroupCardManagementController.GROUP_MEMBER_UPDATE_PIN
+                    )
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1417"));
+    }
+
+    // updateMemberSetting tests
+
+    @Test
+    void updateMemberSettingTest() throws Exception {
+        final GroupCardMemberSettingUpdateRequest request = new GroupCardMemberSettingUpdateRequest();
+        request.setGameAccount("owner");
+        request.setCardNumber(GROUP_CARD_NUMBER);
+        request.setPin(GROUP_CARD_PIN);
+        request.setMemberGameAccount("member-one");
+        request.setType(BankCardSettingType.DEPOSIT_PERMISSION);
+        request.setValue("MEMBERS");
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(
+                    CardController.PREFIX + GroupCardManagementController.GROUP_MEMBER_SETTING_UPDATE
+                )
+                .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        ).andExpect(status().isOk());
+
+        final var card = bankCardDAO.findByNumber(GROUP_CARD_NUMBER).get();
+        assertEquals(
+            BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_SETTING,
+            bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast().getType()
+        );
+    }
+
+    @Test
+    void updateMemberSettingDisabledCardTest() throws Exception {
+        bankCardDAO.findByNumber(GROUP_CARD_NUMBER).ifPresent(card -> {
+            card.setDisabled(true);
+            bankCardDAO.save(card);
+        });
+
+        final GroupCardMemberSettingUpdateRequest request = new GroupCardMemberSettingUpdateRequest();
+        request.setGameAccount("owner");
+        request.setCardNumber(GROUP_CARD_NUMBER);
+        request.setPin(GROUP_CARD_PIN);
+        request.setMemberGameAccount("member-one");
+        request.setType(BankCardSettingType.DEPOSIT_PERMISSION);
+        request.setValue("MEMBERS");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put(
+                        CardController.PREFIX + GroupCardManagementController.GROUP_MEMBER_SETTING_UPDATE
+                    )
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1405"));
+    }
+
+    @Test
+    void updateMemberSettingWrongPinTest() throws Exception {
+        final GroupCardMemberSettingUpdateRequest request = new GroupCardMemberSettingUpdateRequest();
+        request.setGameAccount("owner");
+        request.setCardNumber(GROUP_CARD_NUMBER);
+        request.setPin("0000");
+        request.setMemberGameAccount("member-one");
+        request.setType(BankCardSettingType.DEPOSIT_PERMISSION);
+        request.setValue("MEMBERS");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put(
+                        CardController.PREFIX + GroupCardManagementController.GROUP_MEMBER_SETTING_UPDATE
+                    )
+                    .header(X_TOKEN_HEADER, SESSION_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            ).andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("1403"));
+    }
+
+    @Test
+    void updateMemberSettingUnknownMemberTest() throws Exception {
+        final GroupCardMemberSettingUpdateRequest request = new GroupCardMemberSettingUpdateRequest();
+        request.setGameAccount("owner");
+        request.setCardNumber(GROUP_CARD_NUMBER);
+        request.setPin(GROUP_CARD_PIN);
+        request.setMemberGameAccount("other-player");
+        request.setType(BankCardSettingType.DEPOSIT_PERMISSION);
+        request.setValue("MEMBERS");
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put(
+                        CardController.PREFIX + GroupCardManagementController.GROUP_MEMBER_SETTING_UPDATE
                     )
                     .header(X_TOKEN_HEADER, SESSION_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
