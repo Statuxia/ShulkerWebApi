@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -52,6 +53,12 @@ public class BankCard implements Identifiable<Long> {
 
     @Column(name = "pattern_seed", nullable = false)
     private Long patternSeed = 0L;
+
+    @Column(name = "name")
+    private String name;
+
+    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
+    private List<BankCardSetting> settings;
 
     @Override
     public Long getId() {
@@ -143,6 +150,22 @@ public class BankCard implements Identifiable<Long> {
         this.patternSeed = patternSeed;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<BankCardSetting> getSettings() {
+        return settings;
+    }
+
+    public void setSettings(List<BankCardSetting> settings) {
+        this.settings = settings;
+    }
+
     public void updatePatternSeed() {
         this.patternSeed = ThreadLocalRandom.current().nextLong(0, 1001);
     }
@@ -175,6 +198,7 @@ public class BankCard implements Identifiable<Long> {
         sb.append(", disabledTime=").append(disabledTime);
         sb.append(", cardStyle=").append(cardStyle);
         sb.append(", patternSeed=").append(patternSeed);
+        sb.append(", name=").append(name);
         sb.append('}');
         return sb.toString();
     }
