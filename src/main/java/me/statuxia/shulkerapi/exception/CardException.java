@@ -40,6 +40,10 @@ public class CardException extends ApiException {
         = new CardException("exception.CardException.UNKNOWN_MEMBER", 1417);
     public static final CardException MEMBER_IS_CARD_OWNER
         = new CardException("exception.CardException.MEMBER_IS_CARD_OWNER", 1418);
+    public static final CardException GROUP_CARD_SENDER
+        = new CardException("exception.CardException.GROUP_CARD_SENDER", 1419);
+    public static final CardException OPERATION_NOT_PERMITTED
+        = new CardException("exception.CardException.OPERATION_NOT_PERMITTED", 1420);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

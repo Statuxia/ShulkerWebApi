@@ -13,6 +13,8 @@ public class ChangeCardBalanceRequest extends BaseCardRequest {
     @Min(1)
     private Long funds;
 
+    private String memberGameAccount;
+
     public String getPin() {
         return pin;
     }
@@ -27,5 +29,13 @@ public class ChangeCardBalanceRequest extends BaseCardRequest {
 
     public void setFunds(Long funds) {
         this.funds = funds;
+    }
+
+    public String getMemberGameAccount() {
+        return memberGameAccount;
+    }
+
+    public void setMemberGameAccount(String memberGameAccount) {
+        this.memberGameAccount = memberGameAccount;
     }
 }

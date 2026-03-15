@@ -1,8 +1,10 @@
 package me.statuxia.shulkerapi.service;
 
+import me.statuxia.shulkerapi.dto.CardHistoryAdditionalData;
 import me.statuxia.shulkerapi.dto.search.impl.BankCardSearchDTO;
 import me.statuxia.shulkerapi.model.*;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface BankCardService {
@@ -15,6 +17,16 @@ public interface BankCardService {
     void withdrawFunds(BankCard card, Long amount, boolean withAdminIncrease);
 
     /**
+     * Списание средств с дополнительными данными для истории
+     */
+    void withdrawFunds(
+        BankCard card,
+        Long amount,
+        boolean withAdminIncrease,
+        List<CardHistoryAdditionalData> additionalData
+    );
+
+    /**
      * Изменение стиля карты
      */
     void changeStyle(BankCard card, CardStyleType styleType);
@@ -23,6 +35,11 @@ public interface BankCardService {
      * Начисление средств
      */
     void depositFunds(BankCard card, Long amount);
+
+    /**
+     * Начисление средств с дополнительными данными для истории
+     */
+    void depositFunds(BankCard card, Long amount, List<CardHistoryAdditionalData> additionalData);
 
     /**
      * Перевод средств
