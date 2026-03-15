@@ -22,9 +22,7 @@ import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.GroupCardManagementControllerOperation;
-import me.statuxia.shulkerapi.swagger.controller.card.NotGroupCardOperation;
-import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
-import me.statuxia.shulkerapi.swagger.controller.card.UnknownMemberOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -74,6 +72,8 @@ public class GroupCardManagementController extends CardController {
     @UnknownAccountOperation
     @UnknownCardOperation
     @NotGroupCardOperation
+    @CardDisabledOperation
+    @InvalidPinOperation
     @GroupCardManagementControllerOperation.UpdateSetting
     public ResponseEntity<Void> updateSetting(
         @RequestBody @Valid GroupCardSettingUpdateRequest request,
@@ -83,6 +83,15 @@ public class GroupCardManagementController extends CardController {
 
         if (!CardType.GROUP.equals(card.getType())) {
             throw CardException.NOT_GROUP_CARD;
+        }
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        final boolean isAdmin = getTokenService().hasAuthority(token.token(), UPDATE_GROUP_CARD_SETTING);
+        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+            throw CardException.INVALID_PIN;
         }
 
         final Optional<BankCardSetting> existing = bankCardSettingDAO.find(
@@ -100,6 +109,8 @@ public class GroupCardManagementController extends CardController {
             bankCardSettingDAO.save(setting);
         }
 
+        getCardHistoryService().writeUpdateGroupCardSetting(card);
+
         return ResponseEntity.ok().build();
     }
 
@@ -108,6 +119,9 @@ public class GroupCardManagementController extends CardController {
     @UnknownAccountOperation
     @UnknownCardOperation
     @NotGroupCardOperation
+    @CardDisabledOperation
+    @InvalidPinOperation
+    @MemberIsCardOwnerOperation
     @GroupCardManagementControllerOperation.AddMember
     public ResponseEntity<Void> addMember(
         @RequestBody @Valid GroupCardMemberAddRequest request,
@@ -117,6 +131,19 @@ public class GroupCardManagementController extends CardController {
 
         if (!CardType.GROUP.equals(card.getType())) {
             throw CardException.NOT_GROUP_CARD;
+        }
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
+        if (!isAdmin && !card.getPin().equals(request.getCardPin())) {
+            throw CardException.INVALID_PIN;
+        }
+
+        if (card.getGameAccount().getName().equals(request.getMemberGameAccount())) {
+            throw CardException.MEMBER_IS_CARD_OWNER;
         }
 
         final GameAccount memberGameAccount = getGameAccountService().getGameAccount(request.getMemberGameAccount());
@@ -130,6 +157,7 @@ public class GroupCardManagementController extends CardController {
         member.setDebited(0L);
 
         bankCardMemberDAO.save(member);
+        getCardHistoryService().writeAddGroupCardMember(card);
 
         return ResponseEntity.ok().build();
     }
@@ -140,6 +168,8 @@ public class GroupCardManagementController extends CardController {
     @UnknownCardOperation
     @NotGroupCardOperation
     @UnknownMemberOperation
+    @CardDisabledOperation
+    @InvalidPinOperation
     @GroupCardManagementControllerOperation.RemoveMember
     public ResponseEntity<Void> removeMember(
         @RequestBody @Valid GroupCardMemberRemoveRequest request,
@@ -149,6 +179,15 @@ public class GroupCardManagementController extends CardController {
 
         if (!CardType.GROUP.equals(card.getType())) {
             throw CardException.NOT_GROUP_CARD;
+        }
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
+        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+            throw CardException.INVALID_PIN;
         }
 
         final GameAccount memberGameAccount = getGameAccountService().getGameAccount(request.getMemberGameAccount());
@@ -167,6 +206,7 @@ public class GroupCardManagementController extends CardController {
             settings.stream().map(BankCardMemberSetting::getId).toList()
         );
         bankCardMemberDAO.forceDelete(member.get());
+        getCardHistoryService().writeRemoveGroupCardMember(card);
 
         return ResponseEntity.ok().build();
     }
@@ -177,6 +217,8 @@ public class GroupCardManagementController extends CardController {
     @UnknownCardOperation
     @NotGroupCardOperation
     @UnknownMemberOperation
+    @CardDisabledOperation
+    @InvalidPinOperation
     @GroupCardManagementControllerOperation.UpdateMemberPin
     public ResponseEntity<Void> updateMemberPin(
         @RequestBody @Valid GroupCardMemberUpdatePinRequest request,
@@ -186,6 +228,15 @@ public class GroupCardManagementController extends CardController {
 
         if (!CardType.GROUP.equals(card.getType())) {
             throw CardException.NOT_GROUP_CARD;
+        }
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
+        }
+
+        final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
+        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+            throw CardException.INVALID_PIN;
         }
 
         final GameAccount memberGameAccount = getGameAccountService().getGameAccount(request.getMemberGameAccount());
@@ -199,6 +250,7 @@ public class GroupCardManagementController extends CardController {
 
         member.get().setPin(request.getNewPin());
         bankCardMemberDAO.save(member.get());
+        getCardHistoryService().writeUpdateGroupCardMemberPin(card);
 
         return ResponseEntity.ok().build();
     }

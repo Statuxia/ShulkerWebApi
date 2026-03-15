@@ -7,9 +7,19 @@ import jakarta.validation.constraints.NotNull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GroupCardMemberRemoveRequest extends BaseCardRequest {
 
+    private String pin;
+
     @NotNull
     @NotEmpty
     private String memberGameAccount;
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
+    }
 
     public String getMemberGameAccount() {
         return memberGameAccount;

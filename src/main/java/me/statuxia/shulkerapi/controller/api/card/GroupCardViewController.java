@@ -22,6 +22,7 @@ import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.GroupCardViewControllerOperation;
+import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.NotGroupCardOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,7 @@ public class GroupCardViewController extends CardController {
     @UnknownAccountOperation
     @UnknownCardOperation
     @NotGroupCardOperation
+    @CardDisabledOperation
     @GroupCardViewControllerOperation.ListMembers
     public ResponseEntity<GroupCardMemberPaginationResponse> listMembers(
         @RequestBody @Valid GroupCardMemberListRequest request,
@@ -73,6 +75,10 @@ public class GroupCardViewController extends CardController {
 
         if (!CardType.GROUP.equals(card.getType())) {
             throw CardException.NOT_GROUP_CARD;
+        }
+
+        if (card.isDisabled()) {
+            throw CardException.CARD_DISABLED;
         }
 
         final BankCardMemberSearchDTO dto = new BankCardMemberSearchDTO()

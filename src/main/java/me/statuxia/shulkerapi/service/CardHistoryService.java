@@ -15,4 +15,12 @@ public interface CardHistoryService {
     void writeUpdateName(BankCard card, GameAccount actionBy, boolean isAdmin);
 
     void writeChangeCurrency(ChangeCurrencyDTO dto);
+
+    void writeUpdateGroupCardSetting(BankCard card);
+
+    void writeAddGroupCardMember(BankCard card);
+
+    void writeRemoveGroupCardMember(BankCard card);
+
+    void writeUpdateGroupCardMemberPin(BankCard card);
 }

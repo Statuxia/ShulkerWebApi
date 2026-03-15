@@ -38,6 +38,8 @@ public class CardException extends ApiException {
         = new CardException("exception.CardException.NO_DIRECT_CARD", 1416);
     public static final CardException UNKNOWN_MEMBER
         = new CardException("exception.CardException.UNKNOWN_MEMBER", 1417);
+    public static final CardException MEMBER_IS_CARD_OWNER
+        = new CardException("exception.CardException.MEMBER_IS_CARD_OWNER", 1418);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

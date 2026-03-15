@@ -140,6 +140,26 @@ public class CardHistoryServiceImpl implements CardHistoryService {
         bankCardOperationHistoryDAO.save(operationHistory);
     }
 
+    @Override
+    public void writeUpdateGroupCardSetting(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_SETTING));
+    }
+
+    @Override
+    public void writeAddGroupCardMember(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.ADD_GROUP_CARD_MEMBER));
+    }
+
+    @Override
+    public void writeRemoveGroupCardMember(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.REMOVE_GROUP_CARD_MEMBER));
+    }
+
+    @Override
+    public void writeUpdateGroupCardMemberPin(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_PIN));
+    }
+
     private BankCardHistory write(BankCard card, BankCardHistoryType type) {
         final BankCardHistory history = build(card, type);
         history.setUuid(UUID.randomUUID());

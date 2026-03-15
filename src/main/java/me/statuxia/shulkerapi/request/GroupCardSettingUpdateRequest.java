@@ -8,12 +8,22 @@ import me.statuxia.shulkerapi.model.BankCardSettingType;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GroupCardSettingUpdateRequest extends BaseCardRequest {
 
+    private String pin;
+
     @NotNull
     private BankCardSettingType type;
 
     @NotNull
     @NotEmpty
     private String value;
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
+    }
 
     public BankCardSettingType getType() {
         return type;

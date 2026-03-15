@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Pattern;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GroupCardMemberUpdatePinRequest extends BaseCardRequest {
 
+    private String pin;
+
     @NotNull
     @NotEmpty
     private String memberGameAccount;
@@ -15,6 +17,14 @@ public class GroupCardMemberUpdatePinRequest extends BaseCardRequest {
     @Pattern(regexp = "\\d{4}")
     @NotNull
     private String newPin;
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
+    }
 
     public String getMemberGameAccount() {
         return memberGameAccount;
