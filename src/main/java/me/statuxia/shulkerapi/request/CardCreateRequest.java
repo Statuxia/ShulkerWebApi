@@ -26,6 +26,8 @@ public class CardCreateRequest {
     @NotEmpty
     protected String gameAccount;
 
+    private String name;
+
     public String getGameAccount() {
         return gameAccount;
     }
@@ -64,5 +66,13 @@ public class CardCreateRequest {
 
     public void setPaymentCardPin(String paymentCardPin) {
         this.paymentCardPin = paymentCardPin;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

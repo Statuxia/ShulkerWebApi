@@ -71,6 +71,28 @@ public class CardHistoryServiceImpl implements CardHistoryService {
         bankCardLogDAO.saveAll(logs);
     }
 
+    @Override
+    public void writeUpdateName(BankCard card, GameAccount actionBy, boolean isAdmin) {
+        final List<BankCardLog> logs = new ArrayList<>();
+        final BankCardHistory history = write(card, BankCardHistoryType.UPDATE_NAME);
+        if (isAdmin) {
+            if (actionBy == null) {
+                throw AccountException.UNKNOWN_ACTION_ACCOUNT;
+            }
+            history.setHistoryData(new CardHistoryDataBuilder().markAsAdmin().getData());
+            final BankCardLog log = build(card, actionBy.getName(), history.getUuid());
+            log.setData(
+                new CardLogDataBuilder()
+                    .action(BankCardLogType.UPDATE_NAME)
+                    .getData()
+            );
+            logs.add(log);
+        }
+
+        bankCardHistoryDAO.save(history);
+        bankCardLogDAO.saveAll(logs);
+    }
+
     public void writeDisable(BankCard card, GameAccount actionBy, boolean disable) {
         final BankCardHistory history = write(
             card,

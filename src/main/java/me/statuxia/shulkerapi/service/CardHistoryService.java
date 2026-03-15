@@ -12,5 +12,7 @@ public interface CardHistoryService {
 
     void writeDisable(BankCard card, GameAccount actionBy, boolean disable);
 
+    void writeUpdateName(BankCard card, GameAccount actionBy, boolean isAdmin);
+
     void writeChangeCurrency(ChangeCurrencyDTO dto);
 }

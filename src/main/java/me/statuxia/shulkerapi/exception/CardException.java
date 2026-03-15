@@ -32,6 +32,12 @@ public class CardException extends ApiException {
         = new CardException("exception.CardException.WRONG_CARD_TYPE_CREATION", 1413);
     public static final CardException UNSUPPORTED_FOR_ADMIN_CARD
         = new CardException("exception.CardException.UNSUPPORTED_FOR_ADMIN_CARD", 1414);
+    public static final CardException NOT_GROUP_CARD
+        = new CardException("exception.CardException.NOT_GROUP_CARD", 1415);
+    public static final CardException NO_DIRECT_CARD
+        = new CardException("exception.CardException.NO_DIRECT_CARD", 1416);
+    public static final CardException UNKNOWN_MEMBER
+        = new CardException("exception.CardException.UNKNOWN_MEMBER", 1417);
 
     public CardException(String message, int code) {
         super(message, HttpStatus.BAD_REQUEST, code);

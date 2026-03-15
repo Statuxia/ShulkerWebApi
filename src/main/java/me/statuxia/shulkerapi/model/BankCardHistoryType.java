@@ -14,5 +14,7 @@ public enum BankCardHistoryType {
     TRANSFER_TO,
     PAY_FINE,
 
-    ADMIN_TRANSFER
+    ADMIN_TRANSFER,
+
+    UPDATE_NAME
 }

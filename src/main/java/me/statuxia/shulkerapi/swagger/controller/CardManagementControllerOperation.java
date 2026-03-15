@@ -72,4 +72,16 @@ public class CardManagementControllerOperation {
     )
     public @interface Enable {
     }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Изменение названия групповой карты<br>Авторити: UPDATE_GROUP_CARD_NAME",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema())
+        )
+    )
+    public @interface UpdateName {
+    }
 }

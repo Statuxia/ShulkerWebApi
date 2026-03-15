@@ -137,6 +137,7 @@ public class ViewCardController extends CardController {
         return ResponseEntity.ok(Arrays.stream(CardType.values()).map(type -> {
             final Long price = switch (type) {
                 case DIRECT -> getCardProperties().getNewDirectCardPayment();
+                case GROUP -> getCardProperties().getNewGroupCardPayment();
                 default -> null;
             };
             return new CardTypeItem(
