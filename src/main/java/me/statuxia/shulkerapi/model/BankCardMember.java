@@ -1,7 +1,6 @@
 package me.statuxia.shulkerapi.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -28,7 +27,6 @@ public class BankCardMember implements Identifiable<Long> {
     private GameAccount gameAccount;
 
     @Column(nullable = false)
-    @Pattern(regexp = "\\d{4}")
     private String pin;
 
     @Column(name = "added_at", nullable = false)

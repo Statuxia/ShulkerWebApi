@@ -26,9 +26,9 @@ values
 insert into bank_card_member
 (id, bank_card_id, game_account_id, pin, added_at, credited, debited)
 values
-(1, 1, 1, '0001', '2026-01-01 10:00:00', 100, 50),
-(2, 1, 2, '0002', '2026-01-15 10:00:00', 200, 100),
-(3, 2, 1, '0003', '2026-03-10 10:00:00', 0, 0),
+(1, 1, 1, '$2b$12$GBVR7nmnHOj6cAMfboG8oegA6JODLz.F84j3AihuC6X31q787puOK', '2026-01-01 10:00:00', 100, 50),
+(2, 1, 2, '$2b$12$wp9SwTiNR3luptWJfjoUNeOM5WVHeslxZ293NALQc7fygckDAtVUK', '2026-01-15 10:00:00', 200, 100),
+(3, 2, 1, '$2b$12$Izna6MuG7k0Ne8DUwoEcyu2PgpJZq5OnncerVJwtpePyXF7YllLU.', '2026-03-10 10:00:00', 0, 0),
 (4, 2, 3, '0004', '2026-03-10 12:00:00', 300, 150);
 
 SELECT setval('account_id_seq', (SELECT MAX(id) FROM account));

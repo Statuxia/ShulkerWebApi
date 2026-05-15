@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -60,6 +61,9 @@ class GroupCardManagementControllerTest extends BaseContainerTest {
 
     @Autowired
     protected BankCardMemberDAO bankCardMemberDAO;
+
+    @Autowired
+    protected BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     protected MockMvc mockMvc;
@@ -320,7 +324,7 @@ class GroupCardManagementControllerTest extends BaseContainerTest {
         final var card = bankCardDAO.findByNumber(GROUP_CARD_NUMBER).get();
         final var member = bankCardMemberDAO.find(new BankCardMemberSearchDTO().setCard(card));
         assertTrue(member.isPresent());
-        assertEquals("9999", member.get().getPin());
+        assertTrue(passwordEncoder.matches("9999", member.get().getPin()));
         assertEquals(
             BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_PIN,
             bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCard(card)).getLast().getType()

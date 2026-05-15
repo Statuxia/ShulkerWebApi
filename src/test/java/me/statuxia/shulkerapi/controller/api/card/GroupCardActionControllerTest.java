@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -71,6 +72,9 @@ class GroupCardActionControllerTest extends BaseContainerTest {
 
     @Autowired
     protected GameAccountService gameAccountService;
+
+    @Autowired
+    protected BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     protected MockMvc mockMvc;
@@ -407,7 +411,7 @@ class GroupCardActionControllerTest extends BaseContainerTest {
         final BankCard ownerDirectCard = new BankCard();
         ownerDirectCard.setNumber("9999 9999");
         ownerDirectCard.setGameAccount(gameAccountService.getGameAccount("owner"));
-        ownerDirectCard.setPin(GROUP_CARD_PIN);
+        ownerDirectCard.setPin(passwordEncoder.encode(GROUP_CARD_PIN));
         ownerDirectCard.setType(me.statuxia.shulkerapi.model.CardType.DIRECT);
         ownerDirectCard.setCurrency(200L);
         ownerDirectCard.setCreateTime(DateTime.now());

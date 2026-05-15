@@ -45,8 +45,8 @@ values
 insert into bank_card
 (id, number, game_account_id, pin, type, currency)
 values
-(1, '1234 5678', 1, '1234', 'DIRECT', 500000),
-(2, '1111 1111', 2, '1234', 'DIRECT', 500)
+(1, '1234 5678', 1, '$2b$12$aaRzrXQpn/Sn5VGtvM5amOAzn5XQOvuaVsfQUsmudBKSj/8944fJe', 'DIRECT', 500000),
+(2, '1111 1111', 2, '$2b$12$aaRzrXQpn/Sn5VGtvM5amOAzn5XQOvuaVsfQUsmudBKSj/8944fJe', 'DIRECT', 500)
 ;
 
 SELECT setval('account_id_seq', (SELECT MAX(id) FROM account));

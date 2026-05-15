@@ -29,7 +29,6 @@ public class BankCard implements Identifiable<Long> {
     private GameAccount gameAccount;
 
     @Column(nullable = false)
-    @Pattern(regexp = "\\d{4}")
     private String pin;
 
     @Column(nullable = false)

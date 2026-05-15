@@ -34,6 +34,7 @@ import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperatio
 import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import me.statuxia.shulkerapi.utils.AdminCardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static me.statuxia.shulkerapi.model.TokenAuthorityEnum.*;
@@ -75,11 +75,12 @@ public class CardActionController extends CardController {
         BankCardService bankCardService,
         BankCardMemberDAO bankCardMemberDAO,
         BankCardSettingDAO bankCardSettingDAO,
-        BankCardMemberSettingDAO bankCardMemberSettingDAO
+        BankCardMemberSettingDAO bankCardMemberSettingDAO,
+        BCryptPasswordEncoder passwordEncoder
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService, messageService
+            operationProcessorService, cardHistoryService, messageService, passwordEncoder
         );
         this.controller = this;
         this.bankCardService = bankCardService;
@@ -153,7 +154,7 @@ public class CardActionController extends CardController {
         if (CardType.GROUP.equals(card.getType())) {
             processGroupWithdraw(card, request);
         } else {
-            if (card.getPin() == null || !Objects.equals(card.getPin(), request.getPin())) {
+            if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
                 throw CardException.INVALID_PIN;
             }
 
@@ -204,7 +205,7 @@ public class CardActionController extends CardController {
             throw CardException.RECEIVER_CARD_DISABLED;
         }
 
-        if (card.getPin() == null || !Objects.equals(card.getPin(), request.getPin())) {
+        if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -247,7 +248,7 @@ public class CardActionController extends CardController {
             final GameAccount memberGA = getGameAccountService().getGameAccount(request.getMemberGameAccount());
             final BankCardMember member = findMember(card, memberGA);
 
-            if (!member.getPin().equals(request.getPin())) {
+            if (!getPasswordEncoder().matches(request.getPin(), member.getPin())) {
                 throw CardException.INVALID_PIN;
             }
 
@@ -261,7 +262,7 @@ public class CardActionController extends CardController {
             member.setDebited(member.getDebited() + request.getFunds());
             bankCardMemberDAO.save(member);
         } else {
-            if (card.getPin() == null || !Objects.equals(card.getPin(), request.getPin())) {
+            if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
                 throw CardException.INVALID_PIN;
             }
             bankCardService.withdrawFunds(card, request.getFunds(), false);

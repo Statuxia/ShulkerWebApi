@@ -25,6 +25,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,11 +49,13 @@ public class BankCardServiceImpl implements BankCardService {
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
     private final FineDAO fineDAO;
     private final BankCardService service;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     public BankCardServiceImpl(
         CardStyleDAO cardStyleDAO, BankCardDAO bankCardDAO, BankCardLogDAO bankCardLogDAO,
-        CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO, FineDAO fineDAO
+        CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO,
+        FineDAO fineDAO, BCryptPasswordEncoder passwordEncoder
     ) {
         this.cardStyleDAO = cardStyleDAO;
         this.bankCardDAO = bankCardDAO;
@@ -61,6 +64,7 @@ public class BankCardServiceImpl implements BankCardService {
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
         this.fineDAO = fineDAO;
         this.service = this;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -83,7 +87,7 @@ public class BankCardServiceImpl implements BankCardService {
             throw CardException.PAYMENT_FROM_DIRECT;
         }
 
-        if (!card.getPin().equals(paymentCardPin)) {
+        if (!passwordEncoder.matches(paymentCardPin, card.getPin())) {
             throw CardException.INVALID_PAYMENT_PIN;
         }
 

@@ -20,6 +20,7 @@ import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.GroupCardManagementControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.*;
@@ -55,11 +56,11 @@ public class GroupCardManagementController extends CardController {
         CardProperties cardProperties, OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService, MessageService messageService,
         BankCardSettingDAO bankCardSettingDAO, BankCardMemberDAO bankCardMemberDAO,
-        BankCardMemberSettingDAO bankCardMemberSettingDAO
+        BankCardMemberSettingDAO bankCardMemberSettingDAO, BCryptPasswordEncoder passwordEncoder
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService, messageService
+            operationProcessorService, cardHistoryService, messageService, passwordEncoder
         );
         this.bankCardSettingDAO = bankCardSettingDAO;
         this.bankCardMemberDAO = bankCardMemberDAO;
@@ -90,7 +91,7 @@ public class GroupCardManagementController extends CardController {
         }
 
         final boolean isAdmin = getTokenService().hasAuthority(token.token(), UPDATE_GROUP_CARD_SETTING);
-        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+        if (!isAdmin && !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -138,7 +139,7 @@ public class GroupCardManagementController extends CardController {
         }
 
         final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
-        if (!isAdmin && !card.getPin().equals(request.getCardPin())) {
+        if (!isAdmin && !getPasswordEncoder().matches(request.getCardPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -151,7 +152,7 @@ public class GroupCardManagementController extends CardController {
         final BankCardMember member = new BankCardMember();
         member.setCard(card);
         member.setGameAccount(memberGameAccount);
-        member.setPin(request.getPin());
+        member.setPin(getPasswordEncoder().encode(request.getPin()));
         member.setAddedAt(DateTime.now());
         member.setCredited(0L);
         member.setDebited(0L);
@@ -186,7 +187,7 @@ public class GroupCardManagementController extends CardController {
         }
 
         final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
-        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+        if (!isAdmin && !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -232,7 +233,7 @@ public class GroupCardManagementController extends CardController {
         }
 
         final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
-        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+        if (!isAdmin && !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -245,7 +246,7 @@ public class GroupCardManagementController extends CardController {
             throw CardException.UNKNOWN_MEMBER;
         }
 
-        member.get().setPin(request.getNewPin());
+        member.get().setPin(getPasswordEncoder().encode(request.getNewPin()));
         bankCardMemberDAO.save(member.get());
         getCardHistoryService().writeUpdateGroupCardMemberPin(card);
 
@@ -276,7 +277,7 @@ public class GroupCardManagementController extends CardController {
         }
 
         final boolean isAdmin = getTokenService().hasAuthority(token.token(), MANAGE_GROUP_CARD_MEMBERS);
-        if (!isAdmin && !card.getPin().equals(request.getPin())) {
+        if (!isAdmin && !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 

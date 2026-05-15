@@ -16,6 +16,7 @@ import me.statuxia.shulkerapi.service.OperationProcessorService;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +37,7 @@ public abstract class CardController implements Controller {
     private final OperationProcessorService operationProcessorService;
     private final CardHistoryService cardHistoryService;
     private final MessageService messageService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     protected CardController(
@@ -44,7 +46,9 @@ public abstract class CardController implements Controller {
         BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
-        CardHistoryService cardHistoryService, MessageService messageService
+        CardHistoryService cardHistoryService,
+        MessageService messageService,
+        BCryptPasswordEncoder passwordEncoder
     ) {
         this.tokenService = tokenService;
         this.gameAccountService = gameAccountService;
@@ -53,6 +57,7 @@ public abstract class CardController implements Controller {
         this.operationProcessorService = operationProcessorService;
         this.cardHistoryService = cardHistoryService;
         this.messageService = messageService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -102,5 +107,9 @@ public abstract class CardController implements Controller {
 
     public MessageService getMessageService() {
         return messageService;
+    }
+
+    public BCryptPasswordEncoder getPasswordEncoder() {
+        return passwordEncoder;
     }
 }

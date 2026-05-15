@@ -20,13 +20,13 @@ import me.statuxia.shulkerapi.swagger.controller.card.style.NotForPurchaseOperat
 import me.statuxia.shulkerapi.swagger.controller.card.style.UnknownStyleOperation;
 import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping(value = CardController.PREFIX, headers = AuthDataResolver.X_TOKEN_HEADER)
@@ -47,8 +47,10 @@ public class CardStyleController extends CardController {
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService,
-        MessageService messageService, CardStyleDAO cardStyleDAO,
-        BankCardService bankCardService
+        MessageService messageService,
+        CardStyleDAO cardStyleDAO,
+        BankCardService bankCardService,
+        BCryptPasswordEncoder passwordEncoder
     ) {
         super(
             tokenService,
@@ -57,7 +59,8 @@ public class CardStyleController extends CardController {
             cardProperties,
             operationProcessorService,
             cardHistoryService,
-            messageService
+            messageService,
+            passwordEncoder
         );
         this.cardStyleDAO = cardStyleDAO;
         this.bankCardService = bankCardService;
@@ -83,7 +86,7 @@ public class CardStyleController extends CardController {
             throw CardException.PAYMENT_CARD_DISABLED;
         }
 
-        if (card.getPin() == null || !Objects.equals(card.getPin(), request.getPin())) {
+        if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PAYMENT_PIN;
         }
 
