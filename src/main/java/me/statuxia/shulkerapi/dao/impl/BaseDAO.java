@@ -1,5 +1,6 @@
 package me.statuxia.shulkerapi.dao.impl;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -75,7 +76,7 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<E> query = cb.createQuery(getEntityClass());
 
-        Root<E> root = query.from(getEntityClass());
+        final Root<E> root = query.from(getEntityClass());
         query.select(root);
 
         return getEntityManager().createQuery(query).getResultList();
@@ -112,6 +113,22 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
     }
 
     @Override
+    public void forceDelete(E entity) {
+        getEntityManager().remove(entity);
+    }
+
+    @Override
+    public int forceDeleteByIds(Collection<I> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        final String entityName = getEntityName();
+        return entityManager.createQuery("DELETE FROM " + entityName + " e WHERE e.id IN :ids")
+            .setParameter("ids", ids)
+            .executeUpdate();
+    }
+
+    @Override
     public void order(CriteriaQuery<E> query, CriteriaBuilder cb, Root<E> root, Pageable pageable) {
         if (pageable == null) {
             return;
@@ -137,5 +154,13 @@ public abstract class BaseDAO<E extends Identifiable<I>, I extends Serializable,
 
         return query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize())
             .setMaxResults(pageable.getPageSize());
+    }
+
+    private String getEntityName() {
+        final Entity entityAnno = getEntityClass().getAnnotation(Entity.class);
+        if (entityAnno != null && entityAnno.name() != null && !entityAnno.name().isEmpty()) {
+            return entityAnno.name();
+        }
+        return getEntityClass().getSimpleName();
     }
 }

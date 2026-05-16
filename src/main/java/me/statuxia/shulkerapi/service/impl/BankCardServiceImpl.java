@@ -25,10 +25,12 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,11 +49,13 @@ public class BankCardServiceImpl implements BankCardService {
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
     private final FineDAO fineDAO;
     private final BankCardService service;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     public BankCardServiceImpl(
         CardStyleDAO cardStyleDAO, BankCardDAO bankCardDAO, BankCardLogDAO bankCardLogDAO,
-        CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO, FineDAO fineDAO
+        CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO,
+        FineDAO fineDAO, BCryptPasswordEncoder passwordEncoder
     ) {
         this.cardStyleDAO = cardStyleDAO;
         this.bankCardDAO = bankCardDAO;
@@ -60,6 +64,7 @@ public class BankCardServiceImpl implements BankCardService {
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
         this.fineDAO = fineDAO;
         this.service = this;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -82,7 +87,7 @@ public class BankCardServiceImpl implements BankCardService {
             throw CardException.PAYMENT_FROM_DIRECT;
         }
 
-        if (!card.getPin().equals(paymentCardPin)) {
+        if (!passwordEncoder.matches(paymentCardPin, card.getPin())) {
             throw CardException.INVALID_PAYMENT_PIN;
         }
 
@@ -94,6 +99,19 @@ public class BankCardServiceImpl implements BankCardService {
      */
     @Override
     public void withdrawFunds(BankCard card, Long amount, boolean withAdminIncrease) {
+        withdrawFunds(card, amount, withAdminIncrease, Collections.emptyList());
+    }
+
+    /**
+     * Списание средств с дополнительными данными для истории
+     */
+    @Override
+    public void withdrawFunds(
+        BankCard card,
+        Long amount,
+        boolean withAdminIncrease,
+        List<CardHistoryAdditionalData> additionalData
+    ) {
         if (amount <= 0) {
             throw FundsException.AMOUNT_GREATER_ZERO;
         }
@@ -108,10 +126,12 @@ public class BankCardServiceImpl implements BankCardService {
         final UUID historyUuid = UUID.randomUUID();
 
         bankCardDAO.save(card);
-        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+        final ChangeCurrencyDTO dto = new ChangeCurrencyDTO(
             card, BankCardHistoryType.WITHDRAW,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        ).setHistoryUuid(historyUuid));
+        ).setHistoryUuid(historyUuid);
+        additionalData.forEach(dto::addAdditionalData);
+        cardHistoryService.writeChangeCurrency(dto);
 
         if (withAdminIncrease) {
             service.increaseAdminCard(historyUuid, BankCardHistoryType.WITHDRAW, amount, card);
@@ -160,6 +180,14 @@ public class BankCardServiceImpl implements BankCardService {
      */
     @Override
     public void depositFunds(BankCard card, Long amount) {
+        depositFunds(card, amount, Collections.emptyList());
+    }
+
+    /**
+     * Пополнение средств с дополнительными данными для истории
+     */
+    @Override
+    public void depositFunds(BankCard card, Long amount, List<CardHistoryAdditionalData> additionalData) {
         if (amount <= 0) {
             throw FundsException.AMOUNT_GREATER_ZERO;
         }
@@ -168,10 +196,12 @@ public class BankCardServiceImpl implements BankCardService {
         card.setCurrency(oldCurrency + amount);
         final Long newCurrency = card.getCurrency();
         bankCardDAO.save(card);
-        cardHistoryService.writeChangeCurrency(new ChangeCurrencyDTO(
+        final ChangeCurrencyDTO dto = new ChangeCurrencyDTO(
             card, BankCardHistoryType.DEPOSIT,
             oldCurrency, newCurrency, newCurrency - oldCurrency
-        ));
+        );
+        additionalData.forEach(dto::addAdditionalData);
+        cardHistoryService.writeChangeCurrency(dto);
     }
 
     @Override

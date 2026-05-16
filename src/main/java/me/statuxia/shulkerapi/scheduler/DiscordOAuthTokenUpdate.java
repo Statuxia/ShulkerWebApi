@@ -49,6 +49,9 @@ public class DiscordOAuthTokenUpdate {
             final HttpHandler.HttpResponse<DiscordAccessTokenResponse> response
                 = getDiscordIntegrationService().refreshToken(account.getRefreshToken());
             if (response.getException() != null) {
+                account.setUpdateTime(DateTime.now().plusYears(100));
+                account.setAccessToken("-");
+                account.setRefreshToken("-");
                 logger.error("caught error on updating account {}", account.getId());
                 errors++;
                 continue;

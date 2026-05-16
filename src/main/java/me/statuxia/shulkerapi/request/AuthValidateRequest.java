@@ -12,6 +12,7 @@ public class AuthValidateRequest {
     @NonNull
     @NotEmpty
     protected String name;
+
     @NonNull
     @NotEmpty
     protected String ip;

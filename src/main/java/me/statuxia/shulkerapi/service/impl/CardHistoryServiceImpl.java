@@ -71,6 +71,28 @@ public class CardHistoryServiceImpl implements CardHistoryService {
         bankCardLogDAO.saveAll(logs);
     }
 
+    @Override
+    public void writeUpdateName(BankCard card, GameAccount actionBy, boolean isAdmin) {
+        final List<BankCardLog> logs = new ArrayList<>();
+        final BankCardHistory history = write(card, BankCardHistoryType.UPDATE_NAME);
+        if (isAdmin) {
+            if (actionBy == null) {
+                throw AccountException.UNKNOWN_ACTION_ACCOUNT;
+            }
+            history.setHistoryData(new CardHistoryDataBuilder().markAsAdmin().getData());
+            final BankCardLog log = build(card, actionBy.getName(), history.getUuid());
+            log.setData(
+                new CardLogDataBuilder()
+                    .action(BankCardLogType.UPDATE_NAME)
+                    .getData()
+            );
+            logs.add(log);
+        }
+
+        bankCardHistoryDAO.save(history);
+        bankCardLogDAO.saveAll(logs);
+    }
+
     public void writeDisable(BankCard card, GameAccount actionBy, boolean disable) {
         final BankCardHistory history = write(
             card,
@@ -116,6 +138,31 @@ public class CardHistoryServiceImpl implements CardHistoryService {
 
         final BankCardOperationHistory operationHistory = build(history, fromToDiff.diff());
         bankCardOperationHistoryDAO.save(operationHistory);
+    }
+
+    @Override
+    public void writeUpdateGroupCardSetting(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_SETTING));
+    }
+
+    @Override
+    public void writeAddGroupCardMember(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.ADD_GROUP_CARD_MEMBER));
+    }
+
+    @Override
+    public void writeRemoveGroupCardMember(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.REMOVE_GROUP_CARD_MEMBER));
+    }
+
+    @Override
+    public void writeUpdateGroupCardMemberPin(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_PIN));
+    }
+
+    @Override
+    public void writeUpdateGroupCardMemberSetting(BankCard card) {
+        bankCardHistoryDAO.save(write(card, BankCardHistoryType.UPDATE_GROUP_CARD_MEMBER_SETTING));
     }
 
     private BankCardHistory write(BankCard card, BankCardHistoryType type) {

@@ -78,11 +78,11 @@ class CardManagementControllerTest extends BaseContainerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isOk())
-            .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")))
+            .andExpect(jsonPath("$.cardNumber").value(matchesPattern("\\d{4} \\d{4}")))
             .andReturn();
 
         final JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
-        final BankCard card = bankCardDAO.findByNumber(node.get("number").asText()).get();
+        final BankCard card = bankCardDAO.findByNumber(node.get("cardNumber").asText()).get();
 
         assertEquals(
             BankCardHistoryType.CREATE_CARD,
@@ -199,12 +199,12 @@ class CardManagementControllerTest extends BaseContainerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             ).andExpect(status().isOk())
-            .andExpect(jsonPath("$.number").value(matchesPattern("\\d{4} \\d{4}")))
+            .andExpect(jsonPath("$.cardNumber").value(matchesPattern("\\d{4} \\d{4}")))
             .andReturn();
 
 
         final JsonNode node = objectMapper.readTree(result.getResponse().getContentAsString());
-        final BankCard card = bankCardDAO.findByNumber(node.get("number").asText()).get();
+        final BankCard card = bankCardDAO.findByNumber(node.get("cardNumber").asText()).get();
         final BankCard card2 = bankCardDAO.findByNumber("1234 5678").get();
 
         final List<BankCardHistory> histories = bankCardHistoryDAO.findList(new BankCardHistorySearchDTO().setCards(List.of(card, card2)));

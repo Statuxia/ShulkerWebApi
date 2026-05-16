@@ -39,6 +39,7 @@ public class TokenFilter implements Filter {
     private final List<String> ignoredMethods = List.of("OPTIONS", "HEAD");
     private final List<String> whitelistUrls = List.of(
         "/api/v1/oauth2/discord",
+        "/actuator/prometheus",
         TokenController.PREFIX + TokenController.GET_BY_CODE
     );
 

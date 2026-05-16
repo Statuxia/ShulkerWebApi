@@ -26,8 +26,8 @@ public class AuthValidateResponse {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final AuthValidateResponse that = (AuthValidateResponse) o;
-        return state == that.state;
+        final AuthValidateResponse response = (AuthValidateResponse) o;
+        return state == response.state;
     }
 
     @Override

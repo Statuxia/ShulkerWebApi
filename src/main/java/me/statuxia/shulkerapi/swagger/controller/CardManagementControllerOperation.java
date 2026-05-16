@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import me.statuxia.shulkerapi.response.CardCreateResponse;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,7 +19,7 @@ public class CardManagementControllerOperation {
         description = "Создание карты",
         responses = @ApiResponse(
             responseCode = "200", description = "OK",
-            content = @Content(schema = @Schema(implementation = String.class))
+            content = @Content(schema = @Schema(implementation = CardCreateResponse.class))
         )
     )
     public @interface Create {
@@ -70,5 +71,17 @@ public class CardManagementControllerOperation {
         )
     )
     public @interface Enable {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+        description = "Изменение названия групповой карты<br>Авторити: UPDATE_GROUP_CARD_NAME",
+        responses = @ApiResponse(
+            responseCode = "200", description = "OK",
+            content = @Content(schema = @Schema())
+        )
+    )
+    public @interface UpdateName {
     }
 }

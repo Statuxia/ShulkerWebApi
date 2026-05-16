@@ -7,7 +7,7 @@ package me.statuxia.shulkerapi.model;
  * <p>
  * По умолчанию переходы в {@code OUTDATED} происходят через:<br>
  * - 5 минут ({@code STARTED}<br>
- * - 7 дней с момента последнего входа ({@code ACCEPTED})<br>
+ * - 5 минут с момента последнего входа ({@code ACCEPTED})<br>
  * - 31 день ({@code REJECTED})<br>
  * - сразу как будет вызыван {@code /verify} и создана новая запись {@code STARTED} ({@code NOT_NOTIFIED})
  * </p>

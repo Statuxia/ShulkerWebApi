@@ -29,6 +29,7 @@ import me.statuxia.shulkerapi.swagger.controller.ViewCardHistoryControllerOperat
 import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,7 +64,8 @@ public class ViewCardHistoryController extends CardController {
         CardHistoryService cardHistoryService, BankCardHistoryDAO bankCardHistoryDAO,
         BankCardOperationHistoryDAO bankCardOperationHistoryDAO, BankCardLogDAO bankCardLogDAO,
         MessageService messageService,
-        JsonNodeConverter jsonNodeConverter
+        JsonNodeConverter jsonNodeConverter,
+        BCryptPasswordEncoder passwordEncoder
     ) {
         super(
             tokenService,
@@ -72,7 +74,8 @@ public class ViewCardHistoryController extends CardController {
             cardProperties,
             operationProcessorService,
             cardHistoryService,
-            messageService
+            messageService,
+            passwordEncoder
         );
         this.bankCardHistoryDAO = bankCardHistoryDAO;
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;

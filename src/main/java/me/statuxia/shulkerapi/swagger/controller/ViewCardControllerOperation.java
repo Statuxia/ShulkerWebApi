@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import me.statuxia.shulkerapi.response.BankCardItem;
 import me.statuxia.shulkerapi.response.BankCardPaginationResponse;
-import me.statuxia.shulkerapi.response.NamedItem;
+import me.statuxia.shulkerapi.response.CardTypeItem;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -48,7 +48,7 @@ public class ViewCardControllerOperation {
             responseCode = "200", description = "OK",
             content = @Content(
                 array = @ArraySchema(
-                    schema = @Schema(implementation = NamedItem.class)
+                    schema = @Schema(implementation = CardTypeItem.class)
                 )
             )
         )
