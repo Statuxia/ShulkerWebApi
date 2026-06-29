@@ -243,7 +243,7 @@ public class CardManagementController extends CardController {
         @RequestBody @Valid ChangeCardStateRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getController().getBankCard(request, token, null);
+        final BankCard card = getController().getBankCard(request, token, DISABLE_BANK_CARD);
         AdminCardHelper.unsupportedForAdminCard(card);
         final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
 
@@ -268,13 +268,13 @@ public class CardManagementController extends CardController {
     @UnknownAccountOperation
     @UnknownActionByAccountOperation
     @UnknownCardOperation
-    @CardDisabledOperation
+    @CardEnabledOperation
     @UnsupportedForAdminCardOperation
     public ResponseEntity<Void> enable(
         @RequestBody @Valid ChangeCardStateRequest request,
         @AuthData TokenData token
     ) {
-        final BankCard card = getController().getBankCard(request, token, null);
+        final BankCard card = getController().getBankCard(request, token, ENABLE_BANK_CARD);
         AdminCardHelper.unsupportedForAdminCard(card);
         final GameAccount actionBy = getGameAccountService().getActionGameAccount(request.getActionBy());
 
