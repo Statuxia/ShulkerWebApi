@@ -21,11 +21,9 @@ public class FineDAO extends BaseDAO<Fine, Long, FineSearchDTO> {
     public Predicate buildPredicate(CriteriaBuilder cb, Root<Fine> root, FineSearchDTO searchDTO) {
         final List<Predicate> predicates = new ArrayList<>();
 
-        if (searchDTO.getGameAccount() == null) {
-            return cb.disjunction();
+        if (searchDTO.getGameAccount() != null) {
+            predicates.add(cb.equal(root.get("gameAccount"), searchDTO.getGameAccount()));
         }
-
-        predicates.add(cb.equal(root.get("gameAccount"), searchDTO.getGameAccount()));
 
         if (!CollectionUtils.isEmpty(searchDTO.getStatuses())) {
             predicates.add(root.get("status").in(searchDTO.getStatuses()));

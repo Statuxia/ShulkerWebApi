@@ -17,7 +17,6 @@ import me.statuxia.shulkerapi.service.*;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownActionByAccountOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +54,7 @@ public class CardOperationController extends CardController {
         OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService, BankCardService bankCardService,
         BankCardHistoryDAO bankCardHistoryDAO, MessageService messageService,
-        BCryptPasswordEncoder passwordEncoder
+        PinAdapter pinAdapter
     ) {
         super(
             tokenService,
@@ -65,7 +64,7 @@ public class CardOperationController extends CardController {
             operationProcessorService,
             cardHistoryService,
             messageService,
-            passwordEncoder
+            pinAdapter
         );
         this.bankCardService = bankCardService;
         this.bankCardHistoryDAO = bankCardHistoryDAO;

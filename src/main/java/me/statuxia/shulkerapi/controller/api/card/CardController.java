@@ -13,10 +13,10 @@ import me.statuxia.shulkerapi.request.CardRequest;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
+import me.statuxia.shulkerapi.service.PinAdapter;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +37,7 @@ public abstract class CardController implements Controller {
     private final OperationProcessorService operationProcessorService;
     private final CardHistoryService cardHistoryService;
     private final MessageService messageService;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PinAdapter pinAdapter;
 
     @Autowired
     protected CardController(
@@ -48,7 +48,7 @@ public abstract class CardController implements Controller {
         OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService,
         MessageService messageService,
-        BCryptPasswordEncoder passwordEncoder
+        PinAdapter pinAdapter
     ) {
         this.tokenService = tokenService;
         this.gameAccountService = gameAccountService;
@@ -57,7 +57,7 @@ public abstract class CardController implements Controller {
         this.operationProcessorService = operationProcessorService;
         this.cardHistoryService = cardHistoryService;
         this.messageService = messageService;
-        this.passwordEncoder = passwordEncoder;
+        this.pinAdapter = pinAdapter;
     }
 
     @Transactional
@@ -109,7 +109,7 @@ public abstract class CardController implements Controller {
         return messageService;
     }
 
-    public BCryptPasswordEncoder getPasswordEncoder() {
-        return passwordEncoder;
+    public PinAdapter getPinAdapter() {
+        return pinAdapter;
     }
 }

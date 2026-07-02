@@ -21,13 +21,13 @@ import me.statuxia.shulkerapi.response.CardTypeItem;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
+import me.statuxia.shulkerapi.service.PinAdapter;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.ViewCardControllerOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,11 +56,11 @@ public class ViewCardController extends CardController {
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService,
         CardHistoryService cardHistoryService, MessageService messageService,
-        BCryptPasswordEncoder passwordEncoder
+        PinAdapter pinAdapter
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService, messageService, passwordEncoder
+            operationProcessorService, cardHistoryService, messageService, pinAdapter
         );
     }
 

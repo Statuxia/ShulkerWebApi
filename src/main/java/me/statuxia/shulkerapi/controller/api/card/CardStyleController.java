@@ -20,7 +20,6 @@ import me.statuxia.shulkerapi.swagger.controller.card.style.NotForPurchaseOperat
 import me.statuxia.shulkerapi.swagger.controller.card.style.UnknownStyleOperation;
 import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +49,7 @@ public class CardStyleController extends CardController {
         MessageService messageService,
         CardStyleDAO cardStyleDAO,
         BankCardService bankCardService,
-        BCryptPasswordEncoder passwordEncoder
+        PinAdapter pinAdapter
     ) {
         super(
             tokenService,
@@ -60,7 +59,7 @@ public class CardStyleController extends CardController {
             operationProcessorService,
             cardHistoryService,
             messageService,
-            passwordEncoder
+            pinAdapter
         );
         this.cardStyleDAO = cardStyleDAO;
         this.bankCardService = bankCardService;
@@ -86,7 +85,7 @@ public class CardStyleController extends CardController {
             throw CardException.PAYMENT_CARD_DISABLED;
         }
 
-        if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
+        if (card.getPin() == null || !getPinAdapter().pinMatches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PAYMENT_PIN;
         }
 

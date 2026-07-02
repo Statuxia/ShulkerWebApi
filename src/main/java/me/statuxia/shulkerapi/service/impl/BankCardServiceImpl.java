@@ -15,6 +15,7 @@ import me.statuxia.shulkerapi.exception.FundsException;
 import me.statuxia.shulkerapi.model.*;
 import me.statuxia.shulkerapi.service.BankCardService;
 import me.statuxia.shulkerapi.service.CardHistoryService;
+import me.statuxia.shulkerapi.service.PinAdapter;
 import me.statuxia.shulkerapi.swagger.controller.card.InvalidPaymentPinOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.PaymentCardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.PaymentFromDirectOperation;
@@ -25,7 +26,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,13 +49,13 @@ public class BankCardServiceImpl implements BankCardService {
     private final BankCardOperationHistoryDAO bankCardOperationHistoryDAO;
     private final FineDAO fineDAO;
     private final BankCardService service;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PinAdapter pinAdapter;
 
     @Autowired
     public BankCardServiceImpl(
         CardStyleDAO cardStyleDAO, BankCardDAO bankCardDAO, BankCardLogDAO bankCardLogDAO,
         CardHistoryService cardHistoryService, BankCardOperationHistoryDAO bankCardOperationHistoryDAO,
-        FineDAO fineDAO, BCryptPasswordEncoder passwordEncoder
+        FineDAO fineDAO, PinAdapter pinAdapter
     ) {
         this.cardStyleDAO = cardStyleDAO;
         this.bankCardDAO = bankCardDAO;
@@ -64,7 +64,7 @@ public class BankCardServiceImpl implements BankCardService {
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
         this.fineDAO = fineDAO;
         this.service = this;
-        this.passwordEncoder = passwordEncoder;
+        this.pinAdapter = pinAdapter;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class BankCardServiceImpl implements BankCardService {
             throw CardException.PAYMENT_FROM_DIRECT;
         }
 
-        if (!passwordEncoder.matches(paymentCardPin, card.getPin())) {
+        if (!pinAdapter.pinMatches(paymentCardPin, card.getPin())) {
             throw CardException.INVALID_PAYMENT_PIN;
         }
 

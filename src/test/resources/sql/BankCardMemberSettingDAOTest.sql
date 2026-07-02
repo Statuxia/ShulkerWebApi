@@ -23,8 +23,8 @@ values
 insert into bank_card_member
 (id, bank_card_id, game_account_id, pin, added_at, credited, debited)
 values
-(1, 1, 1, '$2b$12$GBVR7nmnHOj6cAMfboG8oegA6JODLz.F84j3AihuC6X31q787puOK', NOW(), 0, 0),
-(2, 1, 2, '$2b$12$wp9SwTiNR3luptWJfjoUNeOM5WVHeslxZ293NALQc7fygckDAtVUK', NOW(), 0, 0);
+(1, 1, 1, '0001', NOW(), 0, 0),
+(2, 1, 2, '0002', NOW(), 0, 0);
 
 insert into bank_card_member_setting
 (id, bank_card_id, bank_card_member_id, type, value)

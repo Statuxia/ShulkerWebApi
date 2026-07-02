@@ -21,6 +21,7 @@ import me.statuxia.shulkerapi.response.NamedItem;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
+import me.statuxia.shulkerapi.service.PinAdapter;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
@@ -29,7 +30,6 @@ import me.statuxia.shulkerapi.swagger.controller.ViewCardHistoryControllerOperat
 import me.statuxia.shulkerapi.swagger.controller.card.CardDisabledOperation;
 import me.statuxia.shulkerapi.swagger.controller.card.UnknownCardOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +65,7 @@ public class ViewCardHistoryController extends CardController {
         BankCardOperationHistoryDAO bankCardOperationHistoryDAO, BankCardLogDAO bankCardLogDAO,
         MessageService messageService,
         JsonNodeConverter jsonNodeConverter,
-        BCryptPasswordEncoder passwordEncoder
+        PinAdapter pinAdapter
     ) {
         super(
             tokenService,
@@ -75,7 +75,7 @@ public class ViewCardHistoryController extends CardController {
             operationProcessorService,
             cardHistoryService,
             messageService,
-            passwordEncoder
+            pinAdapter
         );
         this.bankCardHistoryDAO = bankCardHistoryDAO;
         this.bankCardOperationHistoryDAO = bankCardOperationHistoryDAO;
