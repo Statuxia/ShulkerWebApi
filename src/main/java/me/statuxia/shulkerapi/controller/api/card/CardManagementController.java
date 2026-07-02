@@ -20,9 +20,9 @@ import me.statuxia.shulkerapi.response.CardCreateResponse;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
+import me.statuxia.shulkerapi.service.PinAdapter;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
 import me.statuxia.shulkerapi.swagger.UnknownActionByAccountOperation;
 import me.statuxia.shulkerapi.swagger.controller.CardManagementControllerOperation;
@@ -64,11 +64,11 @@ public class CardManagementController extends CardController {
         TokenService tokenService, GameAccountService gameAccountService, BankCardDAO bankCardDAO,
         CardProperties cardProperties,
         OperationProcessorService operationProcessorService, CardHistoryService cardHistoryService,
-        MessageService messageService, BCryptPasswordEncoder passwordEncoder
+        MessageService messageService, PinAdapter pinAdapter
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService, messageService, passwordEncoder
+            operationProcessorService, cardHistoryService, messageService, pinAdapter
         );
         this.controller = this;
     }
@@ -107,7 +107,7 @@ public class CardManagementController extends CardController {
         bankCard.setCreateTime(DateTime.now());
         bankCard.updatePatternSeed();
         bankCard.setGameAccount(gameAccount);
-        bankCard.setPin(getPasswordEncoder().encode(request.getPin()));
+        bankCard.setPin(getPinAdapter().encodePin(request.getPin()));
 
         if (CardType.GROUP.equals(request.getType())) {
             final Long directCardCount = getBankCardDAO().count(
@@ -154,7 +154,7 @@ public class CardManagementController extends CardController {
             throw CardException.CARD_DISABLED;
         }
 
-        return ResponseEntity.ok(getPasswordEncoder().matches(request.getPin(), card.getPin()));
+        return ResponseEntity.ok(getPinAdapter().pinMatches(request.getPin(), card.getPin()));
     }
 
     @PutMapping(value = UPDATE_PIN, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -182,11 +182,11 @@ public class CardManagementController extends CardController {
 
         final boolean isAdmin = getTokenService().hasAuthority(token.token(), UPDATE_PIN_CODE);
 
-        if (!isAdmin && !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
+        if (!isAdmin && !getPinAdapter().pinMatches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
-        card.setPin(getPasswordEncoder().encode(request.getNewPin()));
+        card.setPin(getPinAdapter().encodePin(request.getNewPin()));
         getBankCardDAO().save(card);
         getCardHistoryService().writeUpdatePin(card, actionBy, isAdmin);
 
@@ -219,7 +219,7 @@ public class CardManagementController extends CardController {
         final GameAccount actionBy = request.getActionBy() == null
             ? null : getGameAccountService().getActionGameAccount(request.getActionBy());
 
-        if (!isAdmin && !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
+        if (!isAdmin && !getPinAdapter().pinMatches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -318,7 +318,7 @@ public class CardManagementController extends CardController {
             throw CardException.PAYMENT_FROM_DIRECT;
         }
 
-        if (!getPasswordEncoder().matches(request.getPaymentCardPin(), card.getPin())) {
+        if (!getPinAdapter().pinMatches(request.getPaymentCardPin(), card.getPin())) {
             throw CardException.INVALID_PAYMENT_PIN;
         }
 

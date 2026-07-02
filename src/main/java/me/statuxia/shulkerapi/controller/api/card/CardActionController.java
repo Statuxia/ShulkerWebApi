@@ -25,6 +25,7 @@ import me.statuxia.shulkerapi.service.BankCardService;
 import me.statuxia.shulkerapi.service.CardHistoryService;
 import me.statuxia.shulkerapi.service.GameAccountService;
 import me.statuxia.shulkerapi.service.OperationProcessorService;
+import me.statuxia.shulkerapi.service.PinAdapter;
 import me.statuxia.shulkerapi.service.TokenService;
 import me.statuxia.shulkerapi.service.impl.MessageService;
 import me.statuxia.shulkerapi.swagger.UnknownAccountOperation;
@@ -34,7 +35,6 @@ import me.statuxia.shulkerapi.swagger.controller.funds.AmountGreaterZeroOperatio
 import me.statuxia.shulkerapi.swagger.controller.funds.NotEnoughFundsOperation;
 import me.statuxia.shulkerapi.utils.AdminCardHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,11 +76,11 @@ public class CardActionController extends CardController {
         BankCardMemberDAO bankCardMemberDAO,
         BankCardSettingDAO bankCardSettingDAO,
         BankCardMemberSettingDAO bankCardMemberSettingDAO,
-        BCryptPasswordEncoder passwordEncoder
+        PinAdapter pinAdapter
     ) {
         super(
             tokenService, gameAccountService, bankCardDAO, cardProperties,
-            operationProcessorService, cardHistoryService, messageService, passwordEncoder
+            operationProcessorService, cardHistoryService, messageService, pinAdapter
         );
         this.controller = this;
         this.bankCardService = bankCardService;
@@ -154,7 +154,7 @@ public class CardActionController extends CardController {
         if (CardType.GROUP.equals(card.getType())) {
             processGroupWithdraw(card, request);
         } else {
-            if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
+            if (card.getPin() == null || !getPinAdapter().pinMatches(request.getPin(), card.getPin())) {
                 throw CardException.INVALID_PIN;
             }
 
@@ -205,7 +205,7 @@ public class CardActionController extends CardController {
             throw CardException.RECEIVER_CARD_DISABLED;
         }
 
-        if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
+        if (card.getPin() == null || !getPinAdapter().pinMatches(request.getPin(), card.getPin())) {
             throw CardException.INVALID_PIN;
         }
 
@@ -248,7 +248,7 @@ public class CardActionController extends CardController {
             final GameAccount memberGA = getGameAccountService().getGameAccount(request.getMemberGameAccount());
             final BankCardMember member = findMember(card, memberGA);
 
-            if (!getPasswordEncoder().matches(request.getPin(), member.getPin())) {
+            if (!getPinAdapter().pinMatches(request.getPin(), member.getPin())) {
                 throw CardException.INVALID_PIN;
             }
 
@@ -262,7 +262,7 @@ public class CardActionController extends CardController {
             member.setDebited(member.getDebited() + request.getFunds());
             bankCardMemberDAO.save(member);
         } else {
-            if (card.getPin() == null || !getPasswordEncoder().matches(request.getPin(), card.getPin())) {
+            if (card.getPin() == null || !getPinAdapter().pinMatches(request.getPin(), card.getPin())) {
                 throw CardException.INVALID_PIN;
             }
             bankCardService.withdrawFunds(card, request.getFunds(), false);
